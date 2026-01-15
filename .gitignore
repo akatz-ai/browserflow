@@ -1,0 +1,35 @@
+# BrowserFlow ignores
+
+# Runtime directories
+.browserflow/
+explorations/*/
+reviews/*/
+/tmp/
+
+# Generated tests (optional - some may want to track these)
+# generated/
+
+# Screenshots (large binaries)
+*.png
+!baselines/**/*.png
+
+# Node modules (if using JS components)
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log

@@ -1,0 +1,23 @@
+# BrowserFlow Configuration
+project:
+  name: simple-nav-example
+  base_url: http://localhost:3000
+
+browser:
+  engine: chromium
+  headless: true
+  viewport:
+    width: 1280
+    height: 720
+  timeout: 30000
+
+exploration:
+  adapter: claude
+  max_retries: 3
+
+review:
+  port: 8190
+
+ci:
+  fail_on_baseline_diff: false
+  parallel: 2

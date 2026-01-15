@@ -1,0 +1,52 @@
+# Example: Simple Navigation Test
+name: homepage-nav
+description: |
+  Verify that the main navigation links work correctly.
+  User clicks through each nav item and verifies page loads.
+
+preconditions:
+  page: "/"
+
+timeout: 60s
+priority: high
+
+steps:
+  - action: screenshot
+    name: "initial-homepage"
+    description: Capture initial state
+
+  - action: click
+    query: "About link in the navigation menu"
+    description: Click the About nav link
+
+  - action: wait
+    for: url
+    contains: "/about"
+    timeout: 5000
+
+  - action: screenshot
+    name: "about-page"
+
+  - action: verify_state
+    checks:
+      - url_contains: "/about"
+      - element_visible: "main"
+
+  - action: click
+    query: "Contact link in the navigation"
+
+  - action: wait
+    for: url
+    contains: "/contact"
+    timeout: 5000
+
+  - action: screenshot
+    name: "contact-page"
+
+expected_outcomes:
+  - navigation_works: true
+  - no_errors: true
+
+tags:
+  - navigation
+  - smoke
