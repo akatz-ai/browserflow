@@ -168,7 +168,7 @@ function SliderView({ before, after }: SliderViewProps) {
           src={before}
           alt=""
           className="h-full object-cover object-left"
-          style={{ width: `${10000 / position}%` }}
+          style={{ width: position > 0 ? `${10000 / position}%` : '100%' }}
         />
       </div>
 
