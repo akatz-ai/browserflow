@@ -1,0 +1,29 @@
+{
+  "name": "@browserflow/cli",
+  "version": "0.0.1",
+  "description": "bf command-line tool for BrowserFlow",
+  "type": "module",
+  "bin": {
+    "bf": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "dev": "bun run src/cli.ts"
+  },
+  "files": ["dist", "src"],
+  "dependencies": {
+    "@browserflow/core": "workspace:*",
+    "@browserflow/exploration": "workspace:*",
+    "@browserflow/generator": "workspace:*"
+  }
+}

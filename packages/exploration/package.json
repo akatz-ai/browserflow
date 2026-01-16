@@ -1,0 +1,23 @@
+{
+  "name": "@browserflow/exploration",
+  "version": "0.0.1",
+  "description": "AI exploration engine for BrowserFlow",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": ["dist", "src"],
+  "dependencies": {
+    "@browserflow/core": "workspace:*"
+  }
+}

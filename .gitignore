@@ -13,8 +13,10 @@ reviews/*/
 *.png
 !baselines/**/*.png
 
-# Node modules (if using JS components)
+# Node modules and build output
 node_modules/
+dist/
+*.tsbuildinfo
 
 # Python
 __pycache__/
