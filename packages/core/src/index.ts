@@ -77,7 +77,7 @@ export {
 } from './lockfile.js';
 
 // Duration utilities
-export { parseDuration, formatDuration } from './duration.js';
+export { parseDuration, formatDuration, isValidDuration } from './duration.js';
 
 // Run store utilities
 export {

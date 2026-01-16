@@ -7,10 +7,10 @@
  * @see bf-92j for implementation task
  */
 
-import { join, basename } from 'path';
+import { join } from 'path';
 import { randomBytes } from 'crypto';
-import { mkdir, symlink, unlink, readlink, readdir, stat } from 'fs/promises';
-import { existsSync, statSync, readdirSync, lstatSync } from 'fs';
+import { mkdir, symlink, unlink } from 'fs/promises';
+import { existsSync, statSync, readdirSync } from 'fs';
 
 /**
  * Run directory structure:
