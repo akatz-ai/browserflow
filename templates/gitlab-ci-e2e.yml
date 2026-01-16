@@ -1,0 +1,33 @@
+# BrowserFlow E2E Tests for GitLab CI
+# Copy the contents of this file to your .gitlab-ci.yml
+# or include it using GitLab's include feature
+
+e2e:
+  stage: test
+  image: oven/bun:latest
+
+  # Cache for faster subsequent runs
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+      - ~/.cache/ms-playwright/
+
+  before_script:
+    - bun add -g @browserflow/cli
+    - bunx playwright install --with-deps chromium
+
+  script:
+    - bun install
+    # Modify this command to match your application's start command
+    - bun run dev &
+    - sleep 5
+    - bf run
+
+  # Upload artifacts on failure for debugging
+  artifacts:
+    when: on_failure
+    paths:
+      - .browserflow/runs/**/failure.json
+      - .browserflow/runs/**/artifacts/
+    expire_in: 1 week

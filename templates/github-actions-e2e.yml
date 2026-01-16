@@ -1,0 +1,56 @@
+# BrowserFlow E2E Tests for GitHub Actions
+# Copy this file to .github/workflows/e2e.yml in your repository
+
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      # Cache Playwright browsers for faster runs
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lockb') }}
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Install BrowserFlow
+        run: bun add -g @browserflow/cli
+
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
+
+      # Modify this command to match your application's start command
+      - name: Start application
+        run: |
+          bun run dev &
+          sleep 5
+
+      - name: Run E2E tests
+        run: bf run
+
+      # Upload artifacts on failure for debugging
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browserflow-failures
+          path: |
+            .browserflow/runs/**/failure.json
+            .browserflow/runs/**/artifacts/
+          retention-days: 7
