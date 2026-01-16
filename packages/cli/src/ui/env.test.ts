@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import { isCI, isTTY, supportsColor, resetEnvCache } from './env.js';
+import { isCI, isTTY, supportsColor, shouldUseSpinners, isInteractive, resetEnvCache } from './env.js';
 
 describe('env', () => {
   let originalEnv: NodeJS.ProcessEnv;
@@ -99,6 +99,37 @@ describe('env', () => {
       resetEnvCache();
       const result = supportsColor();
       expect(typeof result).toBe('boolean');
+    });
+  });
+
+  describe('shouldUseSpinners', () => {
+    it('should return boolean', () => {
+      resetEnvCache();
+      const result = shouldUseSpinners();
+      expect(typeof result).toBe('boolean');
+    });
+
+    it('should return false when in CI', () => {
+      process.env.CI = 'true';
+      resetEnvCache();
+      // In CI, spinners should be disabled regardless of TTY
+      const result = shouldUseSpinners();
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('isInteractive', () => {
+    it('should return boolean', () => {
+      resetEnvCache();
+      const result = isInteractive();
+      expect(typeof result).toBe('boolean');
+    });
+
+    it('should return false when in CI', () => {
+      process.env.CI = 'true';
+      resetEnvCache();
+      const result = isInteractive();
+      expect(result).toBe(false);
     });
   });
 });
