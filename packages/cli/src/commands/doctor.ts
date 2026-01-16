@@ -82,7 +82,9 @@ export async function checkAgentBrowser(): Promise<CheckResult> {
   try {
     const { stdout } = await exec('agent-browser --version');
     const version = stdout.trim();
-    return { status: 'pass', message: `v${version}` };
+    // Handle version with or without 'v' prefix
+    const displayVersion = version.startsWith('v') ? version : `v${version}`;
+    return { status: 'pass', message: displayVersion };
   } catch {
     return {
       status: 'fail',
@@ -94,14 +96,22 @@ export async function checkAgentBrowser(): Promise<CheckResult> {
 
 export async function checkPlaywrightBrowsers(): Promise<CheckResult> {
   try {
-    // Check if chromium is installed by looking for the playwright browser cache
-    const { stdout } = await exec('bunx playwright --version');
-    const version = stdout.trim();
+    // Get playwright version
+    const { stdout: versionOutput } = await exec('bunx playwright --version');
+    const version = versionOutput.trim();
 
-    // Try to check if browsers are installed
+    // Check if chromium is installed using --list
     try {
-      await exec('bunx playwright install --dry-run chromium');
-      return { status: 'pass', message: `Installed (Playwright ${version})` };
+      const { stdout: listOutput } = await exec('bunx playwright install --list');
+      // Check if chromium is listed in the browsers section
+      if (listOutput.includes('chromium-')) {
+        return { status: 'pass', message: `Installed (Playwright ${version})` };
+      }
+      return {
+        status: 'warn',
+        message: `Playwright ${version} (chromium not installed)`,
+        fixHint: 'Run: bunx playwright install chromium',
+      };
     } catch {
       return {
         status: 'warn',

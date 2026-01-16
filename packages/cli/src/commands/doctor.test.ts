@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, mock, spyOn } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -25,13 +25,16 @@ describe('doctorCommand', () => {
   });
 });
 
-describe('Check types', () => {
-  it('should export CheckResult type with correct statuses', async () => {
-    const { CheckResult } = await import('./doctor.js');
-    // Type should allow these values
-    const pass: typeof CheckResult.prototype.status = 'pass';
-    const warn: typeof CheckResult.prototype.status = 'warn';
-    const fail: typeof CheckResult.prototype.status = 'fail';
+describe('CheckResult interface', () => {
+  it('should be used correctly by check functions', async () => {
+    const { checkNodeVersion } = await import('./doctor.js');
+    const result = await checkNodeVersion();
+
+    // Verify the result conforms to CheckResult interface
+    expect(result).toHaveProperty('status');
+    expect(result).toHaveProperty('message');
+    expect(['pass', 'warn', 'fail']).toContain(result.status);
+    expect(typeof result.message).toBe('string');
   });
 });
 
