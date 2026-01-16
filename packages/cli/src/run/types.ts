@@ -36,4 +36,9 @@ export interface FailureInfo {
   error: string;
   screenshot?: string;
   trace?: string;
+  context?: {
+    url: string;
+    viewport: { width: number; height: number };
+    browser: string;
+  };
 }

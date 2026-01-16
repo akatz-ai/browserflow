@@ -2,6 +2,7 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import type { RunResult, SpecResult, FailureInfo } from './types.js';
 import type { ExecutorResult } from './executor.js';
+import { generateFailureBundle, type TestFailure } from './failure-bundle.js';
 
 export async function collectResults(
   runDir: string,
@@ -112,19 +113,35 @@ export async function collectResults(
 export async function generateFailureBundles(
   runDir: string,
   failures: FailureInfo[]
-): Promise<void> {
+): Promise<string[]> {
   const bundlesDir = path.join(runDir, 'failure-bundles');
   await fs.mkdir(bundlesDir, { recursive: true });
+
+  const bundlePaths: string[] = [];
+  const artifactsDir = path.join(runDir, 'artifacts');
 
   for (const failure of failures) {
     const bundleName = `${failure.spec}-${failure.step}`.replace(/[^a-zA-Z0-9-_]/g, '-');
     const bundleDir = path.join(bundlesDir, bundleName);
     await fs.mkdir(bundleDir, { recursive: true });
 
-    // Write failure info
-    await fs.writeFile(
-      path.join(bundleDir, 'failure.json'),
-      JSON.stringify(failure, null, 2)
-    );
+    // Convert FailureInfo to TestFailure
+    const testFailure: TestFailure = {
+      specName: failure.spec,
+      stepId: failure.step,
+      action: failure.step, // Use step name as action if not available
+      message: failure.error,
+      context: failure.context ?? {
+        url: 'unknown',
+        viewport: { width: 1280, height: 720 },
+        browser: 'chromium',
+      },
+    };
+
+    // Generate comprehensive failure bundle
+    const bundlePath = await generateFailureBundle(bundleDir, testFailure, artifactsDir);
+    bundlePaths.push(bundlePath);
   }
+
+  return bundlePaths;
 }
