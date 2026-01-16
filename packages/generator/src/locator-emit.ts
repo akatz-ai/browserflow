@@ -131,11 +131,12 @@ function generateMethodLocator(
       if (!role) {
         throw new Error('getByRole requires a role argument');
       }
+      const escapedRole = escapeString(String(role));
       const optionsStr = formatOptions(options);
       if (optionsStr) {
-        return `${pageVar}.getByRole('${role}', ${optionsStr})`;
+        return `${pageVar}.getByRole('${escapedRole}', ${optionsStr})`;
       }
-      return `${pageVar}.getByRole('${role}')`;
+      return `${pageVar}.getByRole('${escapedRole}')`;
     }
 
     case 'getByText': {

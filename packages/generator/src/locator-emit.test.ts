@@ -406,6 +406,20 @@ describe('generateLocatorCode', () => {
         "page.getByTestId('list').getByRole('listitem').first()"
       );
     });
+
+    it('respects custom pageVar with within', () => {
+      const parent: LocatorObject = {
+        method: 'getByTestId',
+        args: { testId: 'modal' },
+      };
+      const locator: LocatorObject = {
+        method: 'getByRole',
+        args: { role: 'button', name: 'Close' },
+      };
+      expect(generateLocatorCode(locator, { within: parent, pageVar: 'frame' })).toBe(
+        "frame.getByTestId('modal').getByRole('button', { name: 'Close' })"
+      );
+    });
   });
 
   describe('error handling', () => {
