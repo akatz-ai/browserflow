@@ -8,7 +8,7 @@ import type {
   ExplorationStep,
   GeneratedTest,
   ReviewData,
-  SpecStep,
+  LegacySpecStep,
 } from '@browserflow/core';
 import Handlebars from 'handlebars';
 import { resolveLocatorCode, escapeString } from './locator-emit.js';
@@ -185,7 +185,7 @@ export class PlaywrightGenerator {
   /**
    * Describes an action for comments.
    */
-  private describeAction(action: SpecStep): string {
+  private describeAction(action: LegacySpecStep): string {
     switch (action.action) {
       case 'click':
         return `Click: ${action.query ?? action.selector ?? 'element'}`;
@@ -287,7 +287,7 @@ export class PlaywrightGenerator {
   /**
    * Generates navigate action code.
    */
-  private generateNavigateCode(action: SpecStep): string[] {
+  private generateNavigateCode(action: LegacySpecStep): string[] {
     const url = action.to ?? '/';
     return [`await page.goto('${escapeString(url)}');`];
   }
@@ -327,7 +327,7 @@ export class PlaywrightGenerator {
   /**
    * Generates wait action code.
    */
-  private generateWaitCode(action: SpecStep, actualDuration?: number): string[] {
+  private generateWaitCode(action: LegacySpecStep, actualDuration?: number): string[] {
     const lines: string[] = [];
     const timeout = action.timeout ?? this.options.timeout ?? 30000;
 
@@ -371,7 +371,7 @@ export class PlaywrightGenerator {
   /**
    * Generates screenshot action code.
    */
-  private generateScreenshotCode(action: SpecStep): string[] {
+  private generateScreenshotCode(action: LegacySpecStep): string[] {
     const lines: string[] = [];
     const name = action.name ?? 'screenshot';
 
@@ -401,7 +401,7 @@ export class PlaywrightGenerator {
   /**
    * Generates verify_state action code.
    */
-  private generateVerifyCode(action: SpecStep): string[] {
+  private generateVerifyCode(action: LegacySpecStep): string[] {
     const lines: string[] = [];
 
     for (const check of action.checks ?? []) {

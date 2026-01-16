@@ -3,7 +3,10 @@
  * Converts LocatorObject instances to Playwright locator code strings.
  */
 
-import type { LocatorObject, LocatorMethod } from '@browserflow/core';
+import type { LegacyLocatorObject, LocatorMethod } from '@browserflow/core';
+
+// Use the legacy interface for backwards compatibility
+type LocatorObject = LegacyLocatorObject;
 
 /**
  * Options for code generation.

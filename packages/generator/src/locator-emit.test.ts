@@ -4,7 +4,10 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import type { LocatorObject } from '@browserflow/core';
+import type { LegacyLocatorObject } from '@browserflow/core';
+
+// Use the legacy interface for backwards compatibility
+type LocatorObject = LegacyLocatorObject;
 import {
   generateLocatorCode,
   resolveLocatorCode,

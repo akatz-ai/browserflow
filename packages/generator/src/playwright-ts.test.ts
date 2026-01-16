@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import type { ExplorationLockfile, ExplorationStep, SpecStep, ReviewData } from '@browserflow/core';
+import type { ExplorationLockfile, ExplorationStep, LegacySpecStep, ReviewData } from '@browserflow/core';
 import { PlaywrightGenerator, generateTest } from './playwright-ts.js';
 
 /**
@@ -34,7 +34,7 @@ function createMockLockfile(
  * Creates a minimal ExplorationStep for testing.
  */
 function createMockStep(
-  action: SpecStep,
+  action: LegacySpecStep,
   execution: Partial<ExplorationStep['execution']> = {}
 ): ExplorationStep {
   return {

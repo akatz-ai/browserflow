@@ -8,8 +8,8 @@ import { z } from 'zod';
 import { join } from 'path';
 import { createHash } from 'crypto';
 import { readFile, writeFile } from 'fs/promises';
-import { locatorObjectSchema, type LocatorObject } from './locator-object.js';
-import type { SpecStep } from './spec-schema.js';
+import { locatorObjectSchema, type LocatorObject, type LegacyLocatorObject } from './locator-object.js';
+import type { SpecStep, LegacySpecStep } from './spec-schema.js';
 
 // Assertion types
 export type AssertionType =
@@ -166,7 +166,7 @@ export interface ExplorationLockfile {
 
 export interface ExplorationStep {
   step_index: number;
-  spec_action: SpecStep;
+  spec_action: LegacySpecStep;
   execution: StepExecution;
   screenshots: {
     before?: string;
@@ -181,7 +181,7 @@ export interface StepExecution {
   method?: string;
   element_ref?: string;
   selector_used?: string;
-  locator?: LocatorObject;
+  locator?: LegacyLocatorObject;
   duration_ms: number;
   error?: string;
   value_used?: string;

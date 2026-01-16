@@ -287,3 +287,54 @@ export type MaskRegion = z.infer<typeof maskRegionSchema>;
 
 // Alias for specStepSchema (legacy)
 export const specStepSchema = stepSchema;
+
+// Legacy SpecStep type (for backwards compatibility with generator)
+export interface LegacySpecStep {
+  action: ActionType;
+  description?: string;
+  // Click/fill/type - query-based targeting
+  query?: string;
+  // Navigate action
+  to?: string;
+  // Fill action
+  value?: string;
+  // Wait action
+  for?: 'element' | 'text' | 'url' | 'time';
+  text?: string;
+  duration?: string | number;
+  contains?: string;
+  // Select action
+  option?: string;
+  // Check action
+  checked?: boolean;
+  // Screenshot action
+  name?: string;
+  mask?: Array<{
+    selector?: string;
+    region?: { x: number; y: number; width: number; height: number };
+    reason?: string;
+  }>;
+  // Verify state action
+  checks?: Array<{
+    element_visible?: string;
+    element_not_visible?: string;
+    text_contains?: string;
+    text_not_contains?: string;
+    url_contains?: string;
+    element_count?: { selector: string; expected: number };
+    attribute?: { selector: string; attribute: string; equals: string };
+  }>;
+  // AI verify
+  question?: string;
+  expected?: boolean | string | number;
+  // Custom action
+  save_as?: string;
+  // Element reference
+  ref?: string;
+  // Legacy selector
+  selector?: string;
+  // Timeout override
+  timeout?: string;
+  // Keyboard
+  pressEnter?: boolean;
+}

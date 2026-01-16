@@ -21,6 +21,7 @@ export {
   type HighlightRegion,
   type MaskRegion,
   type SpecStep,
+  type LegacySpecStep,
   type ExpectedOutcome,
   type BrowserFlowSpec,
   type Target,
