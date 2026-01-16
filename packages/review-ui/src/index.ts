@@ -17,3 +17,8 @@ export {
   type LocatorCandidate,
   type LocatorStrategy,
 } from './components/LocatorPicker';
+export {
+  MaskEditor,
+  type MaskEditorProps,
+  type Mask,
+} from './components/MaskEditor';
