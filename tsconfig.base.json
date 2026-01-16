@@ -16,7 +16,15 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "composite": true
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@browserflow/core": ["packages/core/src/index.ts"],
+      "@browserflow/cli": ["packages/cli/src/index.ts"],
+      "@browserflow/exploration": ["packages/exploration/src/index.ts"],
+      "@browserflow/generator": ["packages/generator/src/index.ts"],
+      "@browserflow/review-ui": ["packages/review-ui/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "dist"]
 }
