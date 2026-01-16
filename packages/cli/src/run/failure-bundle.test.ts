@@ -5,7 +5,6 @@ import * as os from 'node:os';
 import {
   type FailureBundle,
   type TestFailure,
-  type RepairSuggestion,
   classifyError,
   generateRepairSuggestions,
   generateFailureBundle,
