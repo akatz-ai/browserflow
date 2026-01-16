@@ -13,6 +13,21 @@ export interface LocatorEmitOptions {
   pageVar?: string;
   /** Whether to chain .first() for potentially multiple matches */
   chainFirst?: boolean;
+  /**
+   * Index-based selection for multiple matches:
+   * - 0: .first()
+   * - -1: .last()
+   * - other: .nth(n)
+   * Takes precedence over chainFirst when specified.
+   */
+  nth?: number;
+  /**
+   * Parent locator for scoping. The generated code will be
+   * chained from this parent locator.
+   * Example: within: { method: 'getByTestId', args: { testId: 'form' } }
+   * Results in: page.getByTestId('form').getByRole('button')
+   */
+  within?: LocatorObject;
 }
 
 /**
@@ -63,23 +78,39 @@ export function generateLocatorCode(
   locator: LocatorObject,
   options: LocatorEmitOptions = {}
 ): string {
-  const { pageVar = 'page', chainFirst = false } = options;
+  const { pageVar = 'page', chainFirst = false, nth, within } = options;
+
+  // Start with the base variable or parent locator chain
+  let baseVar = pageVar;
+  if (within) {
+    // Generate code for the parent locator (without page var suffix methods)
+    baseVar = generateLocatorCode(within, { pageVar });
+  }
 
   let code: string;
 
   if (locator.method && locator.args) {
-    code = generateMethodLocator(locator.method, locator.args, pageVar);
+    code = generateMethodLocator(locator.method, locator.args, baseVar);
   } else if (locator.selector) {
-    code = `${pageVar}.locator('${escapeString(locator.selector)}')`;
+    code = `${baseVar}.locator('${escapeString(locator.selector)}')`;
   } else if (locator.ref) {
     // Element refs need to be resolved - use a placeholder selector
     // In practice, the exploration should have resolved this to a selector
-    code = `${pageVar}.locator('[data-ref="${escapeString(locator.ref)}"]')`;
+    code = `${baseVar}.locator('[data-ref="${escapeString(locator.ref)}"]')`;
   } else {
     throw new Error('LocatorObject must have either method+args, selector, or ref');
   }
 
-  if (chainFirst) {
+  // Apply nth handling - takes precedence over chainFirst
+  if (nth !== undefined) {
+    if (nth === 0) {
+      code += '.first()';
+    } else if (nth === -1) {
+      code += '.last()';
+    } else {
+      code += `.nth(${nth})`;
+    }
+  } else if (chainFirst) {
     code += '.first()';
   }
 
@@ -100,11 +131,12 @@ function generateMethodLocator(
       if (!role) {
         throw new Error('getByRole requires a role argument');
       }
+      const escapedRole = escapeString(String(role));
       const optionsStr = formatOptions(options);
       if (optionsStr) {
-        return `${pageVar}.getByRole('${role}', ${optionsStr})`;
+        return `${pageVar}.getByRole('${escapedRole}', ${optionsStr})`;
       }
-      return `${pageVar}.getByRole('${role}')`;
+      return `${pageVar}.getByRole('${escapedRole}')`;
     }
 
     case 'getByText': {
