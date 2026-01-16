@@ -21,7 +21,10 @@ import { lockfileSchema } from '../src/lockfile.js';
 import { browserflowConfigSchema } from '../src/config-schema.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const SCHEMAS_DIR = join(__dirname, '../../../schemas');
+// Output to package-local schemas directory for npm publishing
+const PACKAGE_SCHEMAS_DIR = join(__dirname, '../schemas');
+// Also copy to root schemas directory for monorepo documentation
+const ROOT_SCHEMAS_DIR = join(__dirname, '../../../schemas');
 
 interface SchemaDefinition {
   name: string;
@@ -58,8 +61,9 @@ const schemas: SchemaDefinition[] = [
 async function generateSchemas(): Promise<void> {
   console.log('Generating JSON schemas from Zod schemas...\n');
 
-  // Ensure output directory exists
-  await mkdir(SCHEMAS_DIR, { recursive: true });
+  // Ensure output directories exist
+  await mkdir(PACKAGE_SCHEMAS_DIR, { recursive: true });
+  await mkdir(ROOT_SCHEMAS_DIR, { recursive: true });
 
   for (const { name, filename, schema, title, description } of schemas) {
     const jsonSchema = zodToJsonSchema(schema as any, {
@@ -68,22 +72,26 @@ async function generateSchemas(): Promise<void> {
       errorMessages: true,
     });
 
-    // Add metadata
+    // Add metadata (spread jsonSchema first so our metadata takes precedence)
     const enrichedSchema = {
-      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      ...jsonSchema,
       $id: `https://browserflow.dev/schemas/${filename}`,
       title,
       description,
-      ...jsonSchema,
     };
 
-    const outputPath = join(SCHEMAS_DIR, filename);
-    await writeFile(outputPath, JSON.stringify(enrichedSchema, null, 2) + '\n');
+    const content = JSON.stringify(enrichedSchema, null, 2) + '\n';
+
+    // Write to both locations
+    await writeFile(join(PACKAGE_SCHEMAS_DIR, filename), content);
+    await writeFile(join(ROOT_SCHEMAS_DIR, filename), content);
 
     console.log(`  ✓ ${filename}`);
   }
 
-  console.log(`\nGenerated ${schemas.length} schemas in ${SCHEMAS_DIR}`);
+  console.log(`\nGenerated ${schemas.length} schemas in:`);
+  console.log(`  - ${PACKAGE_SCHEMAS_DIR} (for npm package)`);
+  console.log(`  - ${ROOT_SCHEMAS_DIR} (for monorepo)`);
 }
 
 // Run if executed directly

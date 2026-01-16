@@ -22,7 +22,7 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
-  "files": ["dist", "src", "../../schemas"],
+  "files": ["dist", "src", "schemas"],
   "dependencies": {
     "playwright-core": "^1.57.0",
     "zod": "^3.22.4"
