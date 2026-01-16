@@ -2,12 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "types": ["bun-types"]
   },
   "include": ["src"],
+  "exclude": ["src/**/*.test.ts"],
   "references": [
-    { "path": "../core" },
-    { "path": "../exploration" },
-    { "path": "../generator" }
+    { "path": "../core" }
   ]
 }
