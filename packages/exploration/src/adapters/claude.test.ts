@@ -1,5 +1,5 @@
 // @browserflow/exploration - Claude adapter tests
-import { describe, it, expect, beforeEach, mock, spyOn, afterEach } from 'bun:test';
+import { describe, it, expect, beforeEach, mock } from 'bun:test';
 import { ClaudeAdapter } from './claude';
 
 // Mock the Anthropic SDK

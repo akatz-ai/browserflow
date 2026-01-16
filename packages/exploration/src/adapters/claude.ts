@@ -149,12 +149,14 @@ Use the select_element tool to return the ref of the best matching element.`;
   /**
    * Run exploration on a spec using Claude
    *
+   * Note: The primary AI method is findElement(). This explore() method is a stub
+   * that returns a minimal valid structure. Full exploration is orchestrated by
+   * the Explorer class which uses findElement() for AI-powered element discovery.
+   *
    * @param params - Exploration parameters including spec and browser config
    * @returns Promise resolving to exploration output
    */
   async explore(params: ExploreParams): Promise<ExplorationOutput> {
-    // TODO: Implement in bf-dyj (C.5: Implement Claude adapter)
-    // This stub returns a minimal valid structure for compilation
     const explorationId = `exp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     return {
@@ -176,11 +178,13 @@ Use the select_element tool to return the ref of the best matching element.`;
   /**
    * Retry exploration with review feedback
    *
+   * Note: Currently delegates to explore(). Future enhancement could use
+   * review feedback to improve element selection accuracy.
+   *
    * @param params - Retry parameters including previous exploration and feedback
    * @returns Promise resolving to new exploration output
    */
   async retryWithFeedback(params: RetryParams): Promise<ExplorationOutput> {
-    // TODO: Implement in bf-dyj (C.5: Implement Claude adapter)
     return this.explore(params);
   }
 }

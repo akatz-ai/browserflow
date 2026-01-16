@@ -1,10 +1,8 @@
 // @browserflow/exploration - Explorer tests
-import { describe, it, expect, beforeEach, mock, spyOn } from 'bun:test';
+import { describe, it, expect, beforeEach, spyOn } from 'bun:test';
 import { Explorer } from './explorer';
-import type { BrowserSession, ExplorerConfig } from './explorer';
-import type { AIAdapter, ExplorationOutput, Spec, SpecStep, StepResult } from './adapters/types';
-import { StepExecutor } from './step-executor';
-import { EvidenceCollector } from './evidence';
+import type { BrowserSession } from './explorer';
+import type { AIAdapter, Spec } from './adapters/types';
 
 // Mock browser session
 function createMockBrowserSession(options: Partial<BrowserSession> = {}): BrowserSession {
