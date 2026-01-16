@@ -42,7 +42,7 @@ description: Example spec - customize for your app
 steps:
   - id: visit_home
     action: navigate
-    to: /
+    url: /
 
   - id: homepage_screenshot
     action: screenshot
