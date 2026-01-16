@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 export type ViewMode = 'side-by-side' | 'slider' | 'blink' | 'diff';
@@ -158,11 +158,15 @@ interface SliderViewProps {
 function SliderView({ before, after }: SliderViewProps) {
   const [position, setPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
-  const containerRef = useCallback((node: HTMLDivElement | null) => {
-    if (!node) return;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle mouse move and mouse up with proper cleanup
+  useEffect(() => {
+    if (!isDragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
+      const node = containerRef.current;
+      if (!node) return;
       const rect = node.getBoundingClientRect();
       const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
       setPosition((x / rect.width) * 100);
@@ -170,14 +174,13 @@ function SliderView({ before, after }: SliderViewProps) {
 
     const handleMouseUp = () => setIsDragging(false);
 
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
   }, [isDragging]);
 
   return (
@@ -215,11 +218,11 @@ function SliderView({ before, after }: SliderViewProps) {
 
         {/* Divider line with handle */}
         <div
-          className="absolute top-0 h-full flex items-center"
+          className="absolute top-0 h-full flex items-center justify-center"
           style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
         >
           {/* Vertical line */}
-          <div className="absolute h-full w-0.5 bg-white shadow-lg" />
+          <div className="absolute h-full w-0.5 bg-white shadow-lg left-1/2 -translate-x-1/2" />
 
           {/* Drag handle */}
           <button
