@@ -1,0 +1,220 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://browserflow.dev/schemas/browserflow.schema.json",
+  "title": "BrowserFlow Configuration",
+  "description": "Schema for browserflow.yaml configuration files",
+  "$ref": "#/definitions/browserflow",
+  "definitions": {
+    "browserflow": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "base_url": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "runtime": {
+          "type": "object",
+          "properties": {
+            "browser": {
+              "type": "string",
+              "enum": [
+                "chromium",
+                "firefox",
+                "webkit"
+              ],
+              "default": "chromium"
+            },
+            "engine": {
+              "type": "string",
+              "enum": [
+                "chromium",
+                "firefox",
+                "webkit"
+              ]
+            },
+            "headless": {
+              "type": "boolean",
+              "default": true
+            },
+            "viewport": {
+              "type": "object",
+              "properties": {
+                "width": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "height": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            },
+            "timeout": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "browser": {
+          "type": "object",
+          "properties": {
+            "browser": {
+              "type": "string",
+              "enum": [
+                "chromium",
+                "firefox",
+                "webkit"
+              ],
+              "default": "chromium"
+            },
+            "engine": {
+              "type": "string",
+              "enum": [
+                "chromium",
+                "firefox",
+                "webkit"
+              ]
+            },
+            "headless": {
+              "type": "boolean",
+              "default": true
+            },
+            "viewport": {
+              "type": "object",
+              "properties": {
+                "width": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "height": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            },
+            "timeout": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "locators": {
+          "type": "object",
+          "properties": {
+            "prefer_testid": {
+              "type": "boolean",
+              "default": true
+            },
+            "testid_attributes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "exploration": {
+          "type": "object",
+          "properties": {
+            "adapter": {
+              "type": "string",
+              "default": "claude"
+            },
+            "max_retries": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 3
+            }
+          },
+          "additionalProperties": false
+        },
+        "review": {
+          "type": "object",
+          "properties": {
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535,
+              "default": 8190
+            },
+            "auto_open": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "tests_dir": {
+              "type": "string",
+              "default": "e2e/tests"
+            },
+            "baselines_dir": {
+              "type": "string",
+              "default": "baselines"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ci": {
+          "type": "object",
+          "properties": {
+            "fail_on_baseline_diff": {
+              "type": "boolean",
+              "default": false
+            },
+            "parallel": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "project"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

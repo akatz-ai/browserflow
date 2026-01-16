@@ -16,13 +16,20 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && bun run generate:schemas",
+    "build:schemas": "bun run scripts/generate-schemas.ts",
+    "generate:schemas": "bun run scripts/generate-schemas.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
-  "files": ["dist", "src"],
+  "files": ["dist", "src", "../../schemas"],
   "dependencies": {
     "playwright-core": "^1.57.0",
     "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "zod-to-json-schema": "^3.25.1"
   }
 }

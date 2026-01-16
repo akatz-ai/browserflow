@@ -1,0 +1,405 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://browserflow.dev/schemas/spec-v2.schema.json",
+  "title": "BrowserFlow Spec v2",
+  "description": "Schema for BrowserFlow YAML test specifications (version 2)",
+  "$ref": "#/definitions/spec-v2",
+  "definitions": {
+    "spec-v2": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "number",
+          "const": 2
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$",
+          "errorMessage": {
+            "pattern": "Name must be kebab-case (lowercase letters, numbers, and hyphens only)"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "errorMessage": {
+                  "minLength": "Step id is required"
+                }
+              },
+              "action": {
+                "type": "string",
+                "enum": [
+                  "click",
+                  "navigate",
+                  "back",
+                  "forward",
+                  "refresh",
+                  "fill",
+                  "type",
+                  "select",
+                  "check",
+                  "wait",
+                  "expect",
+                  "screenshot",
+                  "verify_state",
+                  "identify_element",
+                  "ai_verify",
+                  "custom"
+                ]
+              },
+              "description": {
+                "type": "string"
+              },
+              "target": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string"
+                  },
+                  "testid": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "placeholder": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "css": {
+                    "type": "string"
+                  },
+                  "within": {},
+                  "nth": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "url": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "option": {
+                "type": "string"
+              },
+              "checked": {
+                "type": "boolean"
+              },
+              "duration": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "visible",
+                  "hidden",
+                  "enabled",
+                  "disabled",
+                  "checked",
+                  "unchecked",
+                  "focused",
+                  "editable",
+                  "attached",
+                  "detached"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "timeout": {
+                "type": "string"
+              },
+              "pressEnter": {
+                "type": "boolean"
+              },
+              "checks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "element_visible": {
+                      "type": "string"
+                    },
+                    "element_not_visible": {
+                      "type": "string"
+                    },
+                    "text_contains": {
+                      "type": "string"
+                    },
+                    "text_not_contains": {
+                      "type": "string"
+                    },
+                    "url_contains": {
+                      "type": "string"
+                    },
+                    "element_count": {
+                      "type": "object",
+                      "properties": {
+                        "selector": {
+                          "type": "string"
+                        },
+                        "expected": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "selector",
+                        "expected"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "attribute": {
+                      "type": "object",
+                      "properties": {
+                        "selector": {
+                          "type": "string"
+                        },
+                        "attribute": {
+                          "type": "string"
+                        },
+                        "equals": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "selector",
+                        "attribute",
+                        "equals"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "highlight": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "selector": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "selector"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "mask": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "selector": {
+                      "type": "string"
+                    },
+                    "region": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        },
+                        "width": {
+                          "type": "number"
+                        },
+                        "height": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "width",
+                        "height"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "question": {
+                "type": "string"
+              },
+              "expected": {
+                "type": [
+                  "boolean",
+                  "string",
+                  "number"
+                ]
+              },
+              "save_as": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              },
+              "selector": {
+                "type": "string"
+              },
+              "for": {
+                "type": "string",
+                "enum": [
+                  "element",
+                  "text",
+                  "url",
+                  "time"
+                ]
+              },
+              "contains": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "action"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "errorMessage": {
+            "minItems": "At least one step required"
+          }
+        },
+        "timeout": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "high",
+            "normal",
+            "low"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "preconditions": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "auth": {
+              "type": "object",
+              "properties": {
+                "user": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "viewport": {
+              "type": "object",
+              "properties": {
+                "width": {
+                  "type": "number"
+                },
+                "height": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            },
+            "mocks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "response": {}
+                },
+                "required": [
+                  "url"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "expected_outcomes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "check": {
+                "type": "string"
+              },
+              "expected": {
+                "type": [
+                  "boolean",
+                  "number",
+                  "string"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "version",
+        "name",
+        "steps"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
