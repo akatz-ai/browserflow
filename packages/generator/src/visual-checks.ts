@@ -60,7 +60,7 @@ export function generateScreenshotAssertion(
     ? options.name
     : `${options.name}.png`;
 
-  const assertionOptions = buildAssertionOptions(options);
+  const assertionOptions = buildAssertionOptions(options, pageVar);
 
   if (assertionOptions) {
     lines.push(
@@ -87,7 +87,7 @@ export function generateElementScreenshotAssertion(
   options: ScreenshotOptions,
   emitOptions: VisualCheckEmitOptions = {}
 ): string {
-  const { includeComments = false } = emitOptions;
+  const { pageVar = 'page', includeComments = false } = emitOptions;
   const lines: string[] = [];
 
   if (includeComments && options.name) {
@@ -98,7 +98,7 @@ export function generateElementScreenshotAssertion(
     ? options.name
     : `${options.name}.png`;
 
-  const assertionOptions = buildAssertionOptions(options);
+  const assertionOptions = buildAssertionOptions(options, pageVar);
 
   if (assertionOptions) {
     lines.push(
@@ -116,7 +116,7 @@ export function generateElementScreenshotAssertion(
 /**
  * Builds the options object string for toHaveScreenshot.
  */
-function buildAssertionOptions(options: ScreenshotOptions): string {
+function buildAssertionOptions(options: ScreenshotOptions, pageVar = 'page'): string {
   const parts: string[] = [];
 
   if (options.maxDiffPixelRatio !== undefined) {
@@ -140,7 +140,7 @@ function buildAssertionOptions(options: ScreenshotOptions): string {
   }
 
   if (options.mask && options.mask.length > 0) {
-    const maskCode = generateMaskArray(options.mask);
+    const maskCode = generateMaskArray(options.mask, pageVar);
     parts.push(`mask: ${maskCode}`);
   }
 
@@ -154,11 +154,11 @@ function buildAssertionOptions(options: ScreenshotOptions): string {
 /**
  * Generates code for a mask array.
  */
-function generateMaskArray(masks: MaskRegion[]): string {
+function generateMaskArray(masks: MaskRegion[], pageVar = 'page'): string {
   const maskItems = masks
     .map((mask) => {
       if (mask.selector) {
-        return `page.locator('${escapeString(mask.selector)}')`;
+        return `${pageVar}.locator('${escapeString(mask.selector)}')`;
       }
       // Region-based masks need custom handling
       // Playwright doesn't directly support region masks, so we'd need a locator
@@ -207,7 +207,7 @@ export function generateScreenshotCapture(
   }
 
   if (options.mask && options.mask.length > 0) {
-    const maskCode = generateMaskArray(options.mask);
+    const maskCode = generateMaskArray(options.mask, pageVar);
     captureOptions.push(`mask: ${maskCode}`);
   }
 

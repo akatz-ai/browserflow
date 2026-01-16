@@ -6,13 +6,12 @@
 import type {
   ExplorationLockfile,
   ExplorationStep,
-  GeneratorConfig,
   GeneratedTest,
   ReviewData,
   SpecStep,
 } from '@browserflow/core';
 import Handlebars from 'handlebars';
-import { generateLocatorCode, resolveLocatorCode, escapeString } from './locator-emit.js';
+import { resolveLocatorCode, escapeString } from './locator-emit.js';
 import {
   generateScreenshotAssertion,
   generateWaitForAnimations,
