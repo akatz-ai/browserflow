@@ -2,7 +2,7 @@
 
 // Main orchestrator
 export { Explorer } from './explorer';
-export type { ExplorerConfig, BrowserSession } from './explorer';
+export type { ExplorerConfig, BrowserSession, BrowserLaunchOptions } from './explorer';
 
 // Adapters
 export { ClaudeAdapter } from './adapters/claude';
@@ -21,6 +21,8 @@ export type {
   StepExecution,
   StepScreenshots,
   OutcomeCheck,
+  EnhancedSnapshot,
+  FindElementResult,
 } from './adapters/types';
 
 // Step execution

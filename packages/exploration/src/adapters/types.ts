@@ -133,6 +133,26 @@ export interface ReviewFeedback {
 }
 
 /**
+ * Enhanced snapshot from browser - includes tree and element refs
+ */
+export interface EnhancedSnapshot {
+  tree: string;
+  refs: Record<string, unknown>;
+}
+
+/**
+ * Result from findElement operation
+ */
+export interface FindElementResult {
+  /** Element reference (e.g., "e5") or "NOT_FOUND" */
+  ref: string;
+  /** AI reasoning for why this element was selected */
+  reasoning: string;
+  /** Confidence score 0-1 */
+  confidence: number;
+}
+
+/**
  * AI Adapter interface - defines the contract for LLM integrations
  */
 export interface AIAdapter {
@@ -145,6 +165,12 @@ export interface AIAdapter {
    * Run exploration on a spec
    */
   explore(params: ExploreParams): Promise<ExplorationOutput>;
+
+  /**
+   * Find element from natural language query
+   * Uses AI to interpret the query and match against snapshot elements
+   */
+  findElement(query: string, snapshot: EnhancedSnapshot): Promise<FindElementResult>;
 
   /**
    * Retry exploration with review feedback
