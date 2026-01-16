@@ -15,7 +15,6 @@ export async function collectResults(
   // [chromium] › tests/example.spec.ts:3:5 › step name
   const lines = executorResult.stdout.split('\n');
   let currentSpec: SpecResult | null = null;
-  const startTime = Date.now();
 
   for (const line of lines) {
     // Match passed steps: ✓ or ✔
@@ -93,7 +92,8 @@ export async function collectResults(
     specs.push(currentSpec);
   }
 
-  const totalDuration = Date.now() - startTime;
+  // Calculate total duration from individual spec durations
+  const totalDuration = specs.reduce((sum, spec) => sum + spec.duration, 0);
   const passed = specs.filter(s => s.status === 'passed').length;
   const failed = specs.filter(s => s.status === 'failed').length;
   const skipped = specs.filter(s => s.status === 'skipped').length;
