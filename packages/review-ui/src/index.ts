@@ -17,3 +17,16 @@ export {
   type LocatorCandidate,
   type LocatorStrategy,
 } from './components/LocatorPicker';
+export {
+  KeyboardShortcutsHelp,
+  type KeyboardShortcutsHelpProps,
+} from './components/KeyboardShortcutsHelp';
+
+// Hooks
+export {
+  useReviewKeyboardShortcuts,
+  KEYBOARD_SHORTCUTS,
+  type ReviewHandlers,
+  type UseReviewKeyboardShortcutsOptions,
+  type ShortcutCategory,
+} from './hooks/useReviewKeyboardShortcuts';
