@@ -3,6 +3,8 @@ import { initCommand } from './commands/init.js';
 import { doctorCommand } from './commands/doctor.js';
 import { lintCommand } from './commands/lint.js';
 import { runCommand } from './commands/run.js';
+import { baselineCommand } from './commands/baseline.js';
+import { repairCommand } from './commands/repair.js';
 
 const VERSION = '0.0.1';
 
@@ -18,6 +20,8 @@ export function createProgram(): Command {
   program.addCommand(doctorCommand());
   program.addCommand(lintCommand());
   program.addCommand(runCommand());
+  program.addCommand(baselineCommand());
+  program.addCommand(repairCommand());
 
   return program;
 }
