@@ -18,6 +18,8 @@
   },
   "files": ["dist", "src"],
   "dependencies": {
-    "@browserflow/core": "workspace:*"
+    "@browserflow/core": "workspace:*",
+    "agent-browser": "^0.5.0",
+    "@anthropic-ai/sdk": "^0.26.0"
   }
 }
