@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import type { LocatorObject, LocatorMethod } from '@browserflow/core';
+import type { LegacyLocatorObject, LocatorMethod } from '@browserflow/core';
 import { cn } from '@/lib/utils';
 
 // Strategy types for locator candidates
@@ -20,8 +20,8 @@ export interface LocatorCandidate {
 
 export interface LocatorPickerProps {
   candidates: LocatorCandidate[];
-  currentLocator?: LocatorObject;
-  onLockLocator: (locator: LocatorObject) => void;
+  currentLocator?: LegacyLocatorObject;
+  onLockLocator: (locator: LegacyLocatorObject) => void;
 }
 
 export function LocatorPicker({
@@ -75,7 +75,7 @@ export function LocatorPicker({
         <div className="p-3 bg-green-50 border border-green-200 rounded">
           <div className="text-sm font-medium text-green-800">Preferred</div>
           <code className="text-xs">
-            {formatLocatorObject(currentLocator)}
+            {formatLegacyLocatorObject(currentLocator)}
           </code>
         </div>
       )}
@@ -181,7 +181,7 @@ function formatStrategy(strategy: LocatorStrategy): string {
   }
 }
 
-function candidateToLocator(candidate: LocatorCandidate): LocatorObject {
+function candidateToLocator(candidate: LocatorCandidate): LegacyLocatorObject {
   const { strategy } = candidate;
 
   switch (strategy.type) {
@@ -222,7 +222,7 @@ function candidateToLocator(candidate: LocatorCandidate): LocatorObject {
   }
 }
 
-function formatLocatorObject(locator: LocatorObject): string {
+function formatLegacyLocatorObject(locator: LegacyLocatorObject): string {
   if (locator.method && locator.args) {
     const args = Object.entries(locator.args)
       .filter(([_, v]) => v !== undefined)

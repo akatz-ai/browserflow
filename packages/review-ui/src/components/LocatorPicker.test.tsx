@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LocatorPicker, type LocatorCandidate } from './LocatorPicker';
-import type { LocatorObject } from '@browserflow/core';
+import type { LegacyLocatorObject } from '@browserflow/core';
 
 // Helper to create mock candidates
 function createMockCandidate(overrides: Partial<LocatorCandidate> = {}): LocatorCandidate {
@@ -32,7 +32,7 @@ describe('LocatorPicker', () => {
         matchCount: 3,
       }),
     ],
-    currentLocator: undefined as LocatorObject | undefined,
+    currentLocator: undefined as LegacyLocatorObject | undefined,
     onLockLocator: vi.fn(),
   };
 
@@ -151,7 +151,7 @@ describe('LocatorPicker', () => {
     });
 
     it('shows "Locked" badge when a locator is locked', () => {
-      const lockedLocator: LocatorObject = {
+      const lockedLocator: LegacyLocatorObject = {
         method: 'getByTestId',
         args: { text: 'submit-button' },
         description: 'Submit button',
@@ -163,7 +163,7 @@ describe('LocatorPicker', () => {
     });
 
     it('displays the currently locked locator details', () => {
-      const lockedLocator: LocatorObject = {
+      const lockedLocator: LegacyLocatorObject = {
         method: 'getByTestId',
         args: { text: 'submit-button' },
         description: 'Submit button',
