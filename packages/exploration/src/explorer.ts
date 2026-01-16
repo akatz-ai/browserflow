@@ -39,8 +39,33 @@ export interface BrowserSession {
     selector?: string;
   }): Promise<EnhancedSnapshot>;
   close(): Promise<void>;
+
+  // Interaction methods
   click?(ref: string): Promise<void>;
   fill?(ref: string, value: string): Promise<void>;
+  type?(ref: string, text: string): Promise<void>;
+  select?(ref: string, option: string): Promise<void>;
+  check?(ref: string, checked: boolean): Promise<void>;
+  press?(key: string): Promise<void>;
+
+  // Navigation methods
+  back?(): Promise<void>;
+  forward?(): Promise<void>;
+  refresh?(): Promise<void>;
+
+  // Wait methods
+  waitForSelector?(selector: string, timeout: number): Promise<void>;
+  waitForURL?(urlPattern: string, timeout: number): Promise<void>;
+  waitForText?(text: string, timeout: number): Promise<void>;
+  waitForLoadState?(state: 'load' | 'domcontentloaded' | 'networkidle'): Promise<void>;
+  waitForTimeout?(ms: number): Promise<void>;
+
+  // Scroll methods
+  scrollIntoView?(ref: string): Promise<void>;
+  scroll?(x: number, y: number): Promise<void>;
+
+  // State methods
+  getCurrentURL?(): string;
 }
 
 /**
@@ -383,14 +408,14 @@ export class Explorer {
    * Execute a single step manually (for testing/debugging)
    *
    * @param step - The step to execute
-   * @param sessionId - Browser session ID
+   * @param stepIndex - Index of the step (default: 0)
    * @returns Promise resolving to step result
    */
   async executeStep(
     step: Spec['steps'][number],
-    sessionId: string
+    stepIndex: number = 0
   ): Promise<StepResult> {
-    return this.stepExecutor.execute(step, sessionId);
+    return this.stepExecutor.execute(step, stepIndex);
   }
 
   /**

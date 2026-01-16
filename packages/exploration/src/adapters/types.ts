@@ -61,6 +61,26 @@ export interface ExplorationOutput {
 }
 
 /**
+ * Verify check conditions
+ */
+export interface VerifyCheck {
+  element_visible?: string;
+  element_not_visible?: string;
+  text_contains?: string;
+  text_not_contains?: string;
+  url_contains?: string;
+  element_count?: {
+    selector: string;
+    expected: number;
+  };
+  attribute?: {
+    selector: string;
+    attribute: string;
+    equals: string;
+  };
+}
+
+/**
  * Step definition from a spec file
  */
 export interface SpecStep {
@@ -72,11 +92,16 @@ export interface SpecStep {
   value?: string;
   for?: string;
   text?: string;
+  contains?: string;
   timeout?: number;
   duration?: number;
-  checks?: unknown[];
+  checks?: VerifyCheck[];
   name?: string;
   description?: string;
+  option?: string;
+  checked?: boolean;
+  scrollX?: number;
+  scrollY?: number;
   [key: string]: unknown;
 }
 
