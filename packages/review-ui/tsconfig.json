@@ -7,8 +7,10 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@browserflow/core": ["./node_modules/@browserflow/core/dist/index.d.ts", "../core/src/index.ts"]
     },
+    "types": ["vitest/globals"],
     "noEmit": true
   },
   "include": ["src"],
