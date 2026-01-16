@@ -1,0 +1,39 @@
+import { test, expect } from '@playwright/test';
+
+/**
+ * BrowserFlow Generated Test: {{specName}}
+ * ═══════════════════════════════════════════════════════════════════════════
+ * Spec: {{specPath}}
+ * Exploration: {{explorationId}}
+ * {{#if reviewer}}Approved by: {{reviewer}} @ {{reviewedAt}}{{/if}}
+ * Generated: {{generatedAt}}
+ *
+ * This test was generated from an approved exploration. Do not edit manually.
+ * To update, re-run exploration and get new approval.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+test.describe('{{specName}}', () => {
+  {{#if baseUrl}}
+  test.use({ baseURL: '{{baseUrl}}' });
+  {{/if}}
+
+  {{#if timeout}}
+  test.setTimeout({{timeout}});
+  {{/if}}
+
+  test('{{testDescription}}', async ({ page }) => {
+{{#each steps}}
+{{{code}}}
+
+{{/each}}
+{{#if outcomeChecks}}
+    // ─────────────────────────────────────────────────────────────────────────
+    // Final Outcome Verifications
+    // ─────────────────────────────────────────────────────────────────────────
+{{#each outcomeChecks}}
+{{{code}}}
+{{/each}}
+{{/if}}
+  });
+});

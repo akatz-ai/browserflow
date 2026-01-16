@@ -18,6 +18,7 @@
   },
   "files": ["dist", "src"],
   "dependencies": {
-    "@browserflow/core": "workspace:*"
+    "@browserflow/core": "workspace:*",
+    "handlebars": "^4.7.8"
   }
 }
