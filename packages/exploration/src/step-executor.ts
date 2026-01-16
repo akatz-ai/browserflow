@@ -5,7 +5,6 @@ import type {
   SpecStep,
   StepResult,
   StepExecution,
-  StepScreenshots,
   AIAdapter,
   EnhancedSnapshot,
   VerifyCheck,

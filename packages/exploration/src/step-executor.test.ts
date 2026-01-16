@@ -1,8 +1,8 @@
 // @browserflow/exploration - Step executor tests
-import { describe, it, expect, beforeEach, spyOn, afterEach, mock, Mock } from 'bun:test';
-import { StepExecutor, StepExecutorConfig } from './step-executor';
+import { describe, it, expect, beforeEach, spyOn } from 'bun:test';
+import { StepExecutor } from './step-executor';
 import type { BrowserSession } from './explorer';
-import type { AIAdapter, SpecStep, EnhancedSnapshot } from './adapters/types';
+import type { AIAdapter, SpecStep } from './adapters/types';
 
 // Mock browser session
 function createMockBrowserSession(options: Partial<BrowserSession> = {}): BrowserSession {
@@ -384,7 +384,6 @@ describe('StepExecutor', () => {
 
   describe('verify_state action', () => {
     it('should verify element is visible', async () => {
-      const snapshotSpy = spyOn(mockBrowser, 'getSnapshot');
       const step: SpecStep = {
         action: 'verify_state',
         checks: [{ element_visible: 'button' }],
