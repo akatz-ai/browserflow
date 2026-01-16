@@ -5,7 +5,7 @@
 
 import { Command } from 'commander';
 import { readFile, access, readdir } from 'node:fs/promises';
-import { join, basename, dirname } from 'node:path';
+import { join, basename } from 'node:path';
 import { colors, symbols } from '../ui/colors.js';
 import { logHeader, logNewline, logSuccess, logWarning, logError } from '../ui/prompts.js';
 

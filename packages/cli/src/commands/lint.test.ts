@@ -13,7 +13,6 @@ import {
   getLineNumber,
   formatLintError,
   type LintError,
-  type LintResult,
 } from './lint.js';
 
 describe('getLineNumber', () => {

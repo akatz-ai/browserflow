@@ -5,7 +5,7 @@
 
 import { Command } from 'commander';
 import { readFile, readdir, access } from 'node:fs/promises';
-import { join, relative, resolve, basename } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { parse as parseYaml, LineCounter, parseDocument } from 'yaml';
 import { specSchema } from '@browserflow/core';
 import { colors, symbols } from '../ui/colors.js';
@@ -40,8 +40,14 @@ export function getLineNumber(content: string, path: (string | number)[]): numbe
       return 1;
     }
 
+    // Cast to any to use getIn method - the yaml library types are complex
+    const contents = doc.contents as { getIn: (path: (string | number)[], keepScalar?: boolean) => unknown };
+    if (!('getIn' in contents)) {
+      return 1;
+    }
+
     // Use getIn with keepScalar=true to get the actual node
-    const node = doc.contents.getIn(path, true);
+    const node = contents.getIn(path, true);
 
     if (node && typeof node === 'object' && 'range' in node) {
       const range = (node as { range: [number, number, number] | null }).range;
@@ -55,7 +61,7 @@ export function getLineNumber(content: string, path: (string | number)[]): numbe
     // This helps when the property doesn't exist (e.g., missing 'id')
     if (path.length > 0) {
       const parentPath = path.slice(0, -1);
-      const parentNode = doc.contents.getIn(parentPath, true);
+      const parentNode = contents.getIn(parentPath, true);
       if (parentNode && typeof parentNode === 'object' && 'range' in parentNode) {
         const range = (parentNode as { range: [number, number, number] | null }).range;
         if (range && range[0] !== undefined) {
