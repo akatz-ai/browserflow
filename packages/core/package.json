@@ -17,7 +17,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "vitest",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "files": ["dist", "src"],
