@@ -69,9 +69,8 @@ steps:
 
   - id: check_hero
     action: expect
-    checks:
-      - visible:
-          target: { css: "h1" }
+    state: visible
+    target: { css: "h1" }
 
   - id: homepage_screenshot
     action: screenshot
@@ -227,7 +226,7 @@ bunx playwright install --with-deps chromium
 
 ### Spec validation errors
 
-Run `bf lint` with verbose output to see detailed error messages. Common issues:
+Run `bf lint` to see detailed error messages with line numbers. Common issues:
 - Missing required `id` on steps
 - Invalid duration format (use `3s`, `2m`, `500ms`)
 - Name not in kebab-case
@@ -244,7 +243,7 @@ Run `bf lint` with verbose output to see detailed error messages. Common issues:
 | `bf baseline accept` | Accept new baselines |
 | `bf baseline update` | Update baselines from latest run |
 | `bf baseline diff` | View baseline differences |
-| `bf repair` | Repair broken locators |
+| `bf repair` | Fix broken tests using failure bundles |
 
 ## What's Next?
 
