@@ -104,3 +104,29 @@ export {
   type GeneratedConfig,
 } from './config.js';
 
+// Browserflow config schema (for browserflow.yaml validation)
+export {
+  browserflowConfigSchema,
+  browserTypeSchema,
+  viewportSchema,
+  projectConfigSchema,
+  runtimeConfigSchema,
+  locatorsConfigSchema,
+  explorationConfigSchema,
+  reviewConfigSchema,
+  outputConfigSchema,
+  ciConfigSchema,
+  validateBrowserflowConfig,
+  parseBrowserflowConfig,
+  type BrowserTypeConfig,
+  type ViewportConfig,
+  type ProjectConfig,
+  type RuntimeConfig,
+  type LocatorsConfig,
+  type ExplorationConfig,
+  type ReviewConfig,
+  type OutputConfig,
+  type CiConfig,
+  type BrowserflowConfig,
+} from './config-schema.js';
+
