@@ -5,8 +5,42 @@
  */
 
 import { z } from 'zod';
+import { isValidDuration } from './duration.js';
 
-// Placeholder schemas - will be implemented in bf-dgs
+// Duration validation
+export const durationSchema = z.string().refine(isValidDuration, {
+  message: 'Must be a valid duration string like "3s", "2m", "500ms", or "1m30s"',
+});
+
+// Target object - at least one locator strategy required
+export const targetSchema: z.ZodType<Target> = z.lazy(() =>
+  z
+    .object({
+      query: z.string().optional(),
+      testid: z.string().optional(),
+      role: z.string().optional(),
+      name: z.string().optional(),
+      label: z.string().optional(),
+      placeholder: z.string().optional(),
+      text: z.string().optional(),
+      css: z.string().optional(),
+      within: targetSchema.optional(),
+      nth: z.number().int().optional(),
+    })
+    .refine(
+      (data) =>
+        data.query ||
+        data.testid ||
+        data.role ||
+        data.label ||
+        data.placeholder ||
+        data.text ||
+        data.css,
+      'Target must have at least one locator strategy (query, testid, role, label, placeholder, text, or css)'
+    )
+);
+
+// Action types from spec section 6.4
 export const actionTypeSchema = z.enum([
   'click',
   'navigate',
@@ -18,13 +52,195 @@ export const actionTypeSchema = z.enum([
   'select',
   'check',
   'wait',
-  'verify_state',
+  'expect',
   'screenshot',
+  'verify_state',
   'identify_element',
   'ai_verify',
   'custom',
 ]);
 
+// State values for expect action
+export const stateSchema = z.enum([
+  'visible',
+  'hidden',
+  'enabled',
+  'disabled',
+  'checked',
+  'unchecked',
+  'focused',
+  'editable',
+  'attached',
+  'detached',
+]);
+
+// Step schema - id is REQUIRED
+export const stepSchema = z
+  .object({
+    id: z.string().min(1, 'Step id is required'),
+    action: actionTypeSchema,
+    description: z.string().optional(),
+    target: targetSchema.optional(),
+    // Navigate action
+    url: z.string().optional(),
+    // Fill/type action
+    value: z.string().optional(),
+    text: z.string().optional(),
+    // Select action
+    option: z.string().optional(),
+    // Check action
+    checked: z.boolean().optional(),
+    // Wait action
+    duration: durationSchema.optional(),
+    // Expect action
+    state: stateSchema.optional(),
+    // Screenshot action
+    name: z.string().optional(),
+    // Timeout override
+    timeout: durationSchema.optional(),
+    // Keyboard
+    pressEnter: z.boolean().optional(),
+    // Verify state
+    checks: z
+      .array(
+        z.object({
+          element_visible: z.string().optional(),
+          element_not_visible: z.string().optional(),
+          text_contains: z.string().optional(),
+          text_not_contains: z.string().optional(),
+          url_contains: z.string().optional(),
+          element_count: z
+            .object({
+              selector: z.string(),
+              expected: z.number(),
+            })
+            .optional(),
+          attribute: z
+            .object({
+              selector: z.string(),
+              attribute: z.string(),
+              equals: z.string(),
+            })
+            .optional(),
+        })
+      )
+      .optional(),
+    // Screenshot options
+    highlight: z
+      .array(
+        z.object({
+          selector: z.string(),
+          label: z.string().optional(),
+        })
+      )
+      .optional(),
+    mask: z
+      .array(
+        z.object({
+          selector: z.string().optional(),
+          region: z
+            .object({
+              x: z.number(),
+              y: z.number(),
+              width: z.number(),
+              height: z.number(),
+            })
+            .optional(),
+          reason: z.string().optional(),
+        })
+      )
+      .optional(),
+    // AI verify
+    question: z.string().optional(),
+    expected: z.union([z.boolean(), z.string(), z.number()]).optional(),
+    // Custom action
+    save_as: z.string().optional(),
+    ref: z.string().optional(),
+    selector: z.string().optional(),
+    for: z.enum(['element', 'text', 'url', 'time']).optional(),
+    contains: z.string().optional(),
+  })
+  .strict();
+
+// Preconditions schema
+export const preconditionsSchema = z.object({
+  page: z
+    .object({
+      url: z.string().optional(),
+    })
+    .optional(),
+  auth: z
+    .object({
+      user: z.string().optional(),
+      state: z.string().optional(),
+    })
+    .optional(),
+  viewport: z
+    .object({
+      width: z.number(),
+      height: z.number(),
+    })
+    .optional(),
+  mocks: z
+    .array(
+      z.object({
+        url: z.string(),
+        response: z.unknown(),
+      })
+    )
+    .optional(),
+});
+
+// Expected outcome schema
+export const expectedOutcomeSchema = z.object({
+  description: z.string().optional(),
+  check: z.string().optional(),
+  expected: z.union([z.boolean(), z.number(), z.string()]).optional(),
+});
+
+// Top-level spec schema
+export const specSchema = z
+  .object({
+    version: z.literal(2),
+    name: z.string().regex(/^[a-z0-9-]+$/, 'Name must be kebab-case (lowercase letters, numbers, and hyphens only)'),
+    description: z.string().optional(),
+    steps: z.array(stepSchema).min(1, 'At least one step required'),
+    timeout: durationSchema.optional(),
+    priority: z.enum(['critical', 'high', 'normal', 'low']).optional(),
+    tags: z.array(z.string()).optional(),
+    preconditions: preconditionsSchema.optional(),
+    expected_outcomes: z.array(expectedOutcomeSchema).optional(),
+  })
+  .refine(
+    (data) => {
+      const ids = data.steps.map((s) => s.id);
+      return new Set(ids).size === ids.length;
+    },
+    { message: 'Step IDs must be unique within spec' }
+  );
+
+// Type definitions
+export type Target = {
+  query?: string;
+  testid?: string;
+  role?: string;
+  name?: string;
+  label?: string;
+  placeholder?: string;
+  text?: string;
+  css?: string;
+  within?: Target;
+  nth?: number;
+};
+
+export type ActionType = z.infer<typeof actionTypeSchema>;
+export type State = z.infer<typeof stateSchema>;
+export type SpecStep = z.infer<typeof stepSchema>;
+export type Preconditions = z.infer<typeof preconditionsSchema>;
+export type ExpectedOutcome = z.infer<typeof expectedOutcomeSchema>;
+export type BrowserFlowSpec = z.infer<typeof specSchema>;
+
+// Legacy exports for backwards compatibility
 export const verifyCheckSchema = z.object({
   element_visible: z.string().optional(),
   element_not_visible: z.string().optional(),
@@ -64,48 +280,10 @@ export const maskRegionSchema = z.object({
   reason: z.string().optional(),
 });
 
-export const specStepSchema = z.object({
-  action: actionTypeSchema,
-  query: z.string().optional(),
-  selector: z.string().optional(),
-  ref: z.string().optional(),
-  description: z.string().optional(),
-  to: z.string().optional(),
-  value: z.string().optional(),
-  for: z.enum(['element', 'text', 'url', 'time']).optional(),
-  text: z.string().optional(),
-  contains: z.string().optional(),
-  timeout: z.number().optional(),
-  duration: z.number().optional(),
-  checks: z.array(verifyCheckSchema).optional(),
-  name: z.string().optional(),
-  highlight: z.array(highlightRegionSchema).optional(),
-  mask: z.array(maskRegionSchema).optional(),
-  option: z.string().optional(),
-  checked: z.boolean().optional(),
-  pressEnter: z.boolean().optional(),
-  question: z.string().optional(),
-  expected: z.boolean().optional(),
-  save_as: z.string().optional(),
-});
-
-export const expectedOutcomeSchema = z.record(z.union([z.boolean(), z.number(), z.string()]));
-
-export const specSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  preconditions: z.record(z.unknown()).optional(),
-  steps: z.array(specStepSchema),
-  expected_outcomes: z.array(expectedOutcomeSchema).optional(),
-  timeout: z.string().optional(),
-  priority: z.enum(['critical', 'high', 'normal', 'low']).optional(),
-  tags: z.array(z.string()).optional(),
-});
-
-export type ActionType = z.infer<typeof actionTypeSchema>;
+// Legacy type exports
 export type VerifyCheck = z.infer<typeof verifyCheckSchema>;
 export type HighlightRegion = z.infer<typeof highlightRegionSchema>;
 export type MaskRegion = z.infer<typeof maskRegionSchema>;
-export type SpecStep = z.infer<typeof specStepSchema>;
-export type ExpectedOutcome = z.infer<typeof expectedOutcomeSchema>;
-export type BrowserFlowSpec = z.infer<typeof specSchema>;
+
+// Alias for specStepSchema (legacy)
+export const specStepSchema = stepSchema;

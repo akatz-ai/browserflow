@@ -7,33 +7,172 @@
  * @see bf-92j for implementation task
  */
 
-import { join } from 'path';
+import { join, basename } from 'path';
+import { randomBytes } from 'crypto';
+import { mkdir, symlink, unlink, readlink, readdir, stat } from 'fs/promises';
+import { existsSync, statSync, readdirSync, lstatSync } from 'fs';
 
 /**
  * Run directory structure:
  * .browserflow/
  *   runs/
- *     <exploration-id>/
- *       lockfile.json
- *       screenshots/
- *         step-0-before.png
- *         step-0-after.png
- *       review.json (optional)
+ *     <spec-name>/
+ *       run-20260115-031000-abc123/
+ *         exploration.json
+ *         review.json
+ *         lockfile.json
+ *         artifacts/
+ *           screenshots/
+ *           trace.zip
+ *           logs/
+ *       run-20260115-041500-def456/
+ *         ...
+ *       latest -> run-20260115-041500-def456
+ *   cache/
+ *   tmp/
  */
 
 export interface RunDirectoryPaths {
-  /** Root .browserflow directory */
   root: string;
-  /** Runs directory */
   runsDir: string;
-  /** This run's directory */
   runDir: string;
-  /** Lockfile path */
   lockfile: string;
-  /** Screenshots directory */
   screenshotsDir: string;
-  /** Review file path */
   reviewFile: string;
+}
+
+export interface RunStore {
+  createRun(specName: string): Promise<string>;
+  getLatestRun(specName: string): string | null;
+  listRuns(specName: string): string[];
+  getRunDir(specName: string, runId: string): string;
+  runExists(specName: string, runId: string): boolean;
+}
+
+/**
+ * Generates a unique run ID.
+ *
+ * Format: run-<YYYYMMDDHHMMSS>-<random>
+ * Example: run-20260115031000-a3f2dd
+ */
+export function createRunId(): string {
+  const now = new Date();
+  const ts = now
+    .toISOString()
+    .replace(/[-:T]/g, '')
+    .slice(0, 14); // YYYYMMDDHHMMSS
+  const rand = randomBytes(3).toString('hex');
+  return `run-${ts}-${rand}`;
+}
+
+/**
+ * Creates a RunStore instance for a project root.
+ */
+export function createRunStore(projectRoot: string): RunStore {
+  const browserflowDir = join(projectRoot, '.browserflow');
+  const runsDir = join(browserflowDir, 'runs');
+
+  return {
+    async createRun(specName: string): Promise<string> {
+      const specDir = join(runsDir, specName);
+      const runId = createRunId();
+      const runDir = join(specDir, runId);
+
+      // Create directory structure
+      await mkdir(runDir, { recursive: true });
+      await mkdir(join(runDir, 'artifacts', 'screenshots'), { recursive: true });
+      await mkdir(join(runDir, 'artifacts', 'logs'), { recursive: true });
+
+      // Update "latest" symlink atomically
+      const latestPath = join(specDir, 'latest');
+      const tempLatestPath = join(specDir, `.latest-${Date.now()}`);
+
+      try {
+        // Create symlink to new location
+        await symlink(runId, tempLatestPath);
+
+        // Atomic rename (replaces old symlink)
+        try {
+          await unlink(latestPath);
+        } catch {
+          // Ignore if doesn't exist
+        }
+        await symlink(runId, latestPath);
+        await unlink(tempLatestPath);
+      } catch (error) {
+        // Cleanup temp symlink on error
+        try {
+          await unlink(tempLatestPath);
+        } catch {
+          // Ignore
+        }
+        throw error;
+      }
+
+      return runDir;
+    },
+
+    getLatestRun(specName: string): string | null {
+      const specDir = join(runsDir, specName);
+      const latestPath = join(specDir, 'latest');
+
+      try {
+        // Check if latest symlink exists
+        if (!existsSync(latestPath)) {
+          return null;
+        }
+
+        // Read symlink target synchronously
+        const target = readdirSync(specDir)
+          .filter((name) => name.startsWith('run-'))
+          .map((name) => ({
+            name,
+            path: join(specDir, name),
+            mtime: statSync(join(specDir, name)).mtime.getTime(),
+          }))
+          .sort((a, b) => b.mtime - a.mtime)[0];
+
+        return target ? target.path : null;
+      } catch {
+        return null;
+      }
+    },
+
+    listRuns(specName: string): string[] {
+      const specDir = join(runsDir, specName);
+
+      try {
+        if (!existsSync(specDir)) {
+          return [];
+        }
+
+        return readdirSync(specDir)
+          .filter((name) => name.startsWith('run-'))
+          .map((name) => ({
+            name,
+            path: join(specDir, name),
+            mtime: statSync(join(specDir, name)).mtime.getTime(),
+          }))
+          .sort((a, b) => b.mtime - a.mtime)
+          .map((item) => item.path);
+      } catch {
+        return [];
+      }
+    },
+
+    getRunDir(specName: string, runId: string): string {
+      return join(runsDir, specName, runId);
+    },
+
+    runExists(specName: string, runId: string): boolean {
+      const runDir = join(runsDir, specName, runId);
+      try {
+        return existsSync(runDir) && statSync(runDir).isDirectory();
+      } catch {
+        return false;
+      }
+    },
+  };
 }
 
 /**

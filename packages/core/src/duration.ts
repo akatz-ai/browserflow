@@ -7,6 +7,52 @@
  * @see bf-x1q for implementation task
  */
 
+const UNITS: Record<string, number> = {
+  ms: 1,
+  s: 1000,
+  m: 60 * 1000,
+  h: 60 * 60 * 1000,
+};
+
+/**
+ * Validates a duration string without parsing it.
+ *
+ * @param input - Duration string to validate
+ * @returns true if valid, false otherwise
+ */
+export function isValidDuration(input: string): boolean {
+  if (typeof input !== 'string') {
+    return false;
+  }
+
+  const trimmed = input.trim().toLowerCase();
+  if (!trimmed) {
+    return false;
+  }
+
+  // Plain number (milliseconds)
+  if (/^\d+$/.test(trimmed)) {
+    return true;
+  }
+
+  // Duration with units
+  const regex = /(\d+(?:\.\d+)?)(ms|s|m|h)/g;
+  let hasMatch = false;
+
+  // Check if entire string matches expected pattern
+  let lastIndex = 0;
+  let match;
+  while ((match = regex.exec(trimmed)) !== null) {
+    if (match.index !== lastIndex) {
+      return false; // Gap in matching
+    }
+    hasMatch = true;
+    lastIndex = regex.lastIndex;
+  }
+
+  return hasMatch && lastIndex === trimmed.length;
+}
+
 /**
  * Parses a duration string into milliseconds.
  *
@@ -18,16 +64,20 @@
  * - "500ms" -> 500
  * - "500" -> 500 (plain numbers treated as ms)
  *
- * @param duration - Duration string to parse
+ * @param input - Duration string to parse
  * @returns Duration in milliseconds
  * @throws Error if format is invalid
  */
-export function parseDuration(duration: string | number): number {
-  if (typeof duration === 'number') {
-    return duration;
+export function parseDuration(input: string | number): number {
+  if (typeof input === 'number') {
+    return input;
   }
 
-  const trimmed = duration.trim().toLowerCase();
+  if (typeof input !== 'string' || !input.trim()) {
+    throw new Error('Duration must be a non-empty string');
+  }
+
+  const trimmed = input.trim().toLowerCase();
 
   // Plain number (milliseconds)
   if (/^\d+$/.test(trimmed)) {
@@ -37,31 +87,18 @@ export function parseDuration(duration: string | number): number {
   let total = 0;
   const regex = /(\d+(?:\.\d+)?)(ms|s|m|h)/g;
   let match;
-  let matched = false;
+  let hasMatch = false;
 
   while ((match = regex.exec(trimmed)) !== null) {
-    matched = true;
-    const value = parseFloat(match[1]);
-    const unit = match[2];
-
-    switch (unit) {
-      case 'ms':
-        total += value;
-        break;
-      case 's':
-        total += value * 1000;
-        break;
-      case 'm':
-        total += value * 60 * 1000;
-        break;
-      case 'h':
-        total += value * 60 * 60 * 1000;
-        break;
-    }
+    hasMatch = true;
+    const [, value, unit] = match;
+    total += parseFloat(value) * UNITS[unit];
   }
 
-  if (!matched) {
-    throw new Error(`Invalid duration format: "${duration}"`);
+  if (!hasMatch) {
+    throw new Error(
+      `Invalid duration "${input}". Use format like "3s", "2m", "500ms", or "1m30s"`
+    );
   }
 
   return Math.round(total);
