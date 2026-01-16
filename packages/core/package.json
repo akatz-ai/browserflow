@@ -9,12 +9,19 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./schemas": {
+      "import": "./dist/spec-schema.js",
+      "types": "./dist/spec-schema.d.ts"
     }
   },
   "scripts": {
     "build": "tsc",
-    "test": "bun test",
+    "test": "vitest",
     "typecheck": "tsc --noEmit"
   },
-  "files": ["dist", "src"]
+  "files": ["dist", "src"],
+  "dependencies": {
+    "zod": "^3.22.4"
+  }
 }
