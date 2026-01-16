@@ -1,0 +1,118 @@
+{
+  "spec": "homepage-test",
+  "exploredAt": "2026-01-16T04:32:04.779Z",
+  "duration": 1160,
+  "status": "passed",
+  "steps": [
+    {
+      "index": 0,
+      "id": "visit_homepage",
+      "action": "navigate",
+      "status": "passed",
+      "duration": 577,
+      "screenshot": "/screenshots/step-0-visit_homepage.png"
+    },
+    {
+      "index": 1,
+      "id": "homepage_screenshot",
+      "action": "screenshot",
+      "status": "passed",
+      "duration": 67,
+      "screenshot": "/screenshots/step-1-homepage_screenshot.png"
+    },
+    {
+      "index": 2,
+      "id": "verify_hero_visible",
+      "action": "expect",
+      "status": "passed",
+      "duration": 84,
+      "screenshot": "/screenshots/step-2-verify_hero_visible.png",
+      "locator": {
+        "method": "getByTestId",
+        "args": {
+          "testId": "cta-button"
+        }
+      }
+    },
+    {
+      "index": 3,
+      "id": "click_increment",
+      "action": "click",
+      "status": "passed",
+      "duration": 85,
+      "screenshot": "/screenshots/step-3-click_increment.png",
+      "locator": {
+        "method": "getByTestId",
+        "args": {
+          "testId": "increment-btn"
+        }
+      }
+    },
+    {
+      "index": 4,
+      "id": "click_increment_again",
+      "action": "click",
+      "status": "passed",
+      "duration": 79,
+      "screenshot": "/screenshots/step-4-click_increment_again.png",
+      "locator": {
+        "method": "getByTestId",
+        "args": {
+          "testId": "increment-btn"
+        }
+      }
+    },
+    {
+      "index": 5,
+      "id": "verify_counter",
+      "action": "expect",
+      "status": "passed",
+      "duration": 69,
+      "screenshot": "/screenshots/step-5-verify_counter.png",
+      "locator": {
+        "method": "getByTestId",
+        "args": {
+          "testId": "counter-value"
+        }
+      }
+    },
+    {
+      "index": 6,
+      "id": "counter_screenshot",
+      "action": "screenshot",
+      "status": "passed",
+      "duration": 66,
+      "screenshot": "/screenshots/step-6-counter_screenshot.png"
+    },
+    {
+      "index": 7,
+      "id": "verify_features",
+      "action": "expect",
+      "status": "passed",
+      "duration": 66,
+      "screenshot": "/screenshots/step-7-verify_features.png",
+      "locator": {
+        "method": "getByTestId",
+        "args": {
+          "testId": "feature-1"
+        }
+      }
+    },
+    {
+      "index": 8,
+      "id": "final_screenshot",
+      "action": "screenshot",
+      "status": "passed",
+      "duration": 67,
+      "screenshot": "/screenshots/step-8-final_screenshot.png"
+    }
+  ],
+  "browser": {
+    "name": "chromium",
+    "version": "120.0"
+  },
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  }
+}

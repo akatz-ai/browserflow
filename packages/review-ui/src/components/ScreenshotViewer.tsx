@@ -131,12 +131,20 @@ function SideBySideView({ before, after }: SideBySideViewProps) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <div className="text-sm font-medium mb-2">Before</div>
-        <img src={before} alt="" className="border rounded w-full" />
+        <div className="text-sm font-medium mb-2 flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-blue-500" />
+          Before Action
+          <span className="text-muted-foreground font-normal">(screenshot taken before this step ran)</span>
+        </div>
+        <img src={before} alt="Screenshot before action" className="border rounded w-full" />
       </div>
       <div>
-        <div className="text-sm font-medium mb-2">After</div>
-        <img src={after} alt="" className="border rounded w-full" />
+        <div className="text-sm font-medium mb-2 flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-green-500" />
+          After Action
+          <span className="text-muted-foreground font-normal">(screenshot taken after this step ran)</span>
+        </div>
+        <img src={after} alt="Screenshot after action" className="border rounded w-full" />
       </div>
     </div>
   );
@@ -149,45 +157,95 @@ interface SliderViewProps {
 
 function SliderView({ before, after }: SliderViewProps) {
   const [position, setPosition] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPosition(Number(e.target.value));
-  }, []);
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      const rect = node.getBoundingClientRect();
+      const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+      setPosition((x / rect.width) * 100);
+    };
+
+    const handleMouseUp = () => setIsDragging(false);
+
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging]);
 
   return (
-    <div className="relative">
-      {/* After image (full width) */}
-      <img src={after} alt="" className="w-full" />
-
-      {/* Before image (clipped) */}
-      <div
-        className="absolute top-0 left-0 h-full overflow-hidden"
-        style={{ width: `${position}%` }}
-      >
-        <img
-          src={before}
-          alt=""
-          className="h-full object-cover object-left"
-          style={{ width: position > 0 ? `${10000 / position}%` : '100%' }}
-        />
+    <div className="space-y-4">
+      {/* Labels */}
+      <div className="flex justify-between text-sm">
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-blue-500" />
+          <span className="font-medium">Before Action</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="font-medium">After Action</span>
+          <span className="w-3 h-3 rounded-full bg-green-500" />
+        </div>
       </div>
 
-      {/* Slider control */}
-      <input
-        type="range"
-        min={0}
-        max={100}
-        value={position}
-        onChange={handleChange}
-        className="absolute bottom-4 left-4 right-4"
-        aria-label="Comparison slider"
-      />
+      {/* Slider */}
+      <div ref={containerRef} className="relative select-none cursor-ew-resize">
+        {/* After image (full width) */}
+        <img src={after} alt="After action" className="w-full" draggable={false} />
 
-      {/* Divider line */}
-      <div
-        className="absolute top-0 h-full w-0.5 bg-white shadow-lg"
-        style={{ left: `${position}%` }}
-      />
+        {/* Before image (clipped) */}
+        <div
+          className="absolute top-0 left-0 h-full overflow-hidden pointer-events-none"
+          style={{ width: `${position}%` }}
+        >
+          <img
+            src={before}
+            alt="Before action"
+            className="h-full object-cover object-left"
+            style={{ width: position > 0 ? `${10000 / position}%` : '100%' }}
+            draggable={false}
+          />
+        </div>
+
+        {/* Divider line with handle */}
+        <div
+          className="absolute top-0 h-full flex items-center"
+          style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
+        >
+          {/* Vertical line */}
+          <div className="absolute h-full w-0.5 bg-white shadow-lg" />
+
+          {/* Drag handle */}
+          <button
+            onMouseDown={() => setIsDragging(true)}
+            className="relative z-10 w-8 h-12 bg-white rounded-md shadow-lg border-2 border-gray-300 hover:border-primary flex items-center justify-center cursor-ew-resize"
+            aria-label="Drag to compare before and after"
+          >
+            <svg className="w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l-5-7 5-7zm8 0v14l5-7-5-7z" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Labels on image */}
+        <div className="absolute top-2 left-2 px-2 py-1 bg-blue-500/80 text-white text-xs rounded">
+          Before
+        </div>
+        <div className="absolute top-2 right-2 px-2 py-1 bg-green-500/80 text-white text-xs rounded">
+          After
+        </div>
+      </div>
+
+      {/* Instructions */}
+      <p className="text-xs text-muted-foreground text-center">
+        Drag the handle or click anywhere on the image to compare before/after states
+      </p>
     </div>
   );
 }
@@ -207,7 +265,7 @@ function BlinkView({ before, after }: BlinkViewProps) {
 
   return (
     <div className="relative">
-      <img src={showBefore ? before : after} alt="" className="w-full" />
+      <img src={showBefore ? before : after} alt={showBefore ? "Before action" : "After action"} className="w-full" />
       <div className="absolute top-2 left-2 px-2 py-1 bg-black/50 text-white text-sm rounded">
         {showBefore ? 'Before' : 'After'}
       </div>
@@ -226,15 +284,15 @@ function DiffView({ baseline, actual, diff }: DiffViewProps) {
     <div className="grid grid-cols-3 gap-4">
       <div>
         <div className="text-sm font-medium mb-2">Baseline</div>
-        <img src={baseline} alt="" className="border rounded w-full" />
+        <img src={baseline} alt="Baseline screenshot" className="border rounded w-full" />
       </div>
       <div>
         <div className="text-sm font-medium mb-2">Actual</div>
-        <img src={actual} alt="" className="border rounded w-full" />
+        <img src={actual} alt="Actual screenshot" className="border rounded w-full" />
       </div>
       <div>
         <div className="text-sm font-medium mb-2">Diff</div>
-        <img src={diff} alt="" className="border rounded w-full" />
+        <img src={diff} alt="Diff image showing changes" className="border rounded w-full" />
       </div>
     </div>
   );

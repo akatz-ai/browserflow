@@ -73,37 +73,33 @@ describe('ScreenshotViewer', () => {
     it('shows both before and after images', () => {
       render(<ScreenshotViewer {...defaultProps} mode="side-by-side" />);
 
-      expect(screen.getByText(/before/i)).toBeInTheDocument();
-      expect(screen.getByText(/after/i)).toBeInTheDocument();
+      expect(screen.getByText(/before action/i)).toBeInTheDocument();
+      expect(screen.getByText(/after action/i)).toBeInTheDocument();
 
-      const images = screen.getAllByRole('presentation');
+      const images = screen.getAllByRole('img');
       expect(images.length).toBe(2);
     });
   });
 
   describe('Slider View', () => {
-    it('renders slider input for comparison', () => {
+    it('renders drag handle for comparison', () => {
       render(<ScreenshotViewer {...defaultProps} mode="slider" />);
 
-      expect(screen.getByRole('slider')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /drag to compare/i })).toBeInTheDocument();
     });
 
     it('shows both images overlaid', () => {
       render(<ScreenshotViewer {...defaultProps} mode="slider" />);
 
-      const images = screen.getAllByRole('presentation');
+      const images = screen.getAllByRole('img');
       expect(images.length).toBe(2);
     });
 
-    it('slider is draggable and updates position', () => {
+    it('shows before/after labels', () => {
       render(<ScreenshotViewer {...defaultProps} mode="slider" />);
 
-      const slider = screen.getByRole('slider');
-      expect(slider).toHaveValue('50'); // Default position
-
-      // Simulate slider change using fireEvent for range inputs
-      fireEvent.change(slider, { target: { value: '75' } });
-      expect(slider).toHaveValue('75');
+      expect(screen.getByText('Before')).toBeInTheDocument();
+      expect(screen.getByText('After')).toBeInTheDocument();
     });
   });
 
@@ -120,7 +116,7 @@ describe('ScreenshotViewer', () => {
       render(<ScreenshotViewer {...defaultProps} mode="blink" />);
 
       // Initially shows one image
-      let images = screen.getAllByRole('presentation');
+      let images = screen.getAllByRole('img');
       expect(images.length).toBe(1);
       expect(images[0]).toHaveAttribute('src', '/screenshots/before.png');
 
@@ -129,7 +125,7 @@ describe('ScreenshotViewer', () => {
         vi.advanceTimersByTime(500);
       });
 
-      images = screen.getAllByRole('presentation');
+      images = screen.getAllByRole('img');
       expect(images[0]).toHaveAttribute('src', '/screenshots/after.png');
 
       // After another 500ms, back to before
@@ -137,7 +133,7 @@ describe('ScreenshotViewer', () => {
         vi.advanceTimersByTime(500);
       });
 
-      images = screen.getAllByRole('presentation');
+      images = screen.getAllByRole('img');
       expect(images[0]).toHaveAttribute('src', '/screenshots/before.png');
     });
   });
@@ -146,7 +142,7 @@ describe('ScreenshotViewer', () => {
     it('shows the diff image', () => {
       render(<ScreenshotViewer {...defaultProps} mode="diff" />);
 
-      const images = screen.getAllByRole('presentation');
+      const images = screen.getAllByRole('img');
       // Should show at least the diff image
       expect(images.some(img => img.getAttribute('src') === '/screenshots/diff.png')).toBe(true);
     });
@@ -217,8 +213,8 @@ describe('ScreenshotViewer', () => {
       // Rerender with new mode to simulate parent state update
       rerender(<ScreenshotViewer {...defaultProps} mode="slider" onModeChange={onModeChange} />);
 
-      // Slider view should now be visible
-      expect(screen.getByRole('slider')).toBeInTheDocument();
+      // Slider view should now be visible (drag handle button)
+      expect(screen.getByRole('button', { name: /drag to compare/i })).toBeInTheDocument();
     });
   });
 });

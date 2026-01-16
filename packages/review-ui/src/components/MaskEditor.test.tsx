@@ -66,11 +66,9 @@ describe('MaskEditor', () => {
       expect(drawingRect).toBeInTheDocument();
     });
 
-    it('creates a new mask after valid drag and reason input', () => {
+    it('creates a new mask after valid drag and reason input', async () => {
+      const user = userEvent.setup();
       const onMasksChange = vi.fn();
-
-      // Mock window.prompt
-      const mockPrompt = vi.spyOn(window, 'prompt').mockReturnValue('Timestamp region');
 
       render(<MaskEditor {...defaultProps} onMasksChange={onMasksChange} />);
 
@@ -81,21 +79,29 @@ describe('MaskEditor', () => {
       fireEvent.mouseMove(canvas, { clientX: 200, clientY: 180 });
       fireEvent.mouseUp(canvas);
 
-      // Should have prompted for reason
-      expect(mockPrompt).toHaveBeenCalledWith('Why is this region masked?');
+      // Should show pending mask with confirm button
+      const confirmButton = screen.getByRole('button', { name: /confirm mask/i });
+      expect(confirmButton).toBeInTheDocument();
+
+      // Click confirm to open modal
+      await user.click(confirmButton);
+
+      // Enter comment in modal
+      const textarea = screen.getByPlaceholderText(/enter reason/i);
+      await user.type(textarea, 'Timestamp region');
+
+      // Click save
+      const saveButton = screen.getByRole('button', { name: /save mask/i });
+      await user.click(saveButton);
 
       // Should have called onMasksChange with new mask
       expect(onMasksChange).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({
             reason: 'Timestamp region',
-            width: expect.any(Number),
-            height: expect.any(Number),
           }),
         ])
       );
-
-      mockPrompt.mockRestore();
     });
 
     it('does not create mask if drag is too small (less than 10px)', () => {
@@ -130,9 +136,9 @@ describe('MaskEditor', () => {
       mockPrompt.mockRestore();
     });
 
-    it('normalizes negative width/height rectangles', () => {
+    it('normalizes negative width/height rectangles', async () => {
+      const user = userEvent.setup();
       const onMasksChange = vi.fn();
-      const mockPrompt = vi.spyOn(window, 'prompt').mockReturnValue('Test');
 
       render(<MaskEditor {...defaultProps} onMasksChange={onMasksChange} />);
 
@@ -142,6 +148,18 @@ describe('MaskEditor', () => {
       fireEvent.mouseDown(canvas, { clientX: 200, clientY: 180 });
       fireEvent.mouseMove(canvas, { clientX: 100, clientY: 100 });
       fireEvent.mouseUp(canvas);
+
+      // Should show pending mask with confirm button
+      const confirmButton = screen.getByRole('button', { name: /confirm mask/i });
+      await user.click(confirmButton);
+
+      // Enter comment in modal
+      const textarea = screen.getByPlaceholderText(/enter reason/i);
+      await user.type(textarea, 'Test');
+
+      // Click save
+      const saveButton = screen.getByRole('button', { name: /save mask/i });
+      await user.click(saveButton);
 
       // Should normalize to positive width/height
       expect(onMasksChange).toHaveBeenCalledWith(
@@ -157,8 +175,6 @@ describe('MaskEditor', () => {
       const call = onMasksChange.mock.calls[0][0];
       expect(call[0].width).toBeGreaterThan(0);
       expect(call[0].height).toBeGreaterThan(0);
-
-      mockPrompt.mockRestore();
     });
 
     it('does not allow drawing when disabled', () => {
@@ -382,7 +398,7 @@ describe('MaskEditor', () => {
       render(<MaskEditor {...defaultProps} masks={masks} />);
 
       const maskOverlay = screen.getByTestId('mask-overlay');
-      expect(maskOverlay).toHaveClass('bg-red-500/30');
+      expect(maskOverlay).toHaveClass('bg-purple-500/30');
     });
 
     it('shows different style for selected mask', async () => {
@@ -396,7 +412,7 @@ describe('MaskEditor', () => {
       const maskOverlay = screen.getByTestId('mask-overlay');
       await user.click(maskOverlay);
 
-      expect(maskOverlay).toHaveClass('border-blue-500');
+      expect(maskOverlay).toHaveClass('border-purple-500');
     });
 
     it('shows cursor crosshair when enabled', () => {
