@@ -141,31 +141,43 @@ export class PlaywrightGenerator {
   }
 
   /**
-   * Generates code for a single step.
+   * Generates code for a single step wrapped in test.step().
    */
   private generateStepCode(step: ExplorationStep, index: number): string {
     const lines: string[] = [];
     const indent = '    '; // 4 spaces for inside test block
+    const innerIndent = '      '; // 6 spaces for inside test.step block
 
-    // Add step comment
-    if (this.options.includeComments) {
-      lines.push(
-        `${indent}// ─────────────────────────────────────────────────────────────────────────`
-      );
-      lines.push(
-        `${indent}// Step ${index}: ${this.describeAction(step.spec_action)}`
-      );
-      if (step.execution.method) {
-        lines.push(`${indent}// Found via: ${step.execution.method}`);
-      }
-      lines.push(
-        `${indent}// ─────────────────────────────────────────────────────────────────────────`
-      );
-    }
+    // Determine step name: use description if available, otherwise step_{index}
+    const stepName = step.spec_action.description ?? `step_${index}`;
 
     // Generate action-specific code
     const actionCode = this.generateActionCode(step);
-    lines.push(...actionCode.map((line) => `${indent}${line}`));
+
+    // Start test.step() wrapper
+    lines.push(`${indent}await test.step('${escapeString(stepName)}', async () => {`);
+
+    // Add step comment inside the test.step block
+    if (this.options.includeComments) {
+      lines.push(
+        `${innerIndent}// ─────────────────────────────────────────────────────────────────────────`
+      );
+      lines.push(
+        `${innerIndent}// Step ${index}: ${this.describeAction(step.spec_action)}`
+      );
+      if (step.execution.method) {
+        lines.push(`${innerIndent}// Found via: ${step.execution.method}`);
+      }
+      lines.push(
+        `${innerIndent}// ─────────────────────────────────────────────────────────────────────────`
+      );
+    }
+
+    // Add action code inside the test.step block
+    lines.push(...actionCode.map((line) => `${innerIndent}${line}`));
+
+    // Close test.step() wrapper
+    lines.push(`${indent}});`);
 
     return lines.join('\n');
   }
