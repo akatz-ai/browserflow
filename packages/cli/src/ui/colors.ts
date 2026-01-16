@@ -26,4 +26,15 @@ export const colors = {
   skip: chalk.yellow,
 };
 
+// Pre-rendered symbols for consistent output
+export const symbols = {
+  pass: chalk.green('✓'),
+  fail: chalk.red('✗'),
+  pending: chalk.yellow('○'),
+  arrow: chalk.cyan('→'),
+  bullet: chalk.dim('•'),
+  info: chalk.blue('ℹ'),
+  warn: chalk.yellow('⚠'),
+};
+
 export { chalk };
