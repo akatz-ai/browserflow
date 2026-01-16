@@ -1,5 +1,8 @@
 # BrowserFlow ignores
 
+# LLM context generation
+.llmd/
+
 # Runtime directories
 .browserflow/
 explorations/*/
@@ -35,3 +38,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# bv (beads viewer) local config and caches
+.bv/
+.meow/
