@@ -54,13 +54,11 @@ describe('collectResults with JSON reporter', () => {
       },
     };
 
-    const resultsPath = path.join(runDir, 'results.json');
-    await fs.writeFile(resultsPath, JSON.stringify(mockResults, null, 2));
-
     const executorResult: ExecutorResult = {
       exitCode: 0,
-      stdout: '',
+      stdout: JSON.stringify(mockResults),
       stderr: '',
+      jsonOutput: mockResults,
     };
 
     const result = await collectResults(runDir, executorResult);
@@ -113,13 +111,11 @@ describe('collectResults with JSON reporter', () => {
       },
     };
 
-    const resultsPath = path.join(runDir, 'results.json');
-    await fs.writeFile(resultsPath, JSON.stringify(mockResults, null, 2));
-
     const executorResult: ExecutorResult = {
       exitCode: 5,
-      stdout: '',
+      stdout: JSON.stringify(mockResults),
       stderr: '',
+      jsonOutput: mockResults,
     };
 
     const result = await collectResults(runDir, executorResult);
@@ -186,13 +182,11 @@ describe('collectResults with JSON reporter', () => {
       },
     };
 
-    const resultsPath = path.join(runDir, 'results.json');
-    await fs.writeFile(resultsPath, JSON.stringify(mockResults, null, 2));
-
     const executorResult: ExecutorResult = {
       exitCode: 5,
-      stdout: '',
+      stdout: JSON.stringify(mockResults),
       stderr: '',
+      jsonOutput: mockResults,
     };
 
     const result = await collectResults(runDir, executorResult);
@@ -238,13 +232,11 @@ describe('collectResults with JSON reporter', () => {
       },
     };
 
-    const resultsPath = path.join(runDir, 'results.json');
-    await fs.writeFile(resultsPath, JSON.stringify(mockResults, null, 2));
-
     const executorResult: ExecutorResult = {
       exitCode: 0,
-      stdout: '',
+      stdout: JSON.stringify(mockResults),
       stderr: '',
+      jsonOutput: mockResults,
     };
 
     const result = await collectResults(runDir, executorResult);
@@ -310,13 +302,11 @@ describe('collectResults with JSON reporter', () => {
       },
     };
 
-    const resultsPath = path.join(runDir, 'results.json');
-    await fs.writeFile(resultsPath, JSON.stringify(mockResults, null, 2));
-
     const executorResult: ExecutorResult = {
       exitCode: 0,
-      stdout: '',
+      stdout: JSON.stringify(mockResults),
       stderr: '',
+      jsonOutput: mockResults,
     };
 
     const result = await collectResults(runDir, executorResult);
@@ -362,13 +352,11 @@ describe('collectResults with JSON reporter', () => {
       },
     };
 
-    const resultsPath = path.join(runDir, 'results.json');
-    await fs.writeFile(resultsPath, JSON.stringify(mockResults, null, 2));
-
     const executorResult: ExecutorResult = {
       exitCode: 0,
-      stdout: '',
+      stdout: JSON.stringify(mockResults),
       stderr: '',
+      jsonOutput: mockResults,
     };
 
     const result = await collectResults(runDir, executorResult);

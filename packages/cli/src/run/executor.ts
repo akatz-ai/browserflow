@@ -36,13 +36,21 @@ export async function executePlaywright(
     child.on('close', (code) => {
       let jsonOutput: unknown;
       try {
-        // Try to parse JSON output if reporter was json
-        const jsonMatch = stdout.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          jsonOutput = JSON.parse(jsonMatch[0]);
+        // Parse JSON output from JSON reporter
+        // The entire stdout should be valid JSON when using --reporter json
+        if (stdout.trim()) {
+          jsonOutput = JSON.parse(stdout.trim());
         }
-      } catch {
-        // Ignore parse errors
+      } catch (error) {
+        // If JSON parsing fails, try to extract JSON object from mixed output
+        try {
+          const jsonMatch = stdout.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            jsonOutput = JSON.parse(jsonMatch[0]);
+          }
+        } catch {
+          // Ignore parse errors - jsonOutput will remain undefined
+        }
       }
 
       resolve({
@@ -73,10 +81,10 @@ function buildPlaywrightArgs(
   // Config file (if exists)
   args.push('--config', 'e2e/playwright.config.ts');
 
-  // Reporter
-  args.push('--reporter', 'list');
+  // Reporter - use JSON for structured output
+  args.push('--reporter', 'json');
 
-  // Output directory
+  // Output directory for artifacts
   args.push('--output', path.join(runDir, 'artifacts'));
 
   // Parallel workers
