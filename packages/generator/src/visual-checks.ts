@@ -252,3 +252,15 @@ export function generateWaitForAnimations(pageVar = 'page'): string {
 await ${pageVar}.waitForLoadState('networkidle');
 await ${pageVar}.waitForTimeout(500);`;
 }
+
+/**
+ * Generates code to inject overlay elements for region-based masks.
+ * This is a stub - region mask support not yet implemented.
+ */
+export function generateMaskSetupCode(
+  masks: MaskRegion[],
+  pageVar = 'page'
+): string {
+  // TODO: Implement region mask setup code
+  return '';
+}
