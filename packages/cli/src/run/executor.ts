@@ -66,6 +66,7 @@ export async function executePlaywright(
         exitCode: 1,
         stdout,
         stderr: stderr + '\n' + err.message,
+        jsonOutput: undefined,
       });
     });
   });
