@@ -113,7 +113,27 @@ describe('StepExecutor', () => {
   });
 
   describe('navigate action', () => {
-    it('should execute navigate to absolute URL', async () => {
+    it('should execute navigate to absolute URL with canonical "url" field', async () => {
+      const navigateSpy = spyOn(mockBrowser, 'navigate');
+      const step: SpecStep = { action: 'navigate', url: 'https://example.com' };
+
+      const result = await executor.execute(step, 0);
+
+      expect(navigateSpy).toHaveBeenCalledWith('https://example.com');
+      expect(result.execution.status).toBe('completed');
+      expect(result.execution.method).toBe('navigate');
+    });
+
+    it('should execute navigate with relative URL using baseUrl (url field)', async () => {
+      const navigateSpy = spyOn(mockBrowser, 'navigate');
+      const step: SpecStep = { action: 'navigate', url: '/login' };
+
+      await executor.execute(step, 0);
+
+      expect(navigateSpy).toHaveBeenCalledWith('http://localhost:3000/login');
+    });
+
+    it('should execute navigate to absolute URL (legacy "to" field for backward compat)', async () => {
       const navigateSpy = spyOn(mockBrowser, 'navigate');
       const step: SpecStep = { action: 'navigate', to: 'https://example.com' };
 
@@ -124,7 +144,7 @@ describe('StepExecutor', () => {
       expect(result.execution.method).toBe('navigate');
     });
 
-    it('should execute navigate with relative URL using baseUrl', async () => {
+    it('should execute navigate with relative URL using baseUrl (legacy "to" field)', async () => {
       const navigateSpy = spyOn(mockBrowser, 'navigate');
       const step: SpecStep = { action: 'navigate', to: '/login' };
 
@@ -133,13 +153,23 @@ describe('StepExecutor', () => {
       expect(navigateSpy).toHaveBeenCalledWith('http://localhost:3000/login');
     });
 
-    it('should fail when navigate missing "to" field', async () => {
+    it('should prefer "url" field when both "url" and "to" are present', async () => {
+      const navigateSpy = spyOn(mockBrowser, 'navigate');
+      const step: SpecStep = { action: 'navigate', url: 'https://canonical.com', to: 'https://legacy.com' };
+
+      const result = await executor.execute(step, 0);
+
+      expect(navigateSpy).toHaveBeenCalledWith('https://canonical.com');
+      expect(result.execution.status).toBe('completed');
+    });
+
+    it('should fail when navigate missing both "url" and "to" fields', async () => {
       const step: SpecStep = { action: 'navigate' };
 
       const result = await executor.execute(step, 0);
 
       expect(result.execution.status).toBe('failed');
-      expect(result.execution.error).toContain('to');
+      expect(result.execution.error).toContain('url');
     });
   });
 

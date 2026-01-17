@@ -88,7 +88,8 @@ export interface SpecStep {
   query?: string;
   selector?: string;
   ref?: string;
-  to?: string;
+  url?: string; // Canonical field for navigate action
+  to?: string; // Legacy field for navigate action (backward compat)
   value?: string;
   for?: string;
   text?: string;
