@@ -155,13 +155,19 @@ function buildAssertionOptions(options: ScreenshotOptions, pageVar = 'page'): st
  * Generates code for a mask array.
  */
 function generateMaskArray(masks: MaskRegion[], pageVar = 'page'): string {
+  let regionMaskIndex = 0;
   const maskItems = masks
     .map((mask) => {
       if (mask.selector) {
         return `${pageVar}.locator('${escapeString(mask.selector)}')`;
       }
-      // Region-based masks need custom handling
-      // Playwright doesn't directly support region masks, so we'd need a locator
+      if (mask.region) {
+        // Create reference to overlay element that will be injected
+        const selector = `[data-bf-mask="${regionMaskIndex}"]`;
+        const locatorCode = `${pageVar}.locator('${escapeString(selector)}')`;
+        regionMaskIndex++;
+        return locatorCode;
+      }
       return null;
     })
     .filter((item): item is string => item !== null);
@@ -255,12 +261,34 @@ await ${pageVar}.waitForTimeout(500);`;
 
 /**
  * Generates code to inject overlay elements for region-based masks.
- * This is a stub - region mask support not yet implemented.
+ * Returns empty string if no region masks are present.
  */
 export function generateMaskSetupCode(
   masks: MaskRegion[],
   pageVar = 'page'
 ): string {
-  // TODO: Implement region mask setup code
-  return '';
+  // Filter to only region-based masks
+  const regionMasks = masks.filter((m) => m.region);
+
+  if (regionMasks.length === 0) {
+    return '';
+  }
+
+  // Generate individual injection statements for each region mask
+  // Each block is wrapped in its own scope to reuse variable name 'div'
+  const injectionStatements = regionMasks
+    .map((mask, index) => {
+      const r = mask.region!;
+      return `  {
+    const div = document.createElement('div');
+    div.setAttribute('data-bf-mask', '${index}');
+    div.style.cssText = 'position:fixed;left:${r.x}%;top:${r.y}%;width:${r.width}%;height:${r.height}%;pointer-events:none;z-index:99999';
+    document.body.appendChild(div);
+  }`;
+    })
+    .join('\n');
+
+  return `await ${pageVar}.evaluate(() => {
+${injectionStatements}
+});`;
 }

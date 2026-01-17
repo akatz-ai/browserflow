@@ -202,7 +202,8 @@ describe('visual-checks', () => {
       const result = generateScreenshotAssertion({ name: 'test', mask: masks });
 
       // Should maintain order in mask array
-      const maskArrayMatch = result.match(/mask: \[(.*?)\]/s);
+      // Use greedy match to handle attribute selectors with brackets
+      const maskArrayMatch = result.match(/mask: \[(.*)\]/s);
       expect(maskArrayMatch).toBeTruthy();
 
       const maskArray = maskArrayMatch![1];
