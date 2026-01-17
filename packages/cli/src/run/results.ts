@@ -1,6 +1,6 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import type { RunResult, SpecResult, FailureInfo } from './types.js';
+import type { RunResult, SpecResult, StepResult, FailureInfo } from './types.js';
 import type { ExecutorResult } from './executor.js';
 import { generateFailureBundle, type TestFailure } from './failure-bundle.js';
 
@@ -27,14 +27,18 @@ export async function collectResults(
 
   const json = executorResult.jsonOutput as PlaywrightJsonReport;
 
-  // Process each suite
+  // Process each suite (file)
   for (const suite of json.suites ?? []) {
     // Extract spec name from file path
     // e.g., 'e2e/tests/login.spec.ts' -> 'login'
     // e.g., 'e2e/tests/nested/deep/test.spec.ts' -> 'nested/deep/test'
     const specName = extractSpecName(suite.file);
 
-    // Process each spec (test) within the suite
+    const steps: StepResult[] = [];
+    let suiteDuration = 0;
+    let suiteStatus: 'passed' | 'failed' | 'skipped' = 'passed';
+
+    // Process each spec (test) within the suite as a step
     for (const spec of suite.specs ?? []) {
       const test = spec.tests?.[0];
       const result = test?.results?.[0];
@@ -48,19 +52,21 @@ export async function collectResults(
       const duration = result?.duration ?? 0;
       const errorMessage = result?.error?.message;
 
-      const specResult: SpecResult = {
-        name: specName,
-        steps: [{
-          name: spec.title,
-          duration,
-          status,
-          error: errorMessage,
-        }],
+      steps.push({
+        name: spec.title,
         duration,
         status,
-      };
+        error: errorMessage,
+      });
 
-      specs.push(specResult);
+      suiteDuration += duration;
+
+      // Suite fails if any test fails
+      if (status === 'failed') {
+        suiteStatus = 'failed';
+      } else if (status === 'skipped' && suiteStatus === 'passed') {
+        suiteStatus = 'skipped';
+      }
 
       // Track failures
       if (status === 'failed' && errorMessage) {
@@ -70,6 +76,16 @@ export async function collectResults(
           error: errorMessage,
         });
       }
+    }
+
+    // Create one SpecResult per suite (file) with all tests as steps
+    if (steps.length > 0) {
+      specs.push({
+        name: specName,
+        steps,
+        duration: suiteDuration,
+        status: suiteStatus,
+      });
     }
   }
 

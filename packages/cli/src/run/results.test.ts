@@ -193,7 +193,11 @@ describe('collectResults with JSON reporter', () => {
 
     expect(result.passed).toBe(1);
     expect(result.failed).toBe(1);
-    expect(result.specs).toHaveLength(2);
+    expect(result.specs).toHaveLength(1); // One spec (file) with 2 steps (tests)
+    expect(result.specs[0].steps).toHaveLength(2);
+    expect(result.specs[0].steps[0].status).toBe('passed');
+    expect(result.specs[0].steps[1].status).toBe('failed');
+    expect(result.specs[0].status).toBe('failed'); // Suite status is failed if any test fails
     expect(result.failures).toHaveLength(1);
     expect(result.failures[0].error).toBe('Button not visible');
   });
