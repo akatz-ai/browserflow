@@ -179,9 +179,9 @@ export function useReviewState({ steps, initialReviewData = {}, onSubmit }: UseR
     // Add the actual locator used
     if (locator.method) {
       const args = locator.args || {};
-      if (locator.method === 'getByTestId' && args.text) {
+      if (locator.method === 'getByTestId' && args.testId) {
         candidates.push({
-          strategy: { type: 'testid', value: args.text as string },
+          strategy: { type: 'testid', value: args.testId as string },
           confidence: 0.95,
           matchCount: 1,
         });

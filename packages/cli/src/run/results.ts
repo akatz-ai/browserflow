@@ -1,6 +1,6 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import type { RunResult, SpecResult, FailureInfo } from './types.js';
+import type { RunResult, SpecResult, StepResult, FailureInfo } from './types.js';
 import type { ExecutorResult } from './executor.js';
 import { generateFailureBundle, type TestFailure } from './failure-bundle.js';
 
@@ -11,93 +11,90 @@ export async function collectResults(
   const specs: SpecResult[] = [];
   const failures: FailureInfo[] = [];
 
-  // Parse the stdout to extract step-by-step results
-  // Playwright's list reporter outputs lines like:
-  // [chromium] › tests/example.spec.ts:3:5 › step name
-  const lines = executorResult.stdout.split('\n');
-  let currentSpec: SpecResult | null = null;
+  // Parse results from JSON output
+  if (!executorResult.jsonOutput) {
+    // Fallback if no JSON output available
+    return {
+      runDir,
+      specs: [],
+      passed: 0,
+      failed: 0,
+      skipped: 0,
+      duration: 0,
+      failures: [],
+    };
+  }
 
-  for (const line of lines) {
-    // Match passed steps: ✓ or ✔
-    const passMatch = line.match(/[✓✔]\s+.*?›\s+(.+?)\s+\(([0-9.]+)([sm]s?)\)/);
-    if (passMatch) {
-      const [, stepName, duration, unit] = passMatch;
-      const durationMs = unit.startsWith('s')
-        ? parseFloat(duration) * 1000
-        : parseFloat(duration);
+  const json = executorResult.jsonOutput as PlaywrightJsonReport;
 
-      // Extract spec name from earlier in the line
-      const specMatch = line.match(/tests\/(.+?)\.spec\.ts/);
-      const specName = specMatch ? specMatch[1] : 'unknown';
+  // Process each suite (file)
+  for (const suite of json.suites ?? []) {
+    // Extract spec name from file path
+    // e.g., 'e2e/tests/login.spec.ts' -> 'login'
+    // e.g., 'e2e/tests/nested/deep/test.spec.ts' -> 'nested/deep/test'
+    const specName = extractSpecName(suite.file);
 
-      if (!currentSpec || currentSpec.name !== specName) {
-        if (currentSpec) {
-          specs.push(currentSpec);
-        }
-        currentSpec = {
-          name: specName,
-          steps: [],
-          duration: 0,
-          status: 'passed',
-        };
+    const steps: StepResult[] = [];
+    let suiteDuration = 0;
+    let suiteStatus: 'passed' | 'failed' | 'skipped' = 'passed';
+
+    // Process each spec (test) within the suite as a step
+    for (const spec of suite.specs ?? []) {
+      const test = spec.tests?.[0];
+      const result = test?.results?.[0];
+
+      const status = result?.status === 'skipped'
+        ? 'skipped'
+        : spec.ok
+          ? 'passed'
+          : 'failed';
+
+      const duration = result?.duration ?? 0;
+      const errorMessage = result?.error?.message;
+
+      steps.push({
+        name: spec.title,
+        duration,
+        status,
+        error: errorMessage,
+      });
+
+      suiteDuration += duration;
+
+      // Suite fails if any test fails
+      if (status === 'failed') {
+        suiteStatus = 'failed';
+      } else if (status === 'skipped' && suiteStatus === 'passed') {
+        suiteStatus = 'skipped';
       }
 
-      currentSpec.steps.push({
-        name: stepName,
-        duration: durationMs,
-        status: 'passed',
-      });
-      currentSpec.duration += durationMs;
+      // Track failures
+      if (status === 'failed' && errorMessage) {
+        failures.push({
+          spec: specName,
+          step: spec.title,
+          error: errorMessage,
+        });
+      }
     }
 
-    // Match failed steps
-    const failMatch = line.match(/[✗✘×]\s+.*?›\s+(.+?)(?:\s+\(([0-9.]+)([sm]s?)\))?/);
-    if (failMatch) {
-      const [, stepName, duration, unit] = failMatch;
-      const durationMs = duration
-        ? (unit?.startsWith('s') ? parseFloat(duration) * 1000 : parseFloat(duration))
-        : 0;
-
-      const specMatch = line.match(/tests\/(.+?)\.spec\.ts/);
-      const specName = specMatch ? specMatch[1] : 'unknown';
-
-      if (!currentSpec || currentSpec.name !== specName) {
-        if (currentSpec) {
-          specs.push(currentSpec);
-        }
-        currentSpec = {
-          name: specName,
-          steps: [],
-          duration: 0,
-          status: 'failed',
-        };
-      }
-
-      currentSpec.steps.push({
-        name: stepName,
-        duration: durationMs,
-        status: 'failed',
-      });
-      currentSpec.duration += durationMs;
-      currentSpec.status = 'failed';
-
-      failures.push({
-        spec: specName,
-        step: stepName,
-        error: 'Test failed',
+    // Create one SpecResult per suite (file) with all tests as steps
+    if (steps.length > 0) {
+      specs.push({
+        name: specName,
+        steps,
+        duration: suiteDuration,
+        status: suiteStatus,
       });
     }
   }
 
-  if (currentSpec) {
-    specs.push(currentSpec);
-  }
-
-  // Calculate total duration from individual spec durations
-  const totalDuration = specs.reduce((sum, spec) => sum + spec.duration, 0);
-  const passed = specs.filter(s => s.status === 'passed').length;
-  const failed = specs.filter(s => s.status === 'failed').length;
-  const skipped = specs.filter(s => s.status === 'skipped').length;
+  // Use stats from JSON report
+  const stats = json.stats;
+  const passed = stats?.expected ?? 0;
+  const failed = stats?.unexpected ?? 0;
+  const skipped = stats?.skipped ?? 0;
+  const duration = stats?.duration ?? 0;
 
   return {
     runDir,
@@ -105,8 +102,54 @@ export async function collectResults(
     passed,
     failed,
     skipped,
-    duration: totalDuration,
+    duration,
     failures,
+  };
+}
+
+function extractSpecName(filePath: string): string {
+  // Extract spec name from file path
+  // e.g., 'e2e/tests/login.spec.ts' -> 'login'
+  // e.g., 'e2e/tests/nested/deep/test.spec.ts' -> 'nested/deep/test'
+  const match = filePath.match(/tests\/(.+?)\.spec\.ts/);
+  return match ? match[1] : 'unknown';
+}
+
+// Type definitions for Playwright JSON reporter output
+interface PlaywrightJsonReport {
+  config?: unknown;
+  suites?: PlaywrightSuite[];
+  stats?: {
+    expected: number;
+    unexpected: number;
+    skipped: number;
+    duration: number;
+  };
+}
+
+interface PlaywrightSuite {
+  title: string;
+  file: string;
+  specs?: PlaywrightSpec[];
+}
+
+interface PlaywrightSpec {
+  title: string;
+  ok: boolean;
+  tests?: PlaywrightTest[];
+}
+
+interface PlaywrightTest {
+  results?: PlaywrightTestResult[];
+}
+
+interface PlaywrightTestResult {
+  status: string;
+  duration: number;
+  startTime?: string;
+  error?: {
+    message: string;
+    stack?: string;
   };
 }
 

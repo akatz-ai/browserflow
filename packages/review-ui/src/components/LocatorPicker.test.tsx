@@ -117,7 +117,7 @@ describe('LocatorPicker', () => {
       expect(onLockLocator).toHaveBeenCalledWith(
         expect.objectContaining({
           method: 'getByTestId',
-          args: expect.objectContaining({ text: 'submit-button' }),
+          args: expect.objectContaining({ testId: 'submit-button' }),
         })
       );
     });
@@ -153,7 +153,7 @@ describe('LocatorPicker', () => {
     it('shows "Locked" badge when a locator is locked', () => {
       const lockedLocator: LegacyLocatorObject = {
         method: 'getByTestId',
-        args: { text: 'submit-button' },
+        args: { testId: 'submit-button' },
         description: 'Submit button',
       };
 
@@ -165,7 +165,7 @@ describe('LocatorPicker', () => {
     it('displays the currently locked locator details', () => {
       const lockedLocator: LegacyLocatorObject = {
         method: 'getByTestId',
-        args: { text: 'submit-button' },
+        args: { testId: 'submit-button' },
         description: 'Submit button',
       };
 

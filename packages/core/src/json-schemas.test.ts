@@ -141,6 +141,91 @@ describe('spec-v2.schema.json', () => {
     const valid = validate(spec);
     expect(valid).toBe(false);
   });
+
+  test('validates spec with reload action', () => {
+    const spec = {
+      version: 2,
+      name: 'reload-test',
+      steps: [
+        {
+          id: 'reload-page',
+          action: 'reload',
+        },
+      ],
+    };
+    const validate = ajv.compile(specSchema);
+    const valid = validate(spec);
+    expect(valid).toBe(true);
+  });
+
+  test('validates spec with scroll action', () => {
+    const spec = {
+      version: 2,
+      name: 'scroll-test',
+      steps: [
+        {
+          id: 'scroll-down',
+          action: 'scroll',
+          target: { css: '.content' },
+        },
+      ],
+    };
+    const validate = ajv.compile(specSchema);
+    const valid = validate(spec);
+    expect(valid).toBe(true);
+  });
+
+  test('validates spec with press action', () => {
+    const spec = {
+      version: 2,
+      name: 'press-test',
+      steps: [
+        {
+          id: 'press-enter',
+          action: 'press',
+          value: 'Enter',
+        },
+      ],
+    };
+    const validate = ajv.compile(specSchema);
+    const valid = validate(spec);
+    expect(valid).toBe(true);
+  });
+
+  test('validates spec with upload action', () => {
+    const spec = {
+      version: 2,
+      name: 'upload-test',
+      steps: [
+        {
+          id: 'upload-file',
+          action: 'upload',
+          target: { testid: 'file-input' },
+          value: './test-file.pdf',
+        },
+      ],
+    };
+    const validate = ajv.compile(specSchema);
+    const valid = validate(spec);
+    expect(valid).toBe(true);
+  });
+
+  test('validates spec with scroll_into_view action', () => {
+    const spec = {
+      version: 2,
+      name: 'scroll-into-view-test',
+      steps: [
+        {
+          id: 'scroll-element',
+          action: 'scroll_into_view',
+          target: { css: '#footer' },
+        },
+      ],
+    };
+    const validate = ajv.compile(specSchema);
+    const valid = validate(spec);
+    expect(valid).toBe(true);
+  });
 });
 
 describe('browserflow.schema.json', () => {

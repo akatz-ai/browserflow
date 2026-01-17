@@ -188,7 +188,7 @@ function candidateToLocator(candidate: LocatorCandidate): LegacyLocatorObject {
     case 'testid':
       return {
         method: 'getByTestId' as LocatorMethod,
-        args: { text: strategy.value },
+        args: { testId: strategy.value },
       };
     case 'role':
       return {

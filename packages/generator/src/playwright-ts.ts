@@ -15,6 +15,7 @@ import { resolveLocatorCode, escapeString } from './locator-emit.js';
 import {
   generateScreenshotAssertion,
   generateWaitForAnimations,
+  generateMaskSetupCode,
 } from './visual-checks.js';
 
 /**
@@ -379,6 +380,15 @@ export class PlaywrightGenerator {
       // Add wait for animations before screenshot
       lines.push(generateWaitForAnimations());
       lines.push('');
+
+      // Inject mask overlay elements if there are region-based masks
+      if (action.mask && action.mask.length > 0) {
+        const maskSetupCode = generateMaskSetupCode(action.mask);
+        if (maskSetupCode) {
+          lines.push(maskSetupCode);
+          lines.push('');
+        }
+      }
 
       // Generate screenshot assertion
       const assertion = generateScreenshotAssertion(
