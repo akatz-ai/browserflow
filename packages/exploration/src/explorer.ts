@@ -283,10 +283,12 @@ export class Explorer {
   ): Promise<StepExecution> {
     switch (step.action) {
       case 'navigate': {
-        if (!step.to) {
-          throw new Error('Navigate action requires "to" field');
+        // Support both url (canonical) and to (legacy)
+        const targetUrl = step.url ?? step.to;
+        if (!targetUrl) {
+          throw new Error('Navigate action requires "url" field');
         }
-        const url = step.to.startsWith('http') ? step.to : `${baseUrl}${step.to}`;
+        const url = targetUrl.startsWith('http') ? targetUrl : `${baseUrl}${targetUrl}`;
         await this.browser!.navigate(url);
         return {
           status: 'completed',

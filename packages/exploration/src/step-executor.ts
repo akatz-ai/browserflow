@@ -232,16 +232,18 @@ export class StepExecutor {
   // ============ Navigation Actions ============
 
   private async executeNavigate(step: SpecStep): Promise<StepExecution> {
-    if (!step.to) {
+    // Support both url (canonical) and to (legacy)
+    const targetUrl = step.url ?? step.to;
+    if (!targetUrl) {
       return {
         status: 'failed',
         method: 'navigate',
         durationMs: 0,
-        error: 'Navigate action requires "to" field',
+        error: 'Navigate action requires "url" field',
       };
     }
 
-    const url = step.to.startsWith('http') ? step.to : `${this.baseUrl}${step.to}`;
+    const url = targetUrl.startsWith('http') ? targetUrl : `${this.baseUrl}${targetUrl}`;
     await this.browser!.navigate(url);
 
     return {
