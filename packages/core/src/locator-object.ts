@@ -218,6 +218,7 @@ export interface LocatorArgs {
   role?: string;
   name?: string | RegExp;
   text?: string | RegExp;
+  testId?: string;
   exact?: boolean;
   selector?: string;
   [key: string]: unknown;
