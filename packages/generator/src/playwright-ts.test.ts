@@ -465,6 +465,111 @@ describe('PlaywrightGenerator', () => {
       expect(result.content).toContain('checkout-page.png');
     });
 
+    it('generates screenshot with selector-based mask', () => {
+      const lockfile = createMockLockfile({
+        steps: [
+          createMockStep({
+            action: 'screenshot',
+            name: 'dashboard',
+            mask: [
+              { selector: '.timestamp' },
+              { selector: '.user-avatar' },
+            ],
+          }),
+        ],
+      });
+      const generator = new PlaywrightGenerator();
+      const result = generator.generate(lockfile);
+
+      expect(result.content).toContain('toHaveScreenshot');
+      expect(result.content).toContain("mask: [page.locator('.timestamp'), page.locator('.user-avatar')]");
+    });
+
+    it('generates screenshot with region-based mask and setup code', () => {
+      const lockfile = createMockLockfile({
+        steps: [
+          createMockStep({
+            action: 'screenshot',
+            name: 'homepage',
+            mask: [
+              { region: { x: 10, y: 20, width: 100, height: 50 } },
+            ],
+          }),
+        ],
+      });
+      const generator = new PlaywrightGenerator();
+      const result = generator.generate(lockfile);
+
+      // Should include mask setup code before screenshot
+      expect(result.content).toContain('await page.evaluate');
+      expect(result.content).toContain('data-bf-mask');
+      expect(result.content).toContain('left:10%');
+      expect(result.content).toContain('top:20%');
+      expect(result.content).toContain('width:100%');
+      expect(result.content).toContain('height:50%');
+
+      // Should include screenshot with mask reference
+      expect(result.content).toContain('toHaveScreenshot');
+      expect(result.content).toContain("mask: [page.locator('[data-bf-mask=\"0\"]')]");
+    });
+
+    it('generates screenshot with mixed selector and region masks', () => {
+      const lockfile = createMockLockfile({
+        steps: [
+          createMockStep({
+            action: 'screenshot',
+            name: 'complex-page',
+            mask: [
+              { selector: '.header' },
+              { region: { x: 0, y: 90, width: 100, height: 10 } },
+              { selector: '.footer' },
+              { region: { x: 80, y: 5, width: 15, height: 10 } },
+            ],
+          }),
+        ],
+      });
+      const generator = new PlaywrightGenerator();
+      const result = generator.generate(lockfile);
+
+      // Should include setup code for both region masks
+      expect(result.content).toContain('await page.evaluate');
+      expect(result.content).toContain('left:0%');
+      expect(result.content).toContain('top:90%');
+      expect(result.content).toContain('left:80%');
+      expect(result.content).toContain('top:5%');
+
+      // Should include all masks in proper order
+      expect(result.content).toContain("page.locator('.header')");
+      expect(result.content).toContain("page.locator('[data-bf-mask=\"0\"]')");
+      expect(result.content).toContain("page.locator('.footer')");
+      expect(result.content).toContain("page.locator('[data-bf-mask=\"1\"]')");
+    });
+
+    it('generates screenshot without mask setup when only selector masks', () => {
+      const lockfile = createMockLockfile({
+        steps: [
+          createMockStep({
+            action: 'screenshot',
+            name: 'page',
+            mask: [
+              { selector: '.timestamp' },
+              { selector: '.avatar' },
+            ],
+          }),
+        ],
+      });
+      const generator = new PlaywrightGenerator();
+      const result = generator.generate(lockfile);
+
+      // Should NOT include page.evaluate for mask setup
+      expect(result.content).not.toContain('await page.evaluate');
+      expect(result.content).not.toContain('data-bf-mask');
+
+      // Should still include selector masks
+      expect(result.content).toContain("page.locator('.timestamp')");
+      expect(result.content).toContain("page.locator('.avatar')");
+    });
+
     it('handles identify_element action as comment', () => {
       const lockfile = createMockLockfile({
         steps: [
