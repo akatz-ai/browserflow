@@ -424,15 +424,16 @@ export function ReviewPage({
 function formatStepTitle(step?: ExplorationStep): string {
   if (!step) return 'Unknown Step';
 
-  const id = step.spec_action?.id || '';
+  const description = step.spec_action?.description || '';
   const action = step.spec_action?.action || '';
 
-  // Convert snake_case or kebab-case to Title Case
-  const formatted = id
-    .replace(/[-_]/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-
-  if (formatted) return formatted;
+  // If there's a description, use it as title (convert to Title Case)
+  if (description) {
+    const formatted = description
+      .replace(/[-_]/g, ' ')
+      .replace(/\b\w/g, (c: string) => c.toUpperCase());
+    return formatted;
+  }
 
   // Fallback to action type
   return action.charAt(0).toUpperCase() + action.slice(1);
@@ -441,8 +442,8 @@ function formatStepTitle(step?: ExplorationStep): string {
 function getStepDescription(step?: ExplorationStep): string {
   if (!step) return 'No step selected';
 
-  const action = step.spec_action?.action || '';
-  const spec = step.spec_action as Record<string, unknown>;
+  const action = (step.spec_action?.action || '') as string;
+  const spec = step.spec_action as unknown as Record<string, unknown>;
 
   switch (action) {
     case 'navigate':
@@ -471,8 +472,8 @@ function getStepDescription(step?: ExplorationStep): string {
 function getTestActions(step?: ExplorationStep): string[] {
   if (!step) return [];
 
-  const action = step.spec_action?.action || '';
-  const spec = step.spec_action as Record<string, unknown>;
+  const action = (step.spec_action?.action || '') as string;
+  const spec = step.spec_action as unknown as Record<string, unknown>;
   const execution = step.execution;
   const actions: string[] = [];
 
@@ -516,7 +517,7 @@ function getTestActions(step?: ExplorationStep): string[] {
 function getVerificationPoints(step?: ExplorationStep): string[] {
   if (!step) return [];
 
-  const action = step.spec_action?.action || '';
+  const action = (step.spec_action?.action || '') as string;
   const execution = step.execution;
   const points: string[] = [];
 
