@@ -8,6 +8,9 @@ export type { ExplorerConfig, BrowserSession, BrowserLaunchOptions } from './exp
 export { ClaudeAdapter } from './adapters/claude';
 export type { ClaudeAdapterConfig } from './adapters/claude';
 
+// Browser Session Adapters
+export { AgentBrowserSession, createBrowserSession } from './agent-browser-session';
+
 // Core types
 export type {
   AIAdapter,

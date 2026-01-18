@@ -153,8 +153,8 @@ describe('AgentBrowserSession', () => {
     });
 
     test('getSnapshot with selector filters elements', async () => {
-      const snapshot = await session.getSnapshot({ selector: 'body' });
-      expect(snapshot.tree).toContain('body');
+      const snapshot = await session.getSnapshot({ selector: 'h1' });
+      expect(snapshot.tree).toContain('heading');
     });
   });
 
@@ -244,7 +244,7 @@ describe('AgentBrowserSession', () => {
         throw new Error('waitForURL method not implemented');
       }
 
-      await session.waitForURL('example.com', 5000);
+      await session.waitForURL('**/example.com/**', 5000);
       // Should not throw
     });
 
@@ -253,7 +253,7 @@ describe('AgentBrowserSession', () => {
         throw new Error('waitForText method not implemented');
       }
 
-      await session.waitForText('Example', 5000);
+      await session.waitForText('Example Domain', 5000);
       // Should not throw
     });
 
