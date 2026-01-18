@@ -298,9 +298,8 @@ export class AgentBrowserSession implements BrowserSession {
 
     try {
       const page = this.browser.getPage();
-      await page.evaluate(
-        `window.scrollBy(${x}, ${y})`
-      );
+      // Use mouse wheel for scrolling (more reliable than evaluate)
+      await page.mouse.wheel(x, y);
     } catch (error) {
       throw new Error(
         `Failed to scroll by (${x}, ${y}): ${error instanceof Error ? error.message : String(error)}`
