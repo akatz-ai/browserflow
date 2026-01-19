@@ -43,7 +43,7 @@ export async function loadAndValidateSpec(specName: string, cwd: string = proces
   // Validate against schema
   const validation = specSchema.safeParse(parsed);
   if (!validation.success) {
-    const issues = validation.error.issues.map(issue => {
+    const issues = validation.error.issues.map((issue: { path: (string | number)[]; message: string }) => {
       const path = issue.path.join('.');
       return `  - ${path}: ${issue.message}`;
     }).join('\n');

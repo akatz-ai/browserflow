@@ -94,8 +94,8 @@ export interface SpecStep {
   for?: string;
   text?: string;
   contains?: string;
-  timeout?: number;
-  duration?: number;
+  timeout?: string | number;
+  duration?: string | number;
   checks?: VerifyCheck[];
   name?: string;
   description?: string;
@@ -111,7 +111,7 @@ export interface SpecStep {
  */
 export interface Spec {
   name: string;
-  description: string;
+  description?: string;
   preconditions?: Record<string, unknown>;
   steps: SpecStep[];
   expectedOutcomes?: Record<string, unknown>[];

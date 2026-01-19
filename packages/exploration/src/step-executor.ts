@@ -11,6 +11,16 @@ import type {
 } from './adapters/types';
 
 /**
+ * Parse a timeout/duration value that can be string or number
+ */
+function parseTimeout(value: string | number | undefined, defaultValue: number): number {
+  if (value === undefined) return defaultValue;
+  if (typeof value === 'number') return value;
+  const parsed = parseInt(value, 10);
+  return isNaN(parsed) ? defaultValue : parsed;
+}
+
+/**
  * Configuration for step execution
  */
 export interface StepExecutorConfig {
@@ -443,7 +453,7 @@ export class StepExecutor {
 
   private async executeWait(step: SpecStep): Promise<StepExecution> {
     const waitFor = step.for;
-    const timeout = step.timeout ?? this.defaultTimeout;
+    const timeout = parseTimeout(step.timeout, this.defaultTimeout);
 
     switch (waitFor) {
       case 'element':
@@ -466,7 +476,7 @@ export class StepExecutor {
 
       case 'time':
         if (step.duration && this.browser!.waitForTimeout) {
-          await this.browser!.waitForTimeout(step.duration);
+          await this.browser!.waitForTimeout(parseTimeout(step.duration, 1000));
         }
         break;
 

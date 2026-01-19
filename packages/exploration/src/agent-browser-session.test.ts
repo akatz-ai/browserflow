@@ -3,13 +3,19 @@
  *
  * These tests verify that the BrowserSession adapter correctly wraps
  * the agent-browser BrowserManager API.
+ *
+ * NOTE: These are integration tests requiring real browser binaries.
+ * Skipped by default - run with BROWSER_TESTS=1 to enable.
  */
 
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import { AgentBrowserSession } from './agent-browser-session';
 import type { BrowserSession } from './explorer';
 
-describe('AgentBrowserSession', () => {
+// Skip browser integration tests unless explicitly enabled
+const describeBrowser = process.env.BROWSER_TESTS ? describe : describe.skip;
+
+describeBrowser('AgentBrowserSession', () => {
   let session: BrowserSession;
 
   beforeEach(() => {
