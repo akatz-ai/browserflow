@@ -264,3 +264,77 @@ describe('acceptBaselines', () => {
     expect(result.accepted.sort()).toEqual(['screenshot1', 'screenshot2']);
   });
 });
+
+describe('getPendingBaselines', () => {
+  let testDir: string;
+
+  beforeEach(async () => {
+    testDir = join(tmpdir(), `bf-baseline-pending-test-${Date.now()}`);
+    await mkdir(join(testDir, '.browserflow', 'baselines', 'test-spec'), { recursive: true });
+    await mkdir(join(testDir, '.browserflow', 'runs', 'test-spec', 'run-latest', 'artifacts', 'screenshots'), { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true });
+  });
+
+  test('returns baselines with diffs and new screenshots', async () => {
+    // Import the function (will fail until implemented)
+    const { getPendingBaselines } = await import('./baseline.js');
+
+    // Create baseline and different actual (diff)
+    await writeFile(
+      join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png'),
+      createSimplePNG(10, 10, [255, 0, 0, 255]) // Red
+    );
+    await writeFile(
+      join(testDir, '.browserflow', 'runs', 'test-spec', 'run-latest', 'artifacts', 'screenshots', 'screenshot1.png'),
+      createSimplePNG(10, 10, [0, 0, 255, 255]) // Blue (different)
+    );
+
+    // Create new screenshot not in baselines
+    await writeFile(
+      join(testDir, '.browserflow', 'runs', 'test-spec', 'run-latest', 'artifacts', 'screenshots', 'screenshot2.png'),
+      createSimplePNG(10, 10, [0, 255, 0, 255])
+    );
+
+    const pending = await getPendingBaselines('test-spec', { cwd: testDir });
+
+    expect(pending).toHaveLength(2);
+    expect(pending.map(p => p.name).sort()).toEqual(['screenshot1', 'screenshot2']);
+    expect(pending.find(p => p.name === 'screenshot1')?.status).toBe('diff');
+    expect(pending.find(p => p.name === 'screenshot2')?.status).toBe('new');
+  });
+
+  test('returns empty array when all baselines match', async () => {
+    const { getPendingBaselines } = await import('./baseline.js');
+
+    // Create baseline and matching actual
+    const pngBuffer = createSimplePNG();
+    await writeFile(
+      join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png'),
+      pngBuffer
+    );
+    await writeFile(
+      join(testDir, '.browserflow', 'runs', 'test-spec', 'run-latest', 'artifacts', 'screenshots', 'screenshot1.png'),
+      pngBuffer
+    );
+
+    const pending = await getPendingBaselines('test-spec', { cwd: testDir });
+
+    expect(pending).toHaveLength(0);
+  });
+
+  test('returns empty array when no runs exist', async () => {
+    const { getPendingBaselines } = await import('./baseline.js');
+
+    await writeFile(
+      join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png'),
+      createSimplePNG()
+    );
+
+    const pending = await getPendingBaselines('test-spec', { cwd: testDir });
+
+    expect(pending).toHaveLength(0);
+  });
+});
