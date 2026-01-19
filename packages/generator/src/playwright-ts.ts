@@ -110,7 +110,7 @@ export class PlaywrightGenerator {
     });
 
     return {
-      path: `tests/${lockfile.spec}.spec.ts`,
+      path: `e2e/tests/${lockfile.spec}.spec.ts`,
       content,
       specName: lockfile.spec,
       explorationId: lockfile.exploration_id,
