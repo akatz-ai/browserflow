@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { RunStore } from '../run/run-store.js';
+import { createRunStore } from '@browserflow/core';
 import { resolveSpecs, executePlaywright } from '../run/executor.js';
 import { collectResults, generateFailureBundles } from '../run/results.js';
 import { printRunHeader, printRunSummary, printError } from '../run/output.js';
@@ -37,7 +37,7 @@ export function runCommand(): Command {
 }
 
 export async function run(options: RunOptions): Promise<void> {
-  const runStore = new RunStore();
+  const runStore = createRunStore(process.cwd());
 
   // 1. Determine which specs to run
   const specs = await resolveSpecs(options);
@@ -46,7 +46,9 @@ export async function run(options: RunOptions): Promise<void> {
   printRunHeader(specs);
 
   // 3. Create run directory for this execution
-  const runDir = await runStore.createRun('_execution');
+  // Use first spec name as the category, or '_execution' as fallback
+  const specName = specs[0]?.name || '_execution';
+  const runDir = await runStore.createRun(specName);
 
   // 4. Execute Playwright tests
   const executorResult = await executePlaywright(specs, options, runDir);

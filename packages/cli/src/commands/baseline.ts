@@ -4,7 +4,7 @@
  */
 
 import { Command } from 'commander';
-import { readFile, readdir, access, copyFile, mkdir, writeFile } from 'node:fs/promises';
+import { readFile, readdir, access, copyFile, mkdir, writeFile, stat } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import { PNG } from 'pngjs';
@@ -82,24 +82,33 @@ export class BaselineStore {
     }
   }
 
-  async getLatestRun(_specName: string): Promise<string | null> {
-    const runsDir = join(this.baseDir, RUNS_DIR, '_execution');
+  async getLatestRun(specName: string): Promise<string | null> {
+    const specDir = join(this.baseDir, RUNS_DIR, specName);
     try {
-      await access(runsDir);
-      const entries = await readdir(runsDir);
-      const runDirs = entries
-        .filter((e) => e.startsWith('run-'))
-        .sort()
-        .reverse();
+      await access(specDir);
+      const entries = await readdir(specDir);
+      const runDirs = await Promise.all(
+        entries
+          .filter((e) => e.startsWith('run-'))
+          .map(async (name) => {
+            const fullPath = join(specDir, name);
+            const stats = await stat(fullPath);
+            return { name, path: fullPath, mtime: stats.mtime.getTime() };
+          })
+      );
+
       if (runDirs.length === 0) return null;
-      return join(runsDir, runDirs[0]);
+
+      // Sort by modification time, most recent first
+      runDirs.sort((a, b) => b.mtime - a.mtime);
+      return runDirs[0].path;
     } catch {
       return null;
     }
   }
 
-  async getRunDir(runId: string): Promise<string> {
-    return join(this.baseDir, RUNS_DIR, '_execution', runId);
+  async getRunDir(specName: string, runId: string): Promise<string> {
+    return join(this.baseDir, RUNS_DIR, specName, runId);
   }
 
   async copyToBaselines(specName: string, screenshotName: string, sourcePath: string): Promise<string> {
@@ -257,7 +266,7 @@ export async function acceptBaselines(
   // Find run directory
   let runDir: string;
   if (options.runId) {
-    runDir = await store.getRunDir(options.runId);
+    runDir = await store.getRunDir(specName, options.runId);
   } else {
     const latest = await store.getLatestRun(specName);
     if (!latest) {
