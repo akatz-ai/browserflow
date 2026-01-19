@@ -14,12 +14,13 @@
   "files": ["dist"],
   "dependencies": {
     "@browserflow/core": "workspace:*",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
-    "react-hotkeys-hook": "^4.5.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.6.0",
+    "react-hotkeys-hook": "^4.5.0",
+    "react-router-dom": "^6.20.0",
     "tailwind-merge": "^2.0.0"
   },
   "devDependencies": {
