@@ -6,6 +6,7 @@ import { runCommand } from './commands/run.js';
 import { baselineCommand } from './commands/baseline.js';
 import { repairCommand } from './commands/repair.js';
 import { exploreCommand } from './commands/explore.js';
+import { reviewCommand } from './commands/review.js';
 
 const VERSION = '0.0.1';
 
@@ -24,6 +25,7 @@ export function createProgram(): Command {
   program.addCommand(baselineCommand());
   program.addCommand(repairCommand());
   program.addCommand(exploreCommand());
+  program.addCommand(reviewCommand());
 
   return program;
 }
