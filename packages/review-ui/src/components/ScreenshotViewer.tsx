@@ -18,35 +18,8 @@ export function ScreenshotViewer({
   mode,
   onModeChange,
 }: ScreenshotViewerProps) {
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-
-      switch (e.key) {
-        case '1':
-          onModeChange('side-by-side');
-          break;
-        case '2':
-          onModeChange('slider');
-          break;
-        case '3':
-          onModeChange('blink');
-          break;
-        case '4':
-          if (diffSrc) {
-            onModeChange('diff');
-          }
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onModeChange, diffSrc]);
+  // Note: View mode keyboard shortcuts (1-4) are handled by parent via useReviewKeyboardShortcuts
+  // Parent calls onModeChange when shortcuts are triggered
 
   return (
     <div className="flex flex-col h-full">
