@@ -133,14 +133,18 @@ export class BaselineStore {
 /**
  * Compare two image files to check if they match
  */
-async function compareImages(path1: string, path2: string): Promise<{ match: boolean; diffPercent?: number }> {
+export async function compareImages(
+  path1: string,
+  path2: string,
+  options: { threshold?: number; generateDiff?: boolean; diffPath?: string } = {}
+): Promise<{ match: boolean; diffPercent: number; diffPath?: string }> {
   try {
     const [content1, content2] = await Promise.all([readFile(path1), readFile(path2)]);
 
     // Simple byte comparison for now
     // In a real implementation, we'd use an image diffing library like pixelmatch
     if (content1.equals(content2)) {
-      return { match: true };
+      return { match: true, diffPercent: 0 };
     }
 
     // Calculate approximate difference (placeholder - real implementation would use pixelmatch)
@@ -154,7 +158,7 @@ async function compareImages(path1: string, path2: string): Promise<{ match: boo
     const diffPercent = (diffBytes / Math.max(content1.length, content2.length)) * 100;
     return { match: false, diffPercent };
   } catch {
-    return { match: false };
+    return { match: false, diffPercent: 0 };
   }
 }
 
