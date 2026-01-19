@@ -22,7 +22,6 @@ export interface MaskEditorProps {
   masks: Mask[];
   onMasksChange: (masks: Mask[]) => void;
   enabled?: boolean;
-  onToggleEnabled?: () => void;
 }
 
 type ResizeHandle = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w';
@@ -69,7 +68,6 @@ export function MaskEditor({
   masks,
   onMasksChange,
   enabled = true,
-  onToggleEnabled,
 }: MaskEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -336,15 +334,11 @@ export function MaskEditor({
     [masks, onMasksChange]
   );
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts (component-specific only)
+  // Note: 'm' key for toggling mask mode is handled by parent via useReviewKeyboardShortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-
-      if (e.key === 'm' && onToggleEnabled) {
-        onToggleEnabled();
         return;
       }
 
@@ -364,7 +358,7 @@ export function MaskEditor({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedMaskId, showCommentModal, pendingRect, onToggleEnabled, handleModalCancel, handleCancelPending, handleDeleteMask]);
+  }, [selectedMaskId, showCommentModal, pendingRect, handleModalCancel, handleCancelPending, handleDeleteMask]);
 
   return (
     <div ref={containerRef} className="relative inline-block">

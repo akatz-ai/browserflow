@@ -187,14 +187,15 @@ describe('LocatorPicker', () => {
   });
 
   describe('Keyboard Shortcuts', () => {
-    it('focuses picker when pressing "l"', async () => {
-      const user = userEvent.setup();
+    // Note: 'l' key for focusing locator picker is now handled by parent via useReviewKeyboardShortcuts
+    // Parent controls focus behavior when the shortcut is triggered
+
+    it('picker is focusable via tabIndex', () => {
       render(<LocatorPicker {...defaultProps} />);
+      const picker = screen.getByTestId('locator-picker');
 
-      await user.keyboard('l');
-
-      // Container should be focused
-      expect(screen.getByTestId('locator-picker')).toHaveFocus();
+      // Verify it has tabIndex set so it can be focused programmatically
+      expect(picker).toHaveAttribute('tabIndex');
     });
   });
 

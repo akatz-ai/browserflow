@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import type { LegacyLocatorObject, LocatorMethod } from '@browserflow/core';
 import { cn } from '@/lib/utils';
 
@@ -32,22 +32,8 @@ export function LocatorPicker({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Keyboard shortcut to focus picker
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-
-      if (e.key === 'l') {
-        containerRef.current?.focus();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  // Note: 'l' key for focusing locator picker is now handled by parent via useReviewKeyboardShortcuts
+  // Parent controls focus behavior when the shortcut is triggered
 
   const handleLockSelected = () => {
     const candidate = candidates[selectedIndex];

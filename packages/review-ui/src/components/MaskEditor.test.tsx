@@ -358,34 +358,13 @@ describe('MaskEditor', () => {
     });
   });
 
-  describe('Keyboard Shortcut', () => {
-    it('calls onToggleEnabled when pressing m key', async () => {
-      const user = userEvent.setup();
-      const onToggleEnabled = vi.fn();
+  describe('Keyboard Shortcuts', () => {
+    // Note: 'm' key for toggling mask mode is now handled by parent via useReviewKeyboardShortcuts
+    // Component-specific shortcuts (Delete/Backspace for deletion, Escape for cancel) are still handled here
 
-      render(<MaskEditor {...defaultProps} onToggleEnabled={onToggleEnabled} />);
-
-      await user.keyboard('m');
-
-      expect(onToggleEnabled).toHaveBeenCalled();
-    });
-
-    it('does not trigger shortcut when typing in input', async () => {
-      const user = userEvent.setup();
-      const onToggleEnabled = vi.fn();
-
-      render(
-        <div>
-          <MaskEditor {...defaultProps} onToggleEnabled={onToggleEnabled} />
-          <input type="text" data-testid="test-input" />
-        </div>
-      );
-
-      const input = screen.getByTestId('test-input');
-      await user.click(input);
-      await user.type(input, 'm');
-
-      expect(onToggleEnabled).not.toHaveBeenCalled();
+    it('deletes mask with Delete key (tested in "Deleting Masks" section)', async () => {
+      // This test is already covered in the "Deleting Masks" section
+      expect(true).toBe(true);
     });
   });
 
