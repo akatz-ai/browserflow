@@ -239,6 +239,17 @@ describe('StepExecutor', () => {
       expect(result.execution.elementRef).toBe('e1');
     });
 
+    it('should click element with custom timeout (string format)', async () => {
+      const clickSpy = spyOn(mockBrowser, 'click' as keyof BrowserSession);
+      const step: SpecStep = { action: 'click', ref: 'e1', timeout: '10s' };
+
+      const result = await executor.execute(step, 0);
+
+      expect(clickSpy).toHaveBeenCalledWith('e1');
+      expect(result.execution.status).toBe('completed');
+      expect(result.execution.elementRef).toBe('e1');
+    });
+
     it('should fail when element not found', async () => {
       mockAdapter.findElement = async () => ({
         ref: 'NOT_FOUND',
@@ -402,6 +413,26 @@ describe('StepExecutor', () => {
       expect(result.execution.status).toBe('completed');
     });
 
+    it('should wait for time duration with string format (500ms)', async () => {
+      const waitSpy = spyOn(mockBrowser, 'waitForTimeout' as keyof BrowserSession);
+      const step: SpecStep = { action: 'wait', for: 'time', duration: '500ms' };
+
+      const result = await executor.execute(step, 0);
+
+      expect(waitSpy).toHaveBeenCalledWith(500);
+      expect(result.execution.status).toBe('completed');
+    });
+
+    it('should wait for time duration with string format (2s)', async () => {
+      const waitSpy = spyOn(mockBrowser, 'waitForTimeout' as keyof BrowserSession);
+      const step: SpecStep = { action: 'wait', for: 'time', duration: '2s' };
+
+      const result = await executor.execute(step, 0);
+
+      expect(waitSpy).toHaveBeenCalledWith(2000);
+      expect(result.execution.status).toBe('completed');
+    });
+
     it('should use custom timeout when specified', async () => {
       const waitSpy = spyOn(mockBrowser, 'waitForSelector' as keyof BrowserSession);
       const step: SpecStep = { action: 'wait', for: 'element', selector: '.slow', timeout: 60000 };
@@ -409,6 +440,24 @@ describe('StepExecutor', () => {
       await executor.execute(step, 0);
 
       expect(waitSpy).toHaveBeenCalledWith('.slow', 60000);
+    });
+
+    it('should use custom timeout with string format (5s)', async () => {
+      const waitSpy = spyOn(mockBrowser, 'waitForSelector' as keyof BrowserSession);
+      const step: SpecStep = { action: 'wait', for: 'element', selector: '.slow', timeout: '5s' };
+
+      await executor.execute(step, 0);
+
+      expect(waitSpy).toHaveBeenCalledWith('.slow', 5000);
+    });
+
+    it('should use custom timeout with string format (3000ms)', async () => {
+      const waitSpy = spyOn(mockBrowser, 'waitForSelector' as keyof BrowserSession);
+      const step: SpecStep = { action: 'wait', for: 'element', selector: '.slow', timeout: '3000ms' };
+
+      await executor.execute(step, 0);
+
+      expect(waitSpy).toHaveBeenCalledWith('.slow', 3000);
     });
   });
 
