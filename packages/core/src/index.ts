@@ -29,6 +29,9 @@ export {
   type Preconditions,
 } from './spec-schema.js';
 
+// Spec loading and normalization
+export { normalizePreconditions, loadSpec } from './spec-loader.js';
+
 // Locator types and resolution
 export {
   type LocatorObject,
@@ -61,6 +64,7 @@ export {
   type Assertion,
   type AssertionType,
   type GenerationMetadata,
+  type ExplorationReport,
   type ExplorationLockfile,
   type ExplorationStep,
   type StepExecution,
