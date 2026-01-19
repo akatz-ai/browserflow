@@ -32,8 +32,8 @@ export function LocatorPicker({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Note: 'l' key for focusing locator picker is handled by parent via useReviewKeyboardShortcuts
-  // Parent should call a focus function passed as prop when the shortcut is triggered
+  // Note: 'l' key for focusing locator picker is now handled by parent via useReviewKeyboardShortcuts
+  // Parent controls focus behavior when the shortcut is triggered
 
   const handleLockSelected = () => {
     const candidate = candidates[selectedIndex];

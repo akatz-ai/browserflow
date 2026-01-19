@@ -24,7 +24,6 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
     it('should call addMask handler only once when m is pressed', async () => {
       const user = userEvent.setup();
       const addMask = vi.fn();
-      const onToggleEnabled = vi.fn();
 
       // Component that uses both the hook and MaskEditor
       function TestComponent() {
@@ -33,7 +32,7 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
           prevStep: vi.fn(),
           approveStep: vi.fn(),
           rejectStep: vi.fn(),
-          addMask, // This is what should be called
+          addMask, // This is what should be called from the hook
           focusLocatorPicker: vi.fn(),
           addAssertion: vi.fn(),
           focusComment: vi.fn(),
@@ -52,7 +51,6 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
             masks={[]}
             onMasksChange={vi.fn()}
             enabled={true}
-            onToggleEnabled={onToggleEnabled}
           />
         );
       }
@@ -62,17 +60,13 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
       // Press 'm' key
       await user.keyboard('m');
 
-      // EXPECTED: addMask should be called exactly once
-      // ACTUAL: Will be called once from hook, onToggleEnabled called once from MaskEditor
-      // This demonstrates the duplicate handling issue
+      // EXPECTED: addMask should be called exactly once from the hook
       expect(addMask).toHaveBeenCalledTimes(1);
-      expect(onToggleEnabled).toHaveBeenCalledTimes(0); // Should not be called separately
     });
 
     it('should not have race conditions with rapid m key presses', async () => {
       const user = userEvent.setup();
       const addMask = vi.fn();
-      const onToggleEnabled = vi.fn();
 
       function TestComponent() {
         const handlers: ReviewHandlers = {
@@ -99,7 +93,6 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
             masks={[]}
             onMasksChange={vi.fn()}
             enabled={true}
-            onToggleEnabled={onToggleEnabled}
           />
         );
       }
@@ -110,7 +103,6 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
       await user.keyboard('mmmmm');
 
       // EXPECTED: addMask called exactly 5 times (once per press)
-      // ACTUAL: May have unpredictable count due to race conditions
       expect(addMask).toHaveBeenCalledTimes(5);
     });
   });
@@ -371,7 +363,6 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
               masks={[]}
               onMasksChange={vi.fn()}
               enabled={true}
-              onToggleEnabled={vi.fn()}
             />
             <LocatorPicker
               candidates={[]}

@@ -22,7 +22,6 @@ export interface MaskEditorProps {
   masks: Mask[];
   onMasksChange: (masks: Mask[]) => void;
   enabled?: boolean;
-  onToggleEnabled?: () => void;
 }
 
 type ResizeHandle = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w';
@@ -69,7 +68,6 @@ export function MaskEditor({
   masks,
   onMasksChange,
   enabled = true,
-  onToggleEnabled,
 }: MaskEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 

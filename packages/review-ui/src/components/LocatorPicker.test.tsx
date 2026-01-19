@@ -188,7 +188,7 @@ describe('LocatorPicker', () => {
 
   describe('Keyboard Shortcuts', () => {
     // Note: 'l' key for focusing locator picker is now handled by parent via useReviewKeyboardShortcuts
-    // Parent should call containerRef.current?.focus() when the shortcut is triggered
+    // Parent controls focus behavior when the shortcut is triggered
 
     it('picker is focusable via tabIndex', () => {
       render(<LocatorPicker {...defaultProps} />);
