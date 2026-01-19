@@ -5,6 +5,7 @@ import { lintCommand } from './commands/lint.js';
 import { runCommand } from './commands/run.js';
 import { baselineCommand } from './commands/baseline.js';
 import { repairCommand } from './commands/repair.js';
+import { exploreCommand } from './commands/explore.js';
 
 const VERSION = '0.0.1';
 
@@ -22,6 +23,7 @@ export function createProgram(): Command {
   program.addCommand(runCommand());
   program.addCommand(baselineCommand());
   program.addCommand(repairCommand());
+  program.addCommand(exploreCommand());
 
   return program;
 }
