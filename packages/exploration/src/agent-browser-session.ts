@@ -64,9 +64,11 @@ export class AgentBrowserSession implements BrowserSession {
 
     try {
       const page = this.browser.getPage();
+      const { mask, ...restOptions } = options ?? {};
       const buffer = await page.screenshot({
         type: 'png',
-        ...options,
+        ...restOptions,
+        ...(mask && { mask: mask.map((selector) => page.locator(selector)) }),
       });
       return Buffer.from(buffer);
     } catch (error) {
