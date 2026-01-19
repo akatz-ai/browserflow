@@ -681,7 +681,7 @@ describe('PlaywrightGenerator', () => {
       const result = generateTest(lockfile);
 
       expect(result.content).toContain("import { test, expect }");
-      expect(result.path).toBe('tests/test-spec.spec.ts');
+      expect(result.path).toBe('e2e/tests/test-spec.spec.ts');
     });
 
     it('passes options to generator', () => {

@@ -7,13 +7,14 @@ Thank you for your interest in contributing to BrowserFlow!
 ```bash
 git clone https://github.com/your-org/browserflow.git
 cd browserflow
-./bin/bf setup --dev
+bun install
+bunx bf doctor  # Verify setup
 ```
 
 ## Code Style
 
-- Shell scripts: Follow Google Shell Style Guide
-- Use `shellcheck` for linting bash scripts
+- TypeScript: Follow project's ESLint configuration
+- Use `bun run typecheck` to verify types
 - Keep functions small and focused
 
 ## Pull Request Process
@@ -21,9 +22,10 @@ cd browserflow
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/my-feature`
 3. Make your changes
-4. Run tests: `./bin/bf test`
-5. Commit with clear messages
-6. Push and create a PR
+4. Run tests: `bun test`
+5. Run build: `bun run build`
+6. Commit with clear messages
+7. Push and create a PR
 
 ## Areas for Contribution
 
