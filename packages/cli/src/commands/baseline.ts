@@ -7,10 +7,12 @@ import { Command } from 'commander';
 import { readFile, readdir, access, copyFile, mkdir, writeFile, stat } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 import { createHash } from 'node:crypto';
+import { createInterface } from 'node:readline';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import { colors, symbols } from '../ui/colors.js';
 import { logHeader, logNewline, logSuccess, logError, logWarning } from '../ui/prompts.js';
+import { isInteractive } from '../ui/env.js';
 
 const BROWSERFLOW_DIR = '.browserflow';
 const BASELINES_DIR = 'baselines';
@@ -40,6 +42,27 @@ export interface BaselineStatus {
 export interface AcceptResult {
   accepted: string[];
   failed: string[];
+}
+
+/**
+ * Simple readline-based confirmation prompt
+ */
+async function confirm(message: string): Promise<boolean> {
+  if (!isInteractive()) {
+    return false;
+  }
+
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question(`${message} (y/N) `, (answer) => {
+      rl.close();
+      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+    });
+  });
 }
 
 export class BaselineStore {
@@ -249,6 +272,28 @@ export async function getBaselineStatus(
 }
 
 /**
+ * Get pending baselines that need acceptance (diffs or new screenshots)
+ */
+export async function getPendingBaselines(
+  specName: string,
+  options: { cwd?: string } = {}
+): Promise<BaselineInfo[]> {
+  const status = await getBaselineStatus(specName, options);
+
+  // Include baselines with diffs (not missing - those aren't in latest run)
+  const diffs = status.baselines.filter(b => b.status === 'diff');
+
+  // Include new screenshots
+  const newScreenshots: BaselineInfo[] = status.newScreenshots.map(name => ({
+    name,
+    path: '', // Path not relevant for display
+    status: 'new' as const,
+  }));
+
+  return [...diffs, ...newScreenshots];
+}
+
+/**
  * Accept baselines from a run
  */
 export async function acceptBaselines(
@@ -397,17 +442,40 @@ export function baselineCommand(): Command {
       logHeader('Accept Baselines');
       logNewline();
 
-      // Without --all, we should confirm (but for now, always proceed)
+      // Without --all or --screenshot, require confirmation
       if (!options.all && !options.screenshot) {
-        console.log(colors.warning('Warning: Accepting all screenshots without --all flag.'));
-        console.log(colors.dim('Use --screenshot <name> to accept a specific screenshot.'));
+        const pending = await getPendingBaselines(options.spec);
+
+        if (pending.length === 0) {
+          console.log(colors.dim('No pending baselines to accept'));
+          return;
+        }
+
+        console.log(`Found ${colors.info(pending.length.toString())} pending baseline${pending.length > 1 ? 's' : ''}:`);
+        for (const baseline of pending) {
+          const statusIcon = baseline.status === 'diff' ? symbols.fail : symbols.pending;
+          const statusText = baseline.status === 'diff'
+            ? colors.fail('differs from current')
+            : colors.info('new screenshot');
+          console.log(`  ${statusIcon} ${baseline.name} ${colors.dim(`(${statusText})`)}`);
+        }
+        logNewline();
+
+        const confirmed = await confirm(
+          `Accept all ${pending.length} baseline${pending.length > 1 ? 's' : ''}?`
+        );
+
+        if (!confirmed) {
+          console.log(colors.dim('Cancelled'));
+          return;
+        }
         logNewline();
       }
 
       const result = await acceptBaselines(options.spec, {
         runId: options.runId,
         screenshot: options.screenshot,
-        all: true, // Always proceed for now (confirmation would require interactive prompt)
+        all: options.all || true, // If we got here, user confirmed
       });
 
       if (result.accepted.length > 0) {

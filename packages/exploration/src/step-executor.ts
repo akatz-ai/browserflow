@@ -190,6 +190,7 @@ export class StepExecutor {
         return this.executeBack();
       case 'forward':
         return this.executeForward();
+      case 'reload':  // Alias for refresh
       case 'refresh':
         return this.executeRefresh();
 
