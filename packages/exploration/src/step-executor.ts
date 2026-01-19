@@ -747,8 +747,19 @@ export class StepExecutor {
    * Capture a screenshot
    */
   private async captureScreenshot(name: string): Promise<string> {
-    await this.browser!.screenshot();
-    return `${this.screenshotDir}/${name}.png`;
+    const { promises: fs } = await import('fs');
+    const path = await import('path');
+
+    const filepath = path.join(this.screenshotDir, `${name}.png`);
+
+    // Ensure directory exists
+    await fs.mkdir(path.dirname(filepath), { recursive: true });
+
+    // Capture and write screenshot
+    const buffer = await this.browser!.screenshot();
+    await fs.writeFile(filepath, buffer);
+
+    return filepath;
   }
 
   /**

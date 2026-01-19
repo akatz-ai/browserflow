@@ -31,7 +31,12 @@ export interface BrowserSession {
   isLaunched(): boolean;
   launch(options?: BrowserLaunchOptions): Promise<void>;
   navigate(url: string): Promise<void>;
-  screenshot(): Promise<Buffer>;
+  screenshot(options?: {
+    fullPage?: boolean;
+    clip?: { x: number; y: number; width: number; height: number };
+    mask?: string[];
+    quality?: number;
+  }): Promise<Buffer>;
   getSnapshot(options?: {
     interactive?: boolean;
     maxDepth?: number;

@@ -54,12 +54,20 @@ export class AgentBrowserSession implements BrowserSession {
     }
   }
 
-  async screenshot(): Promise<Buffer> {
+  async screenshot(options?: {
+    fullPage?: boolean;
+    clip?: { x: number; y: number; width: number; height: number };
+    mask?: string[];
+    quality?: number;
+  }): Promise<Buffer> {
     this.ensureLaunched();
 
     try {
       const page = this.browser.getPage();
-      const buffer = await page.screenshot({ type: 'png' });
+      const buffer = await page.screenshot({
+        type: 'png',
+        ...options,
+      });
       return Buffer.from(buffer);
     } catch (error) {
       throw new Error(
