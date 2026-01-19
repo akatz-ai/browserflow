@@ -96,26 +96,31 @@ async function serveStaticUI(pathname: string): Promise<Response> {
 async function openBrowser(url: string): Promise<void> {
   const { spawn } = await import('node:child_process');
 
-  // Try common browser commands
-  const commands = process.platform === 'darwin'
-    ? ['open']
+  // Use platform-appropriate command to open browser
+  const cmd = process.platform === 'darwin'
+    ? 'open'
     : process.platform === 'win32'
-    ? ['start']
-    : ['xdg-open', 'sensible-browser', 'firefox', 'chromium', 'google-chrome'];
+    ? 'cmd'
+    : 'xdg-open';
 
-  for (const cmd of commands) {
-    try {
-      spawn(cmd, [url], {
-        detached: true,
-        stdio: 'ignore'
-      }).unref();
-      return;
-    } catch {
-      // Try next command
-    }
+  const args = process.platform === 'win32'
+    ? ['/c', 'start', url]
+    : [url];
+
+  try {
+    const child = spawn(cmd, args, {
+      detached: true,
+      stdio: 'ignore'
+    });
+
+    child.on('error', () => {
+      console.log(colors.dim(`Could not auto-open browser. Visit: ${url}`));
+    });
+
+    child.unref();
+  } catch {
+    console.log(colors.dim(`Could not auto-open browser. Visit: ${url}`));
   }
-
-  console.log(colors.dim(`Could not auto-open browser. Visit: ${url}`));
 }
 
 export function reviewCommand(): Command {
@@ -158,7 +163,14 @@ export function reviewCommand(): Command {
 
             // Handle review submission (POST /api/reviews/:id)
             if (url.pathname.startsWith('/api/reviews/') && req.method === 'POST') {
-              const id = url.pathname.split('/').pop()!;
+              const id = url.pathname.split('/').pop() || '';
+
+              if (!id) {
+                return Response.json(
+                  { error: 'Exploration ID is required' },
+                  { status: 400 }
+                );
+              }
 
               try {
                 const reviewData = await req.json();
