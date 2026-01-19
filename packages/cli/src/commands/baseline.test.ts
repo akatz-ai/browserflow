@@ -7,6 +7,7 @@ import { describe, expect, test, beforeEach, afterEach } from 'bun:test';
 import { mkdir, writeFile, rm, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { PNG } from 'pngjs';
 import {
   BaselineStore,
   getBaselineStatus,
@@ -14,6 +15,23 @@ import {
   type BaselineInfo,
   type BaselineAcceptanceRecord,
 } from './baseline.js';
+
+/**
+ * Helper to create a simple PNG buffer
+ */
+function createSimplePNG(width = 10, height = 10, color = [255, 0, 0, 255]): Buffer {
+  const png = new PNG({ width, height });
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (width * y + x) << 2;
+      png.data[idx] = color[0];
+      png.data[idx + 1] = color[1];
+      png.data[idx + 2] = color[2];
+      png.data[idx + 3] = color[3];
+    }
+  }
+  return PNG.sync.write(png);
+}
 
 describe('BaselineStore', () => {
   let testDir: string;
@@ -36,13 +54,14 @@ describe('BaselineStore', () => {
   });
 
   test('getBaselinesForSpec finds PNG files in baseline directory', async () => {
+    const pngBuffer = createSimplePNG();
     await writeFile(
       join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png'),
-      'fake-image-data'
+      pngBuffer
     );
     await writeFile(
       join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot2.png'),
-      'fake-image-data'
+      pngBuffer
     );
 
     const baselines = await store.getBaselinesForSpec('test-spec');
@@ -54,7 +73,7 @@ describe('BaselineStore', () => {
     const runDir = join(testDir, '.browserflow', 'runs', '_execution', 'run-123');
     await writeFile(
       join(runDir, 'artifacts', 'screenshots', 'screenshot1.png'),
-      'fake-image-data'
+      createSimplePNG()
     );
 
     const actuals = await store.getActualsFromRun(runDir);
@@ -74,16 +93,17 @@ describe('BaselineStore', () => {
 
   test('copyToBaselines creates baseline from actual', async () => {
     const runDir = join(testDir, '.browserflow', 'runs', '_execution', 'run-123');
+    const pngBuffer = createSimplePNG();
     await writeFile(
       join(runDir, 'artifacts', 'screenshots', 'new-screenshot.png'),
-      'new-image-data'
+      pngBuffer
     );
 
     await store.copyToBaselines('test-spec', 'new-screenshot', join(runDir, 'artifacts', 'screenshots', 'new-screenshot.png'));
 
     const baselinePath = join(testDir, '.browserflow', 'baselines', 'test-spec', 'new-screenshot.png');
-    const content = await readFile(baselinePath, 'utf-8');
-    expect(content).toBe('new-image-data');
+    const content = await readFile(baselinePath);
+    expect(content.equals(pngBuffer)).toBe(true);
   });
 
   test('recordAcceptance writes metadata file', async () => {
@@ -118,16 +138,16 @@ describe('getBaselineStatus', () => {
   });
 
   test('returns status for each baseline', async () => {
-    // Create baseline
+    // Create baseline and matching actual
+    const pngBuffer = createSimplePNG();
     await writeFile(
       join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png'),
-      'baseline-image'
+      pngBuffer
     );
 
-    // Create matching actual
     await writeFile(
       join(testDir, '.browserflow', 'runs', '_execution', 'run-latest', 'artifacts', 'screenshots', 'screenshot1.png'),
-      'baseline-image'
+      pngBuffer
     );
 
     const status = await getBaselineStatus('test-spec', { cwd: testDir });
@@ -140,7 +160,7 @@ describe('getBaselineStatus', () => {
     // Create baseline without actual
     await writeFile(
       join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png'),
-      'baseline-image'
+      createSimplePNG()
     );
 
     const status = await getBaselineStatus('test-spec', { cwd: testDir });
@@ -149,14 +169,14 @@ describe('getBaselineStatus', () => {
   });
 
   test('detects differences', async () => {
-    // Create baseline and different actual
+    // Create baseline and different actual (different colors)
     await writeFile(
       join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png'),
-      'baseline-image'
+      createSimplePNG(10, 10, [255, 0, 0, 255]) // Red
     );
     await writeFile(
       join(testDir, '.browserflow', 'runs', '_execution', 'run-latest', 'artifacts', 'screenshots', 'screenshot1.png'),
-      'different-image'
+      createSimplePNG(10, 10, [0, 0, 255, 255]) // Blue
     );
 
     const status = await getBaselineStatus('test-spec', { cwd: testDir });
@@ -180,9 +200,10 @@ describe('acceptBaselines', () => {
 
   test('accepts single screenshot', async () => {
     // Create actual
+    const pngBuffer = createSimplePNG();
     await writeFile(
       join(testDir, '.browserflow', 'runs', '_execution', 'run-123', 'artifacts', 'screenshots', 'screenshot1.png'),
-      'new-image'
+      pngBuffer
     );
 
     const result = await acceptBaselines('test-spec', {
@@ -195,15 +216,15 @@ describe('acceptBaselines', () => {
 
     // Check baseline was created
     const baselinePath = join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png');
-    const content = await readFile(baselinePath, 'utf-8');
-    expect(content).toBe('new-image');
+    const content = await readFile(baselinePath);
+    expect(content.equals(pngBuffer)).toBe(true);
   });
 
   test('records metadata on acceptance', async () => {
     // Create actual
     await writeFile(
       join(testDir, '.browserflow', 'runs', '_execution', 'run-123', 'artifacts', 'screenshots', 'screenshot1.png'),
-      'new-image'
+      createSimplePNG()
     );
 
     await acceptBaselines('test-spec', {
@@ -224,11 +245,11 @@ describe('acceptBaselines', () => {
     // Create multiple actuals
     await writeFile(
       join(testDir, '.browserflow', 'runs', '_execution', 'run-123', 'artifacts', 'screenshots', 'screenshot1.png'),
-      'image1'
+      createSimplePNG(10, 10, [255, 0, 0, 255])
     );
     await writeFile(
       join(testDir, '.browserflow', 'runs', '_execution', 'run-123', 'artifacts', 'screenshots', 'screenshot2.png'),
-      'image2'
+      createSimplePNG(10, 10, [0, 255, 0, 255])
     );
 
     const result = await acceptBaselines('test-spec', {
