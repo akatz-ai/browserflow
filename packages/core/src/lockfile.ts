@@ -148,8 +148,9 @@ export async function writeLockfile(runDir: string, lockfile: Lockfile): Promise
   await writeFile(lockfilePath, content, 'utf-8');
 }
 
-// Legacy types for backwards compatibility
-export interface ExplorationLockfile {
+// Exploration output - NOT the deterministic lockfile
+// This represents the raw output from an exploration run
+export interface ExplorationReport {
   spec: string;
   spec_path: string;
   exploration_id: string;
@@ -163,6 +164,11 @@ export interface ExplorationLockfile {
   overall_status: 'completed' | 'failed' | 'timeout';
   errors: ExplorationError[];
 }
+
+/**
+ * @deprecated Use ExplorationReport instead - this is exploration output, not the deterministic lockfile
+ */
+export type ExplorationLockfile = ExplorationReport;
 
 export interface ExplorationStep {
   step_index: number;
