@@ -4,9 +4,11 @@
  */
 
 import { Command } from 'commander';
-import { readFile, readdir, access, copyFile, mkdir, writeFile } from 'node:fs/promises';
+import { readFile, readdir, access, copyFile, mkdir, writeFile, stat } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 import { createHash } from 'node:crypto';
+import { PNG } from 'pngjs';
+import pixelmatch from 'pixelmatch';
 import { colors, symbols } from '../ui/colors.js';
 import { logHeader, logNewline, logSuccess, logError, logWarning } from '../ui/prompts.js';
 
@@ -80,24 +82,33 @@ export class BaselineStore {
     }
   }
 
-  async getLatestRun(_specName: string): Promise<string | null> {
-    const runsDir = join(this.baseDir, RUNS_DIR, '_execution');
+  async getLatestRun(specName: string): Promise<string | null> {
+    const specDir = join(this.baseDir, RUNS_DIR, specName);
     try {
-      await access(runsDir);
-      const entries = await readdir(runsDir);
-      const runDirs = entries
-        .filter((e) => e.startsWith('run-'))
-        .sort()
-        .reverse();
+      await access(specDir);
+      const entries = await readdir(specDir);
+      const runDirs = await Promise.all(
+        entries
+          .filter((e) => e.startsWith('run-'))
+          .map(async (name) => {
+            const fullPath = join(specDir, name);
+            const stats = await stat(fullPath);
+            return { name, path: fullPath, mtime: stats.mtime.getTime() };
+          })
+      );
+
       if (runDirs.length === 0) return null;
-      return join(runsDir, runDirs[0]);
+
+      // Sort by modification time, most recent first
+      runDirs.sort((a, b) => b.mtime - a.mtime);
+      return runDirs[0].path;
     } catch {
       return null;
     }
   }
 
-  async getRunDir(runId: string): Promise<string> {
-    return join(this.baseDir, RUNS_DIR, '_execution', runId);
+  async getRunDir(specName: string, runId: string): Promise<string> {
+    return join(this.baseDir, RUNS_DIR, specName, runId);
   }
 
   async copyToBaselines(specName: string, screenshotName: string, sourcePath: string): Promise<string> {
@@ -133,28 +144,52 @@ export class BaselineStore {
 /**
  * Compare two image files to check if they match
  */
-async function compareImages(path1: string, path2: string): Promise<{ match: boolean; diffPercent?: number }> {
+export async function compareImages(
+  path1: string,
+  path2: string,
+  options: { threshold?: number; generateDiff?: boolean; diffPath?: string } = {}
+): Promise<{ match: boolean; diffPercent: number; diffPath?: string }> {
+  const { threshold = 0.1, generateDiff = true, diffPath } = options;
+
   try {
-    const [content1, content2] = await Promise.all([readFile(path1), readFile(path2)]);
+    const [img1Buffer, img2Buffer] = await Promise.all([
+      readFile(path1),
+      readFile(path2),
+    ]);
 
-    // Simple byte comparison for now
-    // In a real implementation, we'd use an image diffing library like pixelmatch
-    if (content1.equals(content2)) {
-      return { match: true };
+    const img1 = PNG.sync.read(img1Buffer);
+    const img2 = PNG.sync.read(img2Buffer);
+
+    // Handle size mismatch
+    if (img1.width !== img2.width || img1.height !== img2.height) {
+      return { match: false, diffPercent: 100 };
     }
 
-    // Calculate approximate difference (placeholder - real implementation would use pixelmatch)
-    let diffBytes = 0;
-    const minLen = Math.min(content1.length, content2.length);
-    for (let i = 0; i < minLen; i++) {
-      if (content1[i] !== content2[i]) diffBytes++;
-    }
-    diffBytes += Math.abs(content1.length - content2.length);
+    const { width, height } = img1;
+    const diff = generateDiff ? new PNG({ width, height }) : null;
 
-    const diffPercent = (diffBytes / Math.max(content1.length, content2.length)) * 100;
-    return { match: false, diffPercent };
+    const mismatchedPixels = pixelmatch(
+      img1.data,
+      img2.data,
+      diff?.data ?? null,
+      width,
+      height,
+      { threshold }
+    );
+
+    const totalPixels = width * height;
+    const diffPercent = (mismatchedPixels / totalPixels) * 100;
+    const match = mismatchedPixels === 0;
+
+    // Write diff image if requested and images differ
+    if (!match && diff && diffPath) {
+      await writeFile(diffPath, PNG.sync.write(diff));
+      return { match, diffPercent, diffPath };
+    }
+
+    return { match, diffPercent };
   } catch {
-    return { match: false };
+    return { match: false, diffPercent: 0 };
   }
 }
 
@@ -231,7 +266,7 @@ export async function acceptBaselines(
   // Find run directory
   let runDir: string;
   if (options.runId) {
-    runDir = await store.getRunDir(options.runId);
+    runDir = await store.getRunDir(specName, options.runId);
   } else {
     const latest = await store.getLatestRun(specName);
     if (!latest) {

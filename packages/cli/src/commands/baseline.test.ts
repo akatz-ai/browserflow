@@ -7,6 +7,7 @@ import { describe, expect, test, beforeEach, afterEach } from 'bun:test';
 import { mkdir, writeFile, rm, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { PNG } from 'pngjs';
 import {
   BaselineStore,
   getBaselineStatus,
@@ -15,6 +16,23 @@ import {
   type BaselineAcceptanceRecord,
 } from './baseline.js';
 
+/**
+ * Helper to create a simple PNG buffer
+ */
+function createSimplePNG(width = 10, height = 10, color = [255, 0, 0, 255]): Buffer {
+  const png = new PNG({ width, height });
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (width * y + x) << 2;
+      png.data[idx] = color[0];
+      png.data[idx + 1] = color[1];
+      png.data[idx + 2] = color[2];
+      png.data[idx + 3] = color[3];
+    }
+  }
+  return PNG.sync.write(png);
+}
+
 describe('BaselineStore', () => {
   let testDir: string;
   let store: BaselineStore;
@@ -22,7 +40,7 @@ describe('BaselineStore', () => {
   beforeEach(async () => {
     testDir = join(tmpdir(), `bf-baseline-test-${Date.now()}`);
     await mkdir(join(testDir, '.browserflow', 'baselines', 'test-spec'), { recursive: true });
-    await mkdir(join(testDir, '.browserflow', 'runs', '_execution', 'run-123', 'artifacts', 'screenshots'), { recursive: true });
+    await mkdir(join(testDir, '.browserflow', 'runs', 'test-spec', 'run-123', 'artifacts', 'screenshots'), { recursive: true });
     store = new BaselineStore(testDir);
   });
 
@@ -36,13 +54,14 @@ describe('BaselineStore', () => {
   });
 
   test('getBaselinesForSpec finds PNG files in baseline directory', async () => {
+    const pngBuffer = createSimplePNG();
     await writeFile(
       join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png'),
-      'fake-image-data'
+      pngBuffer
     );
     await writeFile(
       join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot2.png'),
-      'fake-image-data'
+      pngBuffer
     );
 
     const baselines = await store.getBaselinesForSpec('test-spec');
@@ -51,10 +70,10 @@ describe('BaselineStore', () => {
   });
 
   test('getActualsFromRun finds screenshots in run artifacts', async () => {
-    const runDir = join(testDir, '.browserflow', 'runs', '_execution', 'run-123');
+    const runDir = join(testDir, '.browserflow', 'runs', 'test-spec', 'run-123');
     await writeFile(
       join(runDir, 'artifacts', 'screenshots', 'screenshot1.png'),
-      'fake-image-data'
+      createSimplePNG()
     );
 
     const actuals = await store.getActualsFromRun(runDir);
@@ -63,27 +82,30 @@ describe('BaselineStore', () => {
   });
 
   test('getLatestRun returns most recent run', async () => {
-    // Create multiple runs
-    await mkdir(join(testDir, '.browserflow', 'runs', '_execution', 'run-100'), { recursive: true });
-    await mkdir(join(testDir, '.browserflow', 'runs', '_execution', 'run-200'), { recursive: true });
-    await mkdir(join(testDir, '.browserflow', 'runs', '_execution', 'run-150'), { recursive: true });
+    // Create multiple runs (must use stat-based sorting, not alphabetic)
+    await mkdir(join(testDir, '.browserflow', 'runs', 'test-spec', 'run-100'), { recursive: true });
+    await new Promise(r => setTimeout(r, 10)); // Ensure different mtime
+    await mkdir(join(testDir, '.browserflow', 'runs', 'test-spec', 'run-150'), { recursive: true });
+    await new Promise(r => setTimeout(r, 10)); // Ensure different mtime
+    await mkdir(join(testDir, '.browserflow', 'runs', 'test-spec', 'run-200'), { recursive: true });
 
     const latestRun = await store.getLatestRun('test-spec');
     expect(latestRun).toContain('run-200');
   });
 
   test('copyToBaselines creates baseline from actual', async () => {
-    const runDir = join(testDir, '.browserflow', 'runs', '_execution', 'run-123');
+    const runDir = join(testDir, '.browserflow', 'runs', 'test-spec', 'run-123');
+    const pngBuffer = createSimplePNG();
     await writeFile(
       join(runDir, 'artifacts', 'screenshots', 'new-screenshot.png'),
-      'new-image-data'
+      pngBuffer
     );
 
     await store.copyToBaselines('test-spec', 'new-screenshot', join(runDir, 'artifacts', 'screenshots', 'new-screenshot.png'));
 
     const baselinePath = join(testDir, '.browserflow', 'baselines', 'test-spec', 'new-screenshot.png');
-    const content = await readFile(baselinePath, 'utf-8');
-    expect(content).toBe('new-image-data');
+    const content = await readFile(baselinePath);
+    expect(content.equals(pngBuffer)).toBe(true);
   });
 
   test('recordAcceptance writes metadata file', async () => {
@@ -110,7 +132,7 @@ describe('getBaselineStatus', () => {
   beforeEach(async () => {
     testDir = join(tmpdir(), `bf-baseline-status-test-${Date.now()}`);
     await mkdir(join(testDir, '.browserflow', 'baselines', 'test-spec'), { recursive: true });
-    await mkdir(join(testDir, '.browserflow', 'runs', '_execution', 'run-latest', 'artifacts', 'screenshots'), { recursive: true });
+    await mkdir(join(testDir, '.browserflow', 'runs', 'test-spec', 'run-latest', 'artifacts', 'screenshots'), { recursive: true });
   });
 
   afterEach(async () => {
@@ -118,16 +140,16 @@ describe('getBaselineStatus', () => {
   });
 
   test('returns status for each baseline', async () => {
-    // Create baseline
+    // Create baseline and matching actual
+    const pngBuffer = createSimplePNG();
     await writeFile(
       join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png'),
-      'baseline-image'
+      pngBuffer
     );
 
-    // Create matching actual
     await writeFile(
-      join(testDir, '.browserflow', 'runs', '_execution', 'run-latest', 'artifacts', 'screenshots', 'screenshot1.png'),
-      'baseline-image'
+      join(testDir, '.browserflow', 'runs', 'test-spec', 'run-latest', 'artifacts', 'screenshots', 'screenshot1.png'),
+      pngBuffer
     );
 
     const status = await getBaselineStatus('test-spec', { cwd: testDir });
@@ -140,7 +162,7 @@ describe('getBaselineStatus', () => {
     // Create baseline without actual
     await writeFile(
       join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png'),
-      'baseline-image'
+      createSimplePNG()
     );
 
     const status = await getBaselineStatus('test-spec', { cwd: testDir });
@@ -149,14 +171,14 @@ describe('getBaselineStatus', () => {
   });
 
   test('detects differences', async () => {
-    // Create baseline and different actual
+    // Create baseline and different actual (different colors)
     await writeFile(
       join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png'),
-      'baseline-image'
+      createSimplePNG(10, 10, [255, 0, 0, 255]) // Red
     );
     await writeFile(
-      join(testDir, '.browserflow', 'runs', '_execution', 'run-latest', 'artifacts', 'screenshots', 'screenshot1.png'),
-      'different-image'
+      join(testDir, '.browserflow', 'runs', 'test-spec', 'run-latest', 'artifacts', 'screenshots', 'screenshot1.png'),
+      createSimplePNG(10, 10, [0, 0, 255, 255]) // Blue
     );
 
     const status = await getBaselineStatus('test-spec', { cwd: testDir });
@@ -171,7 +193,7 @@ describe('acceptBaselines', () => {
   beforeEach(async () => {
     testDir = join(tmpdir(), `bf-baseline-accept-test-${Date.now()}`);
     await mkdir(join(testDir, '.browserflow', 'baselines', 'test-spec'), { recursive: true });
-    await mkdir(join(testDir, '.browserflow', 'runs', '_execution', 'run-123', 'artifacts', 'screenshots'), { recursive: true });
+    await mkdir(join(testDir, '.browserflow', 'runs', 'test-spec', 'run-123', 'artifacts', 'screenshots'), { recursive: true });
   });
 
   afterEach(async () => {
@@ -180,9 +202,10 @@ describe('acceptBaselines', () => {
 
   test('accepts single screenshot', async () => {
     // Create actual
+    const pngBuffer = createSimplePNG();
     await writeFile(
-      join(testDir, '.browserflow', 'runs', '_execution', 'run-123', 'artifacts', 'screenshots', 'screenshot1.png'),
-      'new-image'
+      join(testDir, '.browserflow', 'runs', 'test-spec', 'run-123', 'artifacts', 'screenshots', 'screenshot1.png'),
+      pngBuffer
     );
 
     const result = await acceptBaselines('test-spec', {
@@ -195,15 +218,15 @@ describe('acceptBaselines', () => {
 
     // Check baseline was created
     const baselinePath = join(testDir, '.browserflow', 'baselines', 'test-spec', 'screenshot1.png');
-    const content = await readFile(baselinePath, 'utf-8');
-    expect(content).toBe('new-image');
+    const content = await readFile(baselinePath);
+    expect(content.equals(pngBuffer)).toBe(true);
   });
 
   test('records metadata on acceptance', async () => {
     // Create actual
     await writeFile(
-      join(testDir, '.browserflow', 'runs', '_execution', 'run-123', 'artifacts', 'screenshots', 'screenshot1.png'),
-      'new-image'
+      join(testDir, '.browserflow', 'runs', 'test-spec', 'run-123', 'artifacts', 'screenshots', 'screenshot1.png'),
+      createSimplePNG()
     );
 
     await acceptBaselines('test-spec', {
@@ -223,12 +246,12 @@ describe('acceptBaselines', () => {
   test('accepts all screenshots when --all flag used', async () => {
     // Create multiple actuals
     await writeFile(
-      join(testDir, '.browserflow', 'runs', '_execution', 'run-123', 'artifacts', 'screenshots', 'screenshot1.png'),
-      'image1'
+      join(testDir, '.browserflow', 'runs', 'test-spec', 'run-123', 'artifacts', 'screenshots', 'screenshot1.png'),
+      createSimplePNG(10, 10, [255, 0, 0, 255])
     );
     await writeFile(
-      join(testDir, '.browserflow', 'runs', '_execution', 'run-123', 'artifacts', 'screenshots', 'screenshot2.png'),
-      'image2'
+      join(testDir, '.browserflow', 'runs', 'test-spec', 'run-123', 'artifacts', 'screenshots', 'screenshot2.png'),
+      createSimplePNG(10, 10, [0, 255, 0, 255])
     );
 
     const result = await acceptBaselines('test-spec', {
