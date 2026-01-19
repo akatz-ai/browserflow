@@ -5,7 +5,6 @@
 
 import { describe, expect, test } from 'bun:test';
 import { normalizePreconditions, loadSpec } from './spec-loader.js';
-import { specSchema } from './spec-schema.js';
 
 describe('normalizePreconditions', () => {
   test('coerces string page to object format', () => {
