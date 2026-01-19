@@ -1,5 +1,6 @@
 // @browserflow/exploration - Step executor
 
+import { parseDuration } from '@browserflow/core';
 import type { BrowserSession } from './explorer';
 import type {
   SpecStep,
@@ -12,12 +13,15 @@ import type {
 
 /**
  * Parse a timeout/duration value that can be string or number
+ * Supports duration strings like "500ms", "5s", "1m" as well as plain numbers
  */
 function parseTimeout(value: string | number | undefined, defaultValue: number): number {
   if (value === undefined) return defaultValue;
-  if (typeof value === 'number') return value;
-  const parsed = parseInt(value, 10);
-  return isNaN(parsed) ? defaultValue : parsed;
+  try {
+    return parseDuration(value);
+  } catch {
+    return defaultValue;
+  }
 }
 
 /**
