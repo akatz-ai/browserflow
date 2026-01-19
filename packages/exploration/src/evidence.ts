@@ -1,5 +1,9 @@
 // @browserflow/exploration - Evidence collection (screenshots and traces)
 
+import { promises as fs } from 'fs';
+import * as path from 'path';
+import type { BrowserSession } from './explorer';
+
 /**
  * Evidence metadata
  */
@@ -44,11 +48,31 @@ export class EvidenceCollector {
   private screenshotFormat: 'png' | 'jpeg';
   private screenshotQuality: number;
   private evidence: EvidenceMetadata[] = [];
+  private sessions: Map<string, BrowserSession> = new Map();
 
   constructor(config: EvidenceCollectorConfig = {}) {
     this.outputDir = config.outputDir ?? './evidence';
     this.screenshotFormat = config.screenshotFormat ?? 'png';
     this.screenshotQuality = config.screenshotQuality ?? 90;
+  }
+
+  /**
+   * Register a browser session for screenshot capture
+   *
+   * @param sessionId - Unique identifier for the session
+   * @param session - Browser session instance
+   */
+  registerSession(sessionId: string, session: BrowserSession): void {
+    this.sessions.set(sessionId, session);
+  }
+
+  /**
+   * Unregister a browser session
+   *
+   * @param sessionId - Session identifier to remove
+   */
+  unregisterSession(sessionId: string): void {
+    this.sessions.delete(sessionId);
   }
 
   /**
@@ -64,20 +88,33 @@ export class EvidenceCollector {
     name: string,
     options: ScreenshotOptions = {}
   ): Promise<string> {
-    // TODO: Implement actual screenshot capture via agent-browser
-    // This stub returns a valid path for compilation
-    const filename = `${name}.${this.screenshotFormat}`;
-    const path = `${this.outputDir}/screenshots/${filename}`;
+    // Get browser session
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error(`No browser session found: ${sessionId}`);
+    }
 
+    // Build file path
+    const filename = `${name}.${this.screenshotFormat}`;
+    const filepath = path.join(this.outputDir, 'screenshots', filename);
+
+    // Ensure directory exists
+    await fs.mkdir(path.dirname(filepath), { recursive: true });
+
+    // Capture screenshot from browser session
+    const buffer = await session.screenshot(options);
+    await fs.writeFile(filepath, buffer);
+
+    // Record metadata
     const metadata: EvidenceMetadata = {
       timestamp: new Date().toISOString(),
       sessionId,
       type: 'screenshot',
-      path,
+      path: filepath,
     };
 
     this.evidence.push(metadata);
-    return path;
+    return filepath;
   }
 
   /**

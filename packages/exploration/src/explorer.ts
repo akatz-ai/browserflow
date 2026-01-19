@@ -165,6 +165,9 @@ export class Explorer {
         viewport,
       });
 
+      // Register browser session with evidence collector
+      this.evidenceCollector.registerSession(explorationId, this.browser);
+
       // 2. Navigate to starting page
       const startPage = (spec.preconditions?.page as string) ?? '/';
       const fullUrl = startPage.startsWith('http') ? startPage : `${baseUrl}${startPage}`;
@@ -201,6 +204,9 @@ export class Explorer {
         errors,
       };
     } finally {
+      // Unregister browser session from evidence collector
+      this.evidenceCollector.unregisterSession(explorationId);
+
       // Always close browser
       await this.browser.close();
     }
