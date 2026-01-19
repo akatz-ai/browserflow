@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { basename } from 'node:path';
 import { createRunStore } from '@browserflow/core';
 import { resolveSpecs, executePlaywright } from '../run/executor.js';
 import { collectResults, generateFailureBundles } from '../run/results.js';
@@ -46,8 +47,14 @@ export async function run(options: RunOptions): Promise<void> {
   printRunHeader(specs);
 
   // 3. Create run directory for this execution
-  // Use first spec name as the category, or '_execution' as fallback
-  const specName = specs[0]?.name || '_execution';
+  // Extract spec name from first spec file path
+  // e.g., 'specs/login.spec.yaml' -> 'login.spec' or 'login'
+  let specName = '_execution'; // fallback
+  if (specs.length > 0) {
+    const specFile = basename(specs[0]);
+    // Remove .yaml/.yml extension if present
+    specName = specFile.replace(/\.(yaml|yml)$/, '');
+  }
   const runDir = await runStore.createRun(specName);
 
   // 4. Execute Playwright tests
