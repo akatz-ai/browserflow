@@ -203,6 +203,16 @@ describe('StepExecutor', () => {
       expect(refreshSpy).toHaveBeenCalled();
       expect(result.execution.status).toBe('completed');
     });
+
+    it('should execute reload action (alias for refresh)', async () => {
+      const refreshSpy = spyOn(mockBrowser, 'refresh' as keyof BrowserSession);
+      const step: SpecStep = { action: 'reload' };
+
+      const result = await executor.execute(step, 0);
+
+      expect(refreshSpy).toHaveBeenCalled();
+      expect(result.execution.status).toBe('completed');
+    });
   });
 
   describe('click action', () => {
