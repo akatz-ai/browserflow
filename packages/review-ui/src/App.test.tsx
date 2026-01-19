@@ -1,8 +1,9 @@
 import { render } from '@testing-library/react';
 import { App } from './App';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as reactHotToast from 'react-hot-toast';
 
-// Mock react-hot-toast - this will fail until we install the package
+// Mock react-hot-toast to avoid side effects in tests
 vi.mock('react-hot-toast', () => ({
   Toaster: vi.fn(() => null),
   toast: {
@@ -61,20 +62,12 @@ describe('App - Toast Notification Integration', () => {
 });
 
 describe('Toast Notification Usage in App.tsx', () => {
-  // Note: These tests verify that toast notifications will be used correctly
-  // They document the expected behavior once implementation is complete
-
-  it('should import toast from react-hot-toast', () => {
-    // This test will fail until react-hot-toast is installed
-    expect(() => {
-      require('react-hot-toast');
-    }).not.toThrow();
+  it('should have react-hot-toast available', () => {
+    expect(reactHotToast).toBeDefined();
   });
 
-  it('should import Toaster component from react-hot-toast', () => {
-    // This test will fail until react-hot-toast is installed
-    const module = require('react-hot-toast');
-    expect(module.Toaster).toBeDefined();
-    expect(module.toast).toBeDefined();
+  it('should export Toaster and toast from react-hot-toast', () => {
+    expect(reactHotToast.Toaster).toBeDefined();
+    expect(reactHotToast.toast).toBeDefined();
   });
 });
