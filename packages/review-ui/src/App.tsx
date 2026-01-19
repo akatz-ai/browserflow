@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
+import { Toaster, toast } from 'react-hot-toast';
 import { ReviewPage } from './pages/ReviewPage';
 import { useExplorationData } from './hooks/useExplorationData';
 import type { StepReviewData } from './hooks/useReviewState';
@@ -6,6 +7,7 @@ import type { StepReviewData } from './hooks/useReviewState';
 export function App() {
   return (
     <BrowserRouter>
+      <Toaster position="bottom-right" />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/review" element={<ReviewRoute />} />
@@ -126,7 +128,7 @@ function ReviewRoute() {
     a.click();
     URL.revokeObjectURL(url);
 
-    alert('Review submitted! Downloaded as JSON file.');
+    toast.success('Review submitted! Downloaded as JSON file.');
   };
 
   return (
