@@ -77,7 +77,7 @@ export class ClaudeAdapter implements AIAdapter {
     this.client = new Anthropic({
       apiKey: config.apiKey,
     });
-    this.model = config.model ?? 'claude-sonnet-4-20250514';
+    this.model = config.model ?? 'claude-haiku-4-5';
     this.maxTokens = config.maxTokens ?? 8192;
   }
 
