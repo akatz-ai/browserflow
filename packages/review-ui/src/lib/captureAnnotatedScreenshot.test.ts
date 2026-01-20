@@ -5,7 +5,7 @@
  * They test the logic of the function when run in a proper browser/DOM context.
  */
 
-import { describe, test, expect, beforeAll } from 'bun:test';
+import { describe, test, expect } from 'vitest';
 import type { Mask } from '../components/MaskEditor';
 
 // Note: We can't fully test captureAnnotatedScreenshot in Node/Bun environment
@@ -30,12 +30,10 @@ describe('captureAnnotatedScreenshot', () => {
       showLabels: true,
     };
 
-    // The function will fail in Node environment due to missing DOM APIs
-    // but we verify the type signature is correct
-    expect(() => {
-      // This call will throw because Image is not defined in Node
-      return captureAnnotatedScreenshot(options);
-    }).toThrow();
+    // In jsdom environment, this returns a promise
+    // It will reject since the image URL is not a real image
+    const result = captureAnnotatedScreenshot(options);
+    expect(result).toBeInstanceOf(Promise);
   });
 
   test('mask color palette has expected colors', async () => {
