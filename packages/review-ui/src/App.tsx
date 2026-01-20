@@ -127,7 +127,7 @@ function ReviewRoute() {
         throw new Error(`Save failed: ${response.statusText}`);
       }
 
-      const reviewPath = response.headers.get('X-Review-Path');
+      const reviewPath = response.headers.get('X-Review-Path') || 'server';
       toast.success(`Saved to ${reviewPath}`);
     } catch (error) {
       const err = error as Error;
