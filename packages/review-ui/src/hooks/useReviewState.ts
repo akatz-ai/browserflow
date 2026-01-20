@@ -16,6 +16,7 @@ export interface StepReviewData {
 export interface ReviewState {
   currentStepIndex: number;
   reviewData: Record<number, StepReviewData>;
+  overallComment: string;
   viewMode: ViewMode;
   maskModeEnabled: boolean;
   showShortcutsHelp: boolean;
@@ -26,12 +27,13 @@ export interface ReviewState {
 export interface UseReviewStateOptions {
   steps: ExplorationStep[];
   initialReviewData?: Record<number, StepReviewData>;
-  onSubmit?: (reviewData: Record<number, StepReviewData>) => void;
+  onSubmit?: (reviewData: Record<number, StepReviewData>, overallComment: string) => void;
 }
 
 export function useReviewState({ steps, initialReviewData = {}, onSubmit }: UseReviewStateOptions) {
   const [currentStepIndex, setCurrentStepIndex] = useState(steps[0]?.step_index ?? 0);
   const [reviewData, setReviewData] = useState<Record<number, StepReviewData>>(initialReviewData);
+  const [overallComment, setOverallComment] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('side-by-side');
   const [maskModeEnabled, setMaskModeEnabled] = useState(false);
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
@@ -140,6 +142,12 @@ export function useReviewState({ steps, initialReviewData = {}, onSubmit }: UseR
     [currentStepIndex, updateStepReview, reviewData]
   );
 
+  // Overall comment
+  const updateOverallComment = useCallback((comment: string) => {
+    setOverallComment(comment);
+    setIsDirty(true);
+  }, []);
+
   // UI state
   const openShortcutsHelp = useCallback(() => {
     setShowShortcutsHelp(true);
@@ -165,10 +173,10 @@ export function useReviewState({ steps, initialReviewData = {}, onSubmit }: UseR
   // Submit
   const submitReview = useCallback(() => {
     if (onSubmit) {
-      onSubmit(reviewData);
+      onSubmit(reviewData, overallComment);
       setIsDirty(false);
     }
-  }, [reviewData, onSubmit]);
+  }, [reviewData, overallComment, onSubmit]);
 
   // Generate mock locator candidates from current step
   const locatorCandidates = useMemo((): LocatorCandidate[] => {
@@ -218,6 +226,7 @@ export function useReviewState({ steps, initialReviewData = {}, onSubmit }: UseR
     state: {
       currentStepIndex,
       reviewData,
+      overallComment,
       viewMode,
       maskModeEnabled,
       showShortcutsHelp,
@@ -238,6 +247,7 @@ export function useReviewState({ steps, initialReviewData = {}, onSubmit }: UseR
       toggleMaskMode,
       lockLocator,
       updateComment,
+      updateOverallComment,
       setViewMode,
       openShortcutsHelp,
       closeShortcutsHelp,

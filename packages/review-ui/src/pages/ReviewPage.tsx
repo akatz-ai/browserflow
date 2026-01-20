@@ -34,7 +34,7 @@ export interface ReviewPageProps {
   steps: ExplorationStep[];
   baseScreenshotPath?: string;
   initialReviewData?: Record<number, StepReviewData>;
-  onSubmit?: (reviewData: Record<number, StepReviewData>) => void;
+  onSubmit?: (reviewData: Record<number, StepReviewData>, overallComment: string) => void;
 }
 
 export function ReviewPage({
@@ -124,43 +124,60 @@ export function ReviewPage({
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="border-b px-4 py-3 flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold">{specName}</h1>
-          <p className="text-sm text-muted-foreground">
-            Exploration: {explorationId}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-4">
-          {/* Progress */}
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-cyan-600">{reviewedCount} reviewed</span>
-            <span className="text-muted-foreground">•</span>
-            <span className="text-muted-foreground">{totalCount} total</span>
+      <header className="border-b">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-semibold">{specName}</h1>
+            <p className="text-sm text-muted-foreground">
+              Exploration: {explorationId}
+            </p>
           </div>
 
-          {/* Actions */}
-          <button
-            onClick={actions.openShortcutsHelp}
-            className="px-3 py-1.5 text-sm hover:bg-muted rounded-md"
-            title="Keyboard shortcuts (Ctrl+?)"
-          >
-            <KeyboardIcon className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-4">
+            {/* Progress */}
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-cyan-600">{reviewedCount} reviewed</span>
+              <span className="text-muted-foreground">•</span>
+              <span className="text-muted-foreground">{totalCount} total</span>
+            </div>
 
-          <button
-            onClick={actions.submitReview}
-            disabled={!state.isDirty}
-            className={cn(
-              'px-4 py-1.5 text-sm font-medium rounded-md transition-colors',
-              state.isDirty
-                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                : 'bg-muted text-muted-foreground cursor-not-allowed'
-            )}
-          >
-            Submit Review
-          </button>
+            {/* Actions */}
+            <button
+              onClick={actions.openShortcutsHelp}
+              className="px-3 py-1.5 text-sm hover:bg-muted rounded-md"
+              title="Keyboard shortcuts (Ctrl+?)"
+            >
+              <KeyboardIcon className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={actions.submitReview}
+              disabled={!state.isDirty}
+              className={cn(
+                'px-4 py-1.5 text-sm font-medium rounded-md transition-colors',
+                state.isDirty
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  : 'bg-muted text-muted-foreground cursor-not-allowed'
+              )}
+            >
+              Submit Review
+            </button>
+          </div>
+        </div>
+
+        {/* Overall Comment */}
+        <div className="px-4 py-3 border-t bg-muted/30">
+          <label htmlFor="overall-comment" className="text-sm font-medium text-cyan-400 block mb-2">
+            Overall Notes
+          </label>
+          <textarea
+            id="overall-comment"
+            value={state.overallComment}
+            onChange={(e) => actions.updateOverallComment(e.target.value)}
+            placeholder="Add overall feedback about this exploration (e.g., summary of findings, general observations)..."
+            className="w-full p-2 text-sm border rounded-md resize-none bg-background h-20"
+            rows={3}
+          />
         </div>
       </header>
 
