@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ExplorationStep, LegacyLocatorObject } from '@browserflow/core';
 import { StepTimeline } from '../components/StepTimeline';
 import { ScreenshotViewer, type ViewMode } from '../components/ScreenshotViewer';
@@ -54,6 +54,7 @@ export function ReviewPage({
   const [editingMask, setEditingMask] = useState<Mask | null>(null);
   const [previewMask, setPreviewMask] = useState<Mask | null>(null);
   const [editMaskComment, setEditMaskComment] = useState('');
+  const [showMaskEditorModal, setShowMaskEditorModal] = useState(false);
 
   const {
     state,
@@ -85,11 +86,27 @@ export function ReviewPage({
   const afterSrc = getScreenshotUrl(currentStep?.screenshots?.after);
   const diffSrc = getScreenshotUrl((currentStep?.screenshots as { diff?: string })?.diff);
 
+  // Handler for opening mask editor modal
+  const openMaskEditorModal = useCallback(() => {
+    if (afterSrc) {
+      setShowMaskEditorModal(true);
+    }
+  }, [afterSrc]);
+
+  // Handler for when masks change in the modal
+  const handleMaskEditorMasksChange = useCallback((newMasks: Mask[]) => {
+    actions.updateMasks(newMasks);
+    // If a new mask was added (length increased), close the modal
+    if (newMasks.length > currentReviewData.masks.length) {
+      setShowMaskEditorModal(false);
+    }
+  }, [actions.updateMasks, currentReviewData.masks.length]);
+
   // Create keyboard handlers
   const keyboardHandlers: ReviewHandlers = {
     nextStep: actions.nextStep,
     prevStep: actions.prevStep,
-    addMask: actions.toggleMaskMode,
+    addMask: openMaskEditorModal,
     focusLocatorPicker: useCallback(() => {
       locatorPickerRef.current?.focus();
     }, []),
@@ -207,35 +224,15 @@ export function ReviewPage({
           getScreenshotUrl={getScreenshotUrl}
         />
 
-        {/* Center: Screenshot viewer / Mask editor */}
+        {/* Center: Screenshot viewer */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {state.maskModeEnabled && afterSrc ? (
-            <div className="flex-1 overflow-auto p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium">Mask Editor</span>
-                <button
-                  onClick={actions.toggleMaskMode}
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Exit mask mode (m)
-                </button>
-              </div>
-              <MaskEditor
-                imageSrc={afterSrc}
-                masks={currentReviewData.masks}
-                onMasksChange={actions.updateMasks}
-                enabled={true}
-              />
-            </div>
-          ) : (
-            <ScreenshotViewer
-              beforeSrc={beforeSrc || afterSrc}
-              afterSrc={afterSrc || beforeSrc}
-              diffSrc={diffSrc}
-              mode={state.viewMode}
-              onModeChange={keyboardHandlers.setViewMode}
-            />
-          )}
+          <ScreenshotViewer
+            beforeSrc={beforeSrc || afterSrc}
+            afterSrc={afterSrc || beforeSrc}
+            diffSrc={diffSrc}
+            mode={state.viewMode}
+            onModeChange={keyboardHandlers.setViewMode}
+          />
 
           {/* Bottom toolbar area */}
           <div className="border-t">
@@ -259,15 +256,16 @@ export function ReviewPage({
             <div className="p-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <button
-                  onClick={actions.toggleMaskMode}
+                  onClick={openMaskEditorModal}
+                  disabled={!afterSrc}
                   className={cn(
                     'px-3 py-1.5 text-sm rounded-md transition-colors',
-                    state.maskModeEnabled
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-secondary hover:bg-secondary/80'
+                    afterSrc
+                      ? 'bg-secondary hover:bg-secondary/80'
+                      : 'bg-muted text-muted-foreground cursor-not-allowed'
                   )}
                 >
-                  {state.maskModeEnabled ? 'Exit Mask Mode' : 'Add Mask (m)'}
+                  Add Mask (m)
                 </button>
               </div>
 
@@ -382,10 +380,16 @@ export function ReviewPage({
                 )}
               </h4>
               <button
-                onClick={actions.toggleMaskMode}
-                className="text-xs text-purple-400 hover:text-purple-300"
+                onClick={openMaskEditorModal}
+                disabled={!afterSrc}
+                className={cn(
+                  'text-xs',
+                  afterSrc
+                    ? 'text-purple-400 hover:text-purple-300'
+                    : 'text-muted-foreground cursor-not-allowed'
+                )}
               >
-                {state.maskModeEnabled ? 'Done' : '+ Add'}
+                + Add
               </button>
             </div>
             {currentReviewData.masks.length === 0 ? (
@@ -450,6 +454,16 @@ export function ReviewPage({
           index={currentReviewData.masks.findIndex(m => m.id === previewMask.id)}
           screenshotSrc={afterSrc}
           onClose={() => setPreviewMask(null)}
+        />
+      )}
+
+      {/* Mask editor modal */}
+      {showMaskEditorModal && afterSrc && (
+        <MaskEditorModal
+          imageSrc={afterSrc}
+          masks={currentReviewData.masks}
+          onMasksChange={handleMaskEditorMasksChange}
+          onClose={() => setShowMaskEditorModal(false)}
         />
       )}
     </div>
@@ -829,6 +843,81 @@ function MaskPreviewModal({ mask, index, screenshotSrc, onClose }: MaskPreviewMo
           <p className="text-xs text-muted-foreground/60 mt-2 font-mono">
             Position: {mask.x.toFixed(1)}%, {mask.y.toFixed(1)}% | Size: {mask.width.toFixed(1)}% x {mask.height.toFixed(1)}%
           </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Mask editor modal - opens a larger view for drawing masks
+interface MaskEditorModalProps {
+  imageSrc: string;
+  masks: Mask[];
+  onMasksChange: (masks: Mask[]) => void;
+  onClose: () => void;
+}
+
+function MaskEditorModal({ imageSrc, masks, onMasksChange, onClose }: MaskEditorModalProps) {
+  // Close on escape key (only when not in the middle of drawing)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't close if typing in a textarea/input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/80" onClick={onClose} />
+
+      {/* Modal content */}
+      <div className="relative bg-background rounded-lg shadow-2xl max-w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold text-lg">Add Mask</h3>
+            <span className="text-sm text-muted-foreground">
+              Draw a rectangle around the region you want to mask
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted transition-colors"
+            aria-label="Close"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Mask editor content */}
+        <div className="flex-1 overflow-auto p-4">
+          <MaskEditor
+            imageSrc={imageSrc}
+            masks={masks}
+            onMasksChange={onMasksChange}
+            enabled={true}
+          />
+        </div>
+
+        {/* Footer with instructions */}
+        <div className="px-4 py-3 border-t bg-muted/30 text-sm text-muted-foreground">
+          <div className="flex items-center gap-4">
+            <span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Click + Drag</kbd> to draw a mask</span>
+            <span><kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Esc</kbd> to close</span>
+            {masks.length > 0 && (
+              <span className="ml-auto text-purple-400">{masks.length} mask{masks.length !== 1 ? 's' : ''} defined</span>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -11,6 +11,8 @@ export interface ScreenshotViewerProps {
   onModeChange: (mode: ViewMode) => void;
 }
 
+type PreviewImage = { src: string; label: string } | null;
+
 export function ScreenshotViewer({
   beforeSrc,
   afterSrc,
@@ -20,6 +22,8 @@ export function ScreenshotViewer({
 }: ScreenshotViewerProps) {
   // Note: View mode keyboard shortcuts (1-4) are handled by parent via useReviewKeyboardShortcuts
   // Parent calls onModeChange when shortcuts are triggered
+
+  const [previewImage, setPreviewImage] = useState<PreviewImage>(null);
 
   return (
     <div className="flex flex-col h-full">
@@ -56,18 +60,40 @@ export function ScreenshotViewer({
       {/* Viewer content */}
       <div className="flex-1 overflow-auto p-4">
         {mode === 'side-by-side' && (
-          <SideBySideView before={beforeSrc} after={afterSrc} />
+          <SideBySideView
+            before={beforeSrc}
+            after={afterSrc}
+            onImageClick={(src, label) => setPreviewImage({ src, label })}
+          />
         )}
         {mode === 'slider' && (
           <SliderView before={beforeSrc} after={afterSrc} />
         )}
         {mode === 'blink' && (
-          <BlinkView before={beforeSrc} after={afterSrc} />
+          <BlinkView
+            before={beforeSrc}
+            after={afterSrc}
+            onImageClick={(src, label) => setPreviewImage({ src, label })}
+          />
         )}
         {mode === 'diff' && diffSrc && (
-          <DiffView baseline={beforeSrc} actual={afterSrc} diff={diffSrc} />
+          <DiffView
+            baseline={beforeSrc}
+            actual={afterSrc}
+            diff={diffSrc}
+            onImageClick={(src, label) => setPreviewImage({ src, label })}
+          />
         )}
       </div>
+
+      {/* Image preview modal */}
+      {previewImage && (
+        <ImagePreviewModal
+          src={previewImage.src}
+          label={previewImage.label}
+          onClose={() => setPreviewImage(null)}
+        />
+      )}
     </div>
   );
 }
@@ -98,9 +124,10 @@ function ModeButton({ active, onClick, children }: ModeButtonProps) {
 interface SideBySideViewProps {
   before: string;
   after: string;
+  onImageClick?: (src: string, label: string) => void;
 }
 
-function SideBySideView({ before, after }: SideBySideViewProps) {
+function SideBySideView({ before, after, onImageClick }: SideBySideViewProps) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
@@ -109,7 +136,11 @@ function SideBySideView({ before, after }: SideBySideViewProps) {
           Before Action
           <span className="text-muted-foreground font-normal">(screenshot taken before this step ran)</span>
         </div>
-        <img src={before} alt="Screenshot before action" className="border rounded w-full" />
+        <ClickableImage
+          src={before}
+          alt="Screenshot before action"
+          onClick={() => onImageClick?.(before, 'Before Action')}
+        />
       </div>
       <div>
         <div className="text-sm font-medium mb-2 flex items-center gap-2">
@@ -117,7 +148,11 @@ function SideBySideView({ before, after }: SideBySideViewProps) {
           After Action
           <span className="text-muted-foreground font-normal">(screenshot taken after this step ran)</span>
         </div>
-        <img src={after} alt="Screenshot after action" className="border rounded w-full" />
+        <ClickableImage
+          src={after}
+          alt="Screenshot after action"
+          onClick={() => onImageClick?.(after, 'After Action')}
+        />
       </div>
     </div>
   );
@@ -229,9 +264,10 @@ function SliderView({ before, after }: SliderViewProps) {
 interface BlinkViewProps {
   before: string;
   after: string;
+  onImageClick?: (src: string, label: string) => void;
 }
 
-function BlinkView({ before, after }: BlinkViewProps) {
+function BlinkView({ before, after, onImageClick }: BlinkViewProps) {
   const [showBefore, setShowBefore] = useState(true);
 
   useEffect(() => {
@@ -239,10 +275,18 @@ function BlinkView({ before, after }: BlinkViewProps) {
     return () => clearInterval(interval);
   }, []);
 
+  const currentSrc = showBefore ? before : after;
+  const currentLabel = showBefore ? 'Before Action' : 'After Action';
+
   return (
     <div className="relative">
-      <img src={showBefore ? before : after} alt={showBefore ? "Before action" : "After action"} className="w-full" />
-      <div className="absolute top-2 left-2 px-2 py-1 bg-black/50 text-white text-sm rounded">
+      <ClickableImage
+        src={currentSrc}
+        alt={showBefore ? "Before action" : "After action"}
+        onClick={() => onImageClick?.(currentSrc, currentLabel)}
+        className="w-full"
+      />
+      <div className="absolute top-2 left-2 px-2 py-1 bg-black/50 text-white text-sm rounded pointer-events-none">
         {showBefore ? 'Before' : 'After'}
       </div>
     </div>
@@ -253,22 +297,121 @@ interface DiffViewProps {
   baseline: string;
   actual: string;
   diff: string;
+  onImageClick?: (src: string, label: string) => void;
 }
 
-function DiffView({ baseline, actual, diff }: DiffViewProps) {
+function DiffView({ baseline, actual, diff, onImageClick }: DiffViewProps) {
   return (
     <div className="grid grid-cols-3 gap-4">
       <div>
         <div className="text-sm font-medium mb-2">Baseline</div>
-        <img src={baseline} alt="Baseline screenshot" className="border rounded w-full" />
+        <ClickableImage
+          src={baseline}
+          alt="Baseline screenshot"
+          onClick={() => onImageClick?.(baseline, 'Baseline')}
+        />
       </div>
       <div>
         <div className="text-sm font-medium mb-2">Actual</div>
-        <img src={actual} alt="Actual screenshot" className="border rounded w-full" />
+        <ClickableImage
+          src={actual}
+          alt="Actual screenshot"
+          onClick={() => onImageClick?.(actual, 'Actual')}
+        />
       </div>
       <div>
         <div className="text-sm font-medium mb-2">Diff</div>
-        <img src={diff} alt="Diff image showing changes" className="border rounded w-full" />
+        <ClickableImage
+          src={diff}
+          alt="Diff image showing changes"
+          onClick={() => onImageClick?.(diff, 'Diff')}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Clickable image component with hover indicator
+interface ClickableImageProps {
+  src: string;
+  alt: string;
+  onClick?: () => void;
+  className?: string;
+}
+
+function ClickableImage({ src, alt, onClick, className }: ClickableImageProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'relative block border rounded overflow-hidden group cursor-zoom-in transition-all hover:ring-2 hover:ring-primary/50',
+        className
+      )}
+    >
+      <img src={src} alt={alt} className="w-full" />
+      {/* Zoom indicator on hover */}
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35M11 8v6M8 11h6" />
+          </svg>
+          Click to enlarge
+        </div>
+      </div>
+    </button>
+  );
+}
+
+// Image preview modal component
+interface ImagePreviewModalProps {
+  src: string;
+  label: string;
+  onClose: () => void;
+}
+
+function ImagePreviewModal({ src, label, onClose }: ImagePreviewModalProps) {
+  // Close on escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-8">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/80" onClick={onClose} />
+
+      {/* Modal content */}
+      <div className="relative max-w-[90vw] max-h-[90vh] overflow-auto">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+          aria-label="Close preview"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* Label */}
+        <div className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-black/60 text-white text-sm font-medium rounded">
+          {label}
+        </div>
+
+        {/* Image */}
+        <img
+          src={src}
+          alt={label}
+          className="max-w-full max-h-[90vh] rounded-lg shadow-2xl"
+        />
       </div>
     </div>
   );
