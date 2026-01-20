@@ -56,74 +56,129 @@ Do NOT create `.spec.ts` files expecting `@playwright/test` runner to work.
 
 ## BrowserFlow Workflow
 
-BrowserFlow is an AI-driven E2E testing tool for **Claude to use** when generating reliable Playwright tests. It follows an **explore → review → generate** workflow where Claude explores the application, humans approve the results, and then Claude generates deterministic test code.
+BrowserFlow is a tool **designed for AI agents to use** when creating reliable Playwright tests. It provides structured browser exploration with human feedback, optimized for LLM context and understanding.
+
+**Core Philosophy:** The `bf` CLI outputs structured data for AI consumption. The AI agent drives the workflow, humans provide feedback, and together they iterate until the test is ready.
 
 ### When to Use BrowserFlow
 
 Use BrowserFlow when:
 - Creating E2E tests for completed features (tracked in beads)
 - You need to test user workflows in the browser
-- You want to generate Playwright tests from exploration artifacts
+- You want human feedback on AI-driven browser exploration
+- Building tests that require iteration and refinement
 
 ### The Workflow
 
 ```
-1. EXPLORE (bf explore) → AI explores app, records evidence
-2. REVIEW (bf review)   → Human approves/rejects steps in web UI
-3. GENERATE (Claude)    → Claude reads artifacts and generates Playwright test
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+│   SPEC   │───▶│ EXPLORE  │───▶│  REVIEW  │───▶│ ITERATE  │───▶ Generate Test
+│  (YAML)  │    │   (AI)   │    │ (Human)  │    │(AI+Human)│
+└──────────┘    └──────────┘    └──────────┘    └──────────┘
+     │               │               │               │
+     ▼               ▼               ▼               ▼
+ Intent-first   Screenshots +   Comments +      Diagnose &
+ what to test   DOM snapshots   mask highlights fix issues
 ```
 
-### Step 1: Exploration
+**Key insight:** The iteration loop is central. The AI reads exploration + review feedback, diagnoses issues, suggests fixes, and the cycle repeats until the workflow is validated.
+
+### Step 1: Write Spec
+
+Create `specs/<name>.yaml` describing **what** the user does (intent), not **how** to click elements:
+
+```yaml
+version: 2
+name: add-todo
+description: Test adding a new todo item
+
+steps:
+  - id: fill-todo
+    action: fill
+    target: { testid: todo-input }
+    value: "Buy groceries"
+
+  - id: click-add
+    action: click
+    target: { testid: add-button }
+
+  - id: verify-added
+    action: verify_state
+    checks:
+      - text_contains: "Buy groceries"
+```
+
+See the BrowserFlow skill for full spec schema documentation.
+
+### Step 2: Exploration
 
 ```bash
 bf explore --spec <spec-name> --url <target-url>
 ```
 
 **What it does:**
-- Reads `specs/<spec-name>.yaml` (intent-first spec describing user actions)
-- Launches browser and executes steps with AI assistance
+- Reads `specs/<spec-name>.yaml`
+- Launches browser and executes steps
 - Captures screenshots before/after each step
-- Records locator candidates, accessibility info, DOM snapshots
-- Saves to `.browserflow/explorations/exp-<timestamp>/`
+- Records DOM snapshots with element refs for Playwright locators
+- Saves to `.browserflow/explorations/exp-<id>/`
 
 **Output artifacts:**
 ```
 .browserflow/explorations/exp-<id>/
 ├── exploration.json    # Full step execution data
-├── screenshots/        # Before/after images
-├── console.log         # Browser console output
-└── network.json        # Network request summary
+├── screenshots/        # Before/after images per step
+└── review.json         # Human feedback (after review)
 ```
 
-### Step 2: Review
+### Step 3: Review (Human Feedback)
 
 ```bash
-bf review
+bf review --exploration <exp-id>
 ```
 
-Opens web UI (http://localhost:3000) where human:
-- Views screenshots for each step
-- Approves or rejects steps
-- Locks preferred locators (test ID > role > CSS)
-- Adds assertions and visual baselines
+Opens web UI (http://localhost:8190) where human provides **free-form feedback**:
+- Views before/after screenshots for each step
+- Adds **comments** explaining what looks wrong or needs attention
+- Draws **masks** (highlights) on screenshots to point at specific issues
+- Writes overall notes summarizing findings
+
+**Important:** Masks are for **highlighting issues**, not hiding dynamic content. Each mask requires a comment explaining what's wrong.
 
 **Output:**
-- `.browserflow/explorations/<exp-id>/review.json` - Approval data, selected locators, feedback
+- `.browserflow/explorations/<exp-id>/review.json` - Comments, masks, overall feedback
 
-### Step 3: Generate Test (Claude's Job)
+### Step 4: Iterate (AI + Human)
 
-After review is complete, **Claude should generate the Playwright test** by:
+This is the core loop:
 
-1. **Reading the exploration artifact** (`.browserflow/explorations/<exp-id>/exploration.json`)
-2. **Reading the review artifact** (`.browserflow/explorations/<exp-id>/review.json`)
-3. **Using the generator package** to create Playwright test code
+1. **AI reads artifacts:**
+   - `exploration.json` - What happened during exploration
+   - `review.json` - Human feedback (comments, mask highlights)
+   - Screenshots - Visual evidence
 
-**Example:**
+2. **AI diagnoses issues:**
+   - Check `exploration.errors` for failures
+   - Read human comments and mask highlights
+   - Identify what needs fixing in the app or spec
+
+3. **Fix and re-explore:**
+   - If app bug: fix the code, re-run exploration
+   - If spec issue: update spec, re-run exploration
+   - If locator issue: note for test generation
+
+4. **Human reviews again** until satisfied
+
+### Step 5: Generate Test
+
+When the workflow is validated, the AI generates a Playwright test by:
+
+1. **Reading the exploration artifact** - Step data, locators, screenshots
+2. **Reading the review feedback** - Human comments, any locked locators
+3. **Writing Playwright test code** - Using the locators and assertions from exploration
+
 ```typescript
-import { generateTest } from '@browserflow/generator';
-import { readFile, writeFile } from 'node:fs/promises';
-
-// Read artifacts
+// Example: Read artifacts and generate test
 const exploration = JSON.parse(
   await readFile('.browserflow/explorations/<exp-id>/exploration.json', 'utf-8')
 );
@@ -131,12 +186,11 @@ const review = JSON.parse(
   await readFile('.browserflow/explorations/<exp-id>/review.json', 'utf-8')
 );
 
-// Generate test
-const result = generateTest(exploration, { includeVisualChecks: true }, review);
-
-// Write to file
-await writeFile(`e2e/tests/${specName}.spec.ts`, result.content);
+// Use exploration.steps[].snapshotAfter.refs for Playwright locators
+// e.g., refs.e1.selector = "getByRole('button', { name: 'Add' })"
 ```
+
+The AI writes the test directly - there's no separate `bf codify` command. The test generation happens in conversation, informed by exploration data and human feedback.
 
 ### Understanding exploration.json
 
@@ -189,53 +243,56 @@ The exploration artifact contains step-by-step execution data:
 
 ### Understanding review.json
 
-The review artifact contains human approval decisions:
+The review artifact contains human feedback (comments and mask highlights):
 
 ```typescript
 {
   exploration_id: string;
-  reviewer?: string;
-  started_at: string;       // ISO8601
-  updated_at: string;
-  verdict: 'approved' | 'rejected' | 'pending';
+  spec_name: string;
+  reviewed_at: string;          // ISO8601 timestamp
+  overall_comment?: string;     // Summary of findings
 
-  steps: [                  // Per-step review decisions
+  steps: [                      // Per-step feedback
     {
       step_index: number;
-      approved: boolean;
-      selected_locator?: string;  // Locked-in locator to use
-      feedback?: string;          // Human notes/corrections
-      add_assertion?: boolean;
-      visual_baseline?: boolean;
+      status: 'reviewed' | 'pending';  // Has feedback vs no feedback yet
+      comment?: string;                // Human notes for this step
+      masks?: [                        // Highlighted regions (issues to address)
+        {
+          id: string;
+          x: number;            // Percentage (0-100)
+          y: number;
+          width: number;
+          height: number;
+          reason: string;       // Required comment explaining the highlight
+        }
+      ];
+      locked_locator?: string;  // Preferred locator if human selected one
     }
-  ],
-
-  overall_notes?: string;
-  submitted_at?: string;
+  ]
 }
 ```
 
-### How Claude Should Use These Artifacts
+**Note:** There's no `approved`/`rejected` status. The review is free-form feedback. Steps with comments or masks are marked `reviewed`; steps without feedback are `pending`.
 
-**When generating tests:**
-
-1. **Read both files** to understand what was explored and what was approved
-2. **Use approved steps only** (check `review.steps[].approved`)
-3. **Prefer selected locators** from review over exploration candidates
-4. **Include assertions** where `add_assertion: true`
-5. **Add visual checks** where `visual_baseline: true`
-6. **Use the generator package** - it handles the complexity of:
-   - Stable locator chains with fallbacks
-   - Deterministic waits (no fixed sleeps)
-   - Proper Playwright test structure
-   - Type-safe code generation
+### How to Use These Artifacts
 
 **When diagnosing issues:**
 
-- **Check `exploration.errors`** - Array of error messages from exploration
-- **Check `steps[].execution.error`** - Per-step failure details
-- **Check `overallStatus`** - Overall exploration result
-- **Read review feedback** - Human notes on what went wrong or needs adjustment
+1. **Read `exploration.errors`** - Array of error messages from exploration
+2. **Read `review.overall_comment`** - Human's summary of findings
+3. **For each step, check:**
+   - `exploration.steps[].execution.error` - Step failure details
+   - `review.steps[].comment` - Human feedback on what's wrong
+   - `review.steps[].masks` - Visual highlights pointing at issues
+
+**When generating tests:**
+
+1. **Read both files** to understand what was explored and what feedback was given
+2. **Use locators from exploration** - `steps[].snapshotAfter.refs` has Playwright selectors
+3. **Prefer `locked_locator`** if human selected one in review
+4. **Address mask highlights** - These point at issues that may need fixes before test generation
+5. **Write deterministic Playwright code** - No AI calls at runtime, no fixed sleeps
 
 ### Example: Finding Latest Exploration for a Spec
 
@@ -273,9 +330,10 @@ When working on E2E tests for completed features:
 2. **Read feature bead:** `bd show <bead-id>`
 3. **Write spec YAML** describing user flow (see BrowserFlow skill for spec format)
 4. **Run exploration:** `bf explore --spec <name> --url <url>`
-5. **Review in browser:** `bf review` (human approves/rejects)
-6. **Generate test** (Claude reads artifacts and uses generator)
-7. **Commit results:**
+5. **Review in browser:** `bf review` (human provides feedback via comments + masks)
+6. **Iterate:** AI reads feedback, fixes issues, re-explores if needed
+7. **Generate test** when workflow is validated (AI writes Playwright code from artifacts)
+8. **Commit results:**
    ```bash
    git add specs/ e2e/tests/
    git commit -m "test: add E2E spec and test for <feature> (bf-xxx)"
@@ -285,4 +343,3 @@ When working on E2E tests for completed features:
 
 - **BrowserFlow skill** (`~/.claude/skills/browserflow-testing.md`) - Detailed workflow guidance, spec format, best practices
 - **Spec YAML format** - Intent-first test specifications (v2 schema)
-- **Generator package** (`@browserflow/generator`) - Test code generation utilities
