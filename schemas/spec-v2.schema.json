@@ -56,7 +56,13 @@
                   "custom"
                 ]
               },
+              "name": {
+                "type": "string"
+              },
               "description": {
+                "type": "string"
+              },
+              "why": {
                 "type": "string"
               },
               "target": {
@@ -125,9 +131,6 @@
                   "attached",
                   "detached"
                 ]
-              },
-              "name": {
-                "type": "string"
               },
               "timeout": {
                 "type": "string"

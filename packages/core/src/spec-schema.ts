@@ -84,7 +84,9 @@ export const stepSchema = z
   .object({
     id: z.string().min(1, 'Step id is required'),
     action: actionTypeSchema,
+    name: z.string().optional(), // 1-4 word display name for UI
     description: z.string().optional(),
+    why: z.string().optional(), // Rationale for this step
     target: targetSchema.optional(),
     // Navigate action
     url: z.string().optional(),
@@ -99,8 +101,6 @@ export const stepSchema = z
     duration: durationSchema.optional(),
     // Expect action
     state: stateSchema.optional(),
-    // Screenshot action
-    name: z.string().optional(),
     // Timeout override
     timeout: durationSchema.optional(),
     // Keyboard
@@ -295,8 +295,11 @@ export const specStepSchema = stepSchema;
 
 // Legacy SpecStep type (for backwards compatibility with generator)
 export interface LegacySpecStep {
+  id?: string;
   action: ActionType;
+  name?: string; // 1-4 word display name for UI
   description?: string;
+  why?: string; // Rationale for this step
   // Click/fill/type - query-based targeting
   query?: string;
   // Navigate action
@@ -312,8 +315,7 @@ export interface LegacySpecStep {
   option?: string;
   // Check action
   checked?: boolean;
-  // Screenshot action
-  name?: string;
+  // Screenshot action - uses top-level 'name' field
   mask?: Array<{
     selector?: string;
     region?: { x: number; y: number; width: number; height: number };

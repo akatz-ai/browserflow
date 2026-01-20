@@ -31,6 +31,7 @@ export function getMaskColor(index: number) {
 export interface ReviewPageProps {
   explorationId: string;
   specName: string;
+  specDescription?: string;
   steps: ExplorationStep[];
   baseScreenshotPath?: string;
   initialReviewData?: Record<number, StepReviewData>;
@@ -40,6 +41,7 @@ export interface ReviewPageProps {
 export function ReviewPage({
   explorationId,
   specName,
+  specDescription,
   steps,
   baseScreenshotPath = '',
   initialReviewData,
@@ -128,6 +130,7 @@ export function ReviewPage({
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
       <header className="border-b">
+        {/* Top row: title + exploration ID | progress + actions */}
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold">{specName}</h1>
@@ -167,6 +170,15 @@ export function ReviewPage({
             </button>
           </div>
         </div>
+
+        {/* Spec description row (full width, below title row) */}
+        {specDescription && (
+          <div className="px-4 pb-3">
+            <p className="text-sm text-muted-foreground">
+              {specDescription}
+            </p>
+          </div>
+        )}
 
         {/* Overall Comment */}
         <div className="px-4 py-3 border-t bg-muted/30">
@@ -291,10 +303,20 @@ export function ReviewPage({
           {/* What's Being Tested */}
           <div className="p-4 border-b">
             <h4 className="text-sm font-semibold text-cyan-400 mb-2">What's Being Tested</h4>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
               {getStepDescription(currentStep)}
             </p>
           </div>
+
+          {/* Why (only if provided in spec) */}
+          {getStepWhy(currentStep) && (
+            <div className="p-4 border-b">
+              <h4 className="text-sm font-semibold text-green-400 mb-2">Why</h4>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {getStepWhy(currentStep)}
+              </p>
+            </div>
+          )}
 
           {/* Test Actions */}
           <div className="p-4 border-b">
@@ -438,35 +460,45 @@ export function ReviewPage({
 function formatStepTitle(step?: ExplorationStep): string {
   if (!step) return 'Unknown Step';
 
-  const description = step.spec_action?.description || '';
-  const action = step.spec_action?.action || '';
+  const specAction = step.spec_action as { name?: string; id?: string; action?: string };
 
-  // If there's a description, use it as title (convert to Title Case)
-  if (description) {
-    const formatted = description
+  // Priority: name > prettified id > action type
+  if (specAction.name) {
+    return specAction.name;
+  }
+
+  if (specAction.id) {
+    return specAction.id
       .replace(/[-_]/g, ' ')
       .replace(/\b\w/g, (c: string) => c.toUpperCase());
-    return formatted;
   }
 
   // Fallback to action type
+  const action = specAction.action || '';
   return action.charAt(0).toUpperCase() + action.slice(1);
 }
 
 function getStepDescription(step?: ExplorationStep): string {
   if (!step) return 'No step selected';
 
-  const action = (step.spec_action?.action || '') as string;
-  const spec = step.spec_action as unknown as Record<string, unknown>;
+  const specAction = step.spec_action as { description?: string; action?: string; url?: string; value?: string };
+
+  // Use description from spec if provided
+  if (specAction.description) {
+    return specAction.description;
+  }
+
+  // Fallback to auto-generated descriptions
+  const action = (specAction.action || '') as string;
 
   switch (action) {
     case 'navigate':
-      return `Navigate to ${spec.url || 'the target URL'}. This loads a new page or route in the browser.`;
+      return `Navigate to ${specAction.url || 'the target URL'}. This loads a new page or route in the browser.`;
     case 'click':
       return `Click on a target element. This simulates a user clicking the specified UI component.`;
     case 'fill':
     case 'type':
-      return `Enter text into an input field. The value "${spec.value || ''}" will be typed into the target element.`;
+      return `Enter text into an input field. The value "${specAction.value || ''}" will be typed into the target element.`;
     case 'screenshot':
       return `Capture a screenshot of the current page state. This creates a visual record for comparison.`;
     case 'expect':
@@ -556,6 +588,12 @@ function getVerificationPoints(step?: ExplorationStep): string[] {
   }
 
   return points;
+}
+
+function getStepWhy(step?: ExplorationStep): string | undefined {
+  if (!step) return undefined;
+  const specAction = step.spec_action as { why?: string };
+  return specAction.why;
 }
 
 function formatLocator(locator: ExplorationStep['execution']['locator']): string {

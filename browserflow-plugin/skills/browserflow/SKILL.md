@@ -63,8 +63,8 @@ steps:
       - url_contains: "/dashboard"
 EOF
 
-# 3. Explore
-bf explore --spec user-login --url http://localhost:3000
+# 3. Explore (use --adapter claude-cli for Claude Code auth)
+bf explore --spec user-login --url http://localhost:3000 --adapter claude-cli
 
 # 4. Review (human provides feedback)
 bf review
@@ -79,7 +79,7 @@ SPEC (yaml) → EXPLORE (AI) → REVIEW (human) → ITERATE → Generate Test
 ```
 
 1. **Spec**: Describe user intent in YAML (`specs/<name>.yaml`)
-2. **Explore**: `bf explore --spec <name> --url <url>` captures screenshots + DOM
+2. **Explore**: `bf explore --spec <name> --url <url> --adapter claude-cli` captures screenshots + DOM
 3. **Review**: `bf review` opens UI for human feedback (comments, mask highlights)
 4. **Iterate**: AI reads artifacts, fixes issues, re-explores until validated
 5. **Generate**: AI writes Playwright test from exploration data
@@ -87,14 +87,16 @@ SPEC (yaml) → EXPLORE (AI) → REVIEW (human) → ITERATE → Generate Test
 ## Commands
 
 ```bash
-bf explore --spec <name> --url <url> [--adapter claude|claude-cli]
+bf explore --spec <name> --url <url> --adapter claude-cli
 bf review [--exploration <exp-id>]
 bf list                    # List explorations
 ```
 
-**Adapters:**
-- `claude` (default): Requires `ANTHROPIC_API_KEY`
-- `claude-cli`: Uses existing Claude Code auth
+**Adapters (must be specified via `--adapter` flag):**
+- `claude` (default): Requires `ANTHROPIC_API_KEY` environment variable
+- `claude-cli` (recommended): Uses existing Claude Code authentication - no API key needed
+
+**Important:** The `--adapter` flag must be passed on the command line. The `adapter` setting in `browserflow.yaml` is not currently read by the CLI. Always use `--adapter claude-cli` when running from Claude Code.
 
 ## Spec Format
 
@@ -107,7 +109,10 @@ description: What this tests
 
 steps:
   - id: unique-step-id
+    name: Short Name           # 1-4 word display name (shown in UI)
     action: click | fill | navigate | wait | expect | verify_state
+    description: What this step does
+    why: Rationale for this step
     target:                    # Element targeting (pick one)
       query: "natural language description"
       testid: "data-testid"

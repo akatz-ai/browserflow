@@ -210,6 +210,7 @@ function ReviewRoute() {
     <ReviewPage
       explorationId={data.id}
       specName={data.specName}
+      specDescription={data.specDescription}
       steps={data.steps}
       baseScreenshotPath={baseScreenshotPath}
       onSubmit={handleSubmit}

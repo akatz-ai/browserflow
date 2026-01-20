@@ -25,8 +25,11 @@ BrowserFlow specs describe **what** the user does (intent), not implementation d
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `id` | Yes | Unique identifier (snake_case) |
+| `id` | Yes | Unique identifier (kebab-case) |
 | `action` | Yes | Action type |
+| `name` | No | Short display name (1-4 words) for UI |
+| `description` | No | What this step does |
+| `why` | No | Rationale for this step |
 | `target` | Depends | Element target (for interactions) |
 | `value` | No | Input value (for `fill`, `type`) |
 | `checks` | No | Assertions (for `expect`, `verify_state`) |
@@ -231,34 +234,52 @@ preconditions:
 
 steps:
   - id: add-to-cart
+    name: Add To Cart
     action: click
     target:
       query: "Add to Cart button on first product"
+    description: Click the Add to Cart button on the first product in the list.
+    why: Core e-commerce action - validates product can be added to cart.
     screenshot: { before: true, after: true }
 
   - id: wait-cart-update
+    name: Wait For Feedback
     action: wait
     for: text
     text: "Added to cart"
     timeout: 3s
+    description: Wait for the "Added to cart" confirmation message.
+    why: Confirms the cart update was successful before proceeding.
 
   - id: go-to-cart
+    name: Go To Cart
     action: navigate
     to: /cart
+    description: Navigate to the shopping cart page.
+    why: User needs to review cart before checkout.
 
   - id: verify-item-in-cart
+    name: Verify Cart Item
     action: expect
     checks:
       - visible: { target: { css: ".cart-item" } }
       - text_contains: "1 item"
+    description: Verify the cart shows the added item.
+    why: Ensures cart state is correct before checkout.
 
   - id: proceed-to-checkout
+    name: Proceed To Checkout
     action: click
     target: { text: "Checkout" }
+    description: Click the Checkout button to start the checkout flow.
+    why: Entry point to the checkout process.
 
   - id: verify-checkout-page
+    name: Verify Checkout Page
     action: expect
     checks:
       - url_contains: "/checkout"
       - visible: { target: { testid: "order-summary" } }
+    description: Verify checkout page loaded with order summary.
+    why: Confirms checkout page is accessible and displays order details.
 ```

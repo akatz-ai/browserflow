@@ -48,6 +48,7 @@ export interface OutcomeCheck {
 export interface ExplorationOutput {
   spec: string;
   specPath: string;
+  specDescription?: string; // Spec-level description for UI display
   explorationId: string;
   timestamp: string;
   durationMs: number;
@@ -97,8 +98,9 @@ export interface SpecStep {
   timeout?: string | number;
   duration?: string | number;
   checks?: VerifyCheck[];
-  name?: string;
+  name?: string; // 1-4 word display name for UI
   description?: string;
+  why?: string; // Rationale for this step
   option?: string;
   checked?: boolean;
   scrollX?: number;

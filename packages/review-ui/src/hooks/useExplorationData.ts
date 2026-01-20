@@ -4,6 +4,7 @@ import type { ExplorationStep } from '@browserflow/core';
 export interface ExplorationData {
   id: string;
   specName: string;
+  specDescription?: string;
   specPath: string;
   exploredAt: string;
   duration: number;
@@ -85,6 +86,7 @@ function normalizeExplorationData(json: unknown, sourcePath: string): Exploratio
     return {
       id: obj.explorationId as string || 'unknown',
       specName: obj.spec as string || 'Unknown Spec',
+      specDescription: obj.specDescription as string | undefined,
       specPath: obj.specPath as string || sourcePath,
       exploredAt: obj.timestamp as string || new Date().toISOString(),
       duration: obj.durationMs as number || 0,

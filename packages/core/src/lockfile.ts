@@ -153,6 +153,7 @@ export async function writeLockfile(runDir: string, lockfile: Lockfile): Promise
 export interface ExplorationReport {
   spec: string;
   spec_path: string;
+  spec_description?: string; // Spec-level description for UI display
   exploration_id: string;
   timestamp: string;
   duration_ms: number;

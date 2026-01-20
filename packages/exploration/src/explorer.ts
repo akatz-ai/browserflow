@@ -219,6 +219,7 @@ export class Explorer {
       return {
         spec: spec.name,
         specPath: options.specPath ?? `specs/${spec.name}.yaml`,
+        specDescription: spec.description,
         explorationId,
         timestamp: new Date().toISOString(),
         durationMs: Date.now() - startTime,

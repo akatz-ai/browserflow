@@ -58,6 +58,29 @@ interface StepThumbnailProps {
   getScreenshotUrl?: (path?: string) => string;
 }
 
+/**
+ * Get display name for a step
+ * Priority: name > prettified id > fallback to "Step N"
+ */
+function getStepDisplayName(step: ExplorationStep): string {
+  const specAction = step.spec_action as { name?: string; id?: string };
+
+  // Use name if provided
+  if (specAction.name) {
+    return specAction.name;
+  }
+
+  // Prettify id (e.g., "open-comfygit-panel" -> "Open Comfygit Panel")
+  if (specAction.id) {
+    return specAction.id
+      .replace(/[-_]/g, ' ')
+      .replace(/\b\w/g, (c: string) => c.toUpperCase());
+  }
+
+  // Fallback
+  return `Step ${step.step_index}`;
+}
+
 function StepThumbnail({
   step,
   index,
@@ -69,6 +92,8 @@ function StepThumbnail({
   const thumbnailSrc = getScreenshotUrl
     ? getScreenshotUrl(step.screenshots?.after)
     : step.screenshots?.after;
+
+  const displayName = getStepDisplayName(step);
 
   return (
     <button
@@ -84,7 +109,7 @@ function StepThumbnail({
 
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium truncate">
-            {index + 1}. Step {step.step_index}
+            {index + 1}. {displayName}
           </div>
           <div className="text-xs text-muted-foreground truncate">
             {step.spec_action.action}
