@@ -50,13 +50,13 @@ function HomePage() {
             <h2 className="font-semibold mb-2">Keyboard Shortcuts</h2>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div><kbd className="px-1 bg-muted rounded">j/k</kbd> Navigate steps</div>
-              <div><kbd className="px-1 bg-muted rounded">a</kbd> Approve</div>
-              <div><kbd className="px-1 bg-muted rounded">r</kbd> Reject</div>
               <div><kbd className="px-1 bg-muted rounded">m</kbd> Add mask</div>
               <div><kbd className="px-1 bg-muted rounded">l</kbd> Lock locator</div>
               <div><kbd className="px-1 bg-muted rounded">c</kbd> Comment</div>
               <div><kbd className="px-1 bg-muted rounded">1-4</kbd> View modes</div>
               <div><kbd className="px-1 bg-muted rounded">Ctrl+S</kbd> Submit</div>
+              <div><kbd className="px-1 bg-muted rounded">?</kbd> Help</div>
+              <div><kbd className="px-1 bg-muted rounded">Esc</kbd> Close/cancel</div>
             </div>
           </div>
         </div>
