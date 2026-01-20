@@ -1,8 +1,11 @@
 // @browserflow/exploration - Explorer tests
-import { describe, it, expect, beforeEach, spyOn } from 'bun:test';
+import { describe, it, expect, beforeEach, spyOn, afterEach } from 'bun:test';
 import { Explorer } from './explorer';
 import type { BrowserSession } from './explorer';
 import type { AIAdapter, Spec } from './adapters/types';
+import { promises as fs } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
 
 // Mock browser session
 function createMockBrowserSession(options: Partial<BrowserSession> = {}): BrowserSession {
@@ -236,6 +239,82 @@ describe('Explorer', () => {
 
       const clickStep = result.steps.find((s) => s.specAction.action === 'click');
       expect(clickStep?.execution.elementRef).toBeDefined();
+    });
+  });
+
+  describe('screenshot file persistence', () => {
+    let testDir: string;
+
+    beforeEach(async () => {
+      // Create temporary test directory
+      testDir = join(tmpdir(), `bf-test-${Date.now()}`);
+      await fs.mkdir(testDir, { recursive: true });
+    });
+
+    afterEach(async () => {
+      // Clean up test directory
+      try {
+        await fs.rm(testDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
+    });
+
+    it('should write screenshot files to disk for each step', async () => {
+      const explorerWithTempDir = new Explorer({
+        adapter: mockAdapter,
+        browser: mockBrowser,
+        outputDir: testDir,
+      });
+
+      const result = await explorerWithTempDir.runExploration(sampleSpec, 'http://localhost:3000');
+
+      // Check that screenshot directory was created
+      const screenshotDir = join(testDir, 'screenshots');
+      const dirExists = await fs.stat(screenshotDir).then(() => true).catch(() => false);
+      expect(dirExists).toBe(true);
+
+      // Check that screenshot files exist for each step
+      for (let i = 0; i < result.steps.length; i++) {
+        const step = result.steps[i];
+
+        // Verify screenshot paths are recorded
+        expect(step.screenshots.before).toBeDefined();
+        expect(step.screenshots.after).toBeDefined();
+
+        // Verify actual files exist
+        const beforePath = join(testDir, step.screenshots.before);
+        const afterPath = join(testDir, step.screenshots.after);
+
+        const beforeExists = await fs.stat(beforePath).then(() => true).catch(() => false);
+        const afterExists = await fs.stat(afterPath).then(() => true).catch(() => false);
+
+        expect(beforeExists).toBe(true);
+        expect(afterExists).toBe(true);
+
+        // Verify files are not empty
+        const beforeSize = (await fs.stat(beforePath)).size;
+        const afterSize = (await fs.stat(afterPath)).size;
+
+        expect(beforeSize).toBeGreaterThan(0);
+        expect(afterSize).toBeGreaterThan(0);
+      }
+    });
+
+    it('should store relative paths in exploration output', async () => {
+      const explorerWithTempDir = new Explorer({
+        adapter: mockAdapter,
+        browser: mockBrowser,
+        outputDir: testDir,
+      });
+
+      const result = await explorerWithTempDir.runExploration(sampleSpec, 'http://localhost:3000');
+
+      // Paths should be relative (start with "screenshots/")
+      for (const step of result.steps) {
+        expect(step.screenshots.before).toMatch(/^screenshots\//);
+        expect(step.screenshots.after).toMatch(/^screenshots\//);
+      }
     });
   });
 });
