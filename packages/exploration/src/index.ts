@@ -7,6 +7,8 @@ export type { ExplorerConfig, BrowserSession, BrowserLaunchOptions } from './exp
 // Adapters
 export { ClaudeAdapter } from './adapters/claude';
 export type { ClaudeAdapterConfig } from './adapters/claude';
+export { ClaudeCliAdapter } from './adapters/claude-cli';
+export type { ClaudeCliAdapterConfig } from './adapters/claude-cli';
 
 // Browser Session Adapters
 export { AgentBrowserSession, createBrowserSession } from './agent-browser-session';

@@ -144,8 +144,12 @@ See the BrowserFlow skill for full spec schema documentation.
 ### Step 2: Exploration
 
 ```bash
-bf explore --spec <spec-name> --url <target-url>
+bf explore --spec <spec-name> --url <target-url> [--adapter <adapter>]
 ```
+
+**Adapter options:**
+- `claude` (default) - Uses Anthropic SDK, requires `ANTHROPIC_API_KEY`
+- `claude-cli` - Uses `claude` CLI, leverages your existing Claude Code auth
 
 **What it does:**
 - Reads `specs/<spec-name>.yaml`
@@ -376,6 +380,84 @@ When working on E2E tests for completed features:
    git add specs/ e2e/tests/
    git commit -m "test: add E2E spec and test for <feature> (bf-xxx)"
    ```
+
+---
+
+## AI Adapters
+
+BrowserFlow uses AI adapters for element finding during exploration. The adapter system is pluggable, allowing you to use different LLM backends.
+
+### Available Adapters
+
+| Adapter | Flag | Requirements | Best For |
+|---------|------|--------------|----------|
+| `claude` | `--adapter claude` (default) | `ANTHROPIC_API_KEY` env var | Direct API access |
+| `claude-cli` | `--adapter claude-cli` | `claude` CLI installed | Using existing Claude Code auth |
+
+### Usage
+
+```bash
+# Use SDK adapter (default) - requires ANTHROPIC_API_KEY
+bf explore --spec add-todo --url http://localhost:3001
+
+# Use CLI adapter - uses your claude CLI authentication
+bf explore --spec add-todo --url http://localhost:3001 --adapter claude-cli
+```
+
+### Creating Custom Adapters
+
+Adapters implement the `AIAdapter` interface from `@browserflow/exploration`:
+
+```typescript
+import type { AIAdapter, EnhancedSnapshot, FindElementResult, ExploreParams, ExplorationOutput } from '@browserflow/exploration';
+
+export class MyCustomAdapter implements AIAdapter {
+  readonly name = 'my-adapter';
+
+  async findElement(query: string, snapshot: EnhancedSnapshot): Promise<FindElementResult> {
+    // Use your LLM to find the element matching the query
+    // snapshot.tree = accessibility tree string
+    // snapshot.refs = available element references (e.g., {e1: {...}, e2: {...}})
+
+    return {
+      ref: 'e1',           // Element ref or 'NOT_FOUND'
+      confidence: 0.95,    // 0-1 confidence score
+      reasoning: 'Found button with matching name'
+    };
+  }
+
+  async explore(params: ExploreParams): Promise<ExplorationOutput> {
+    // Return minimal structure - Explorer orchestrates the full exploration
+    return {
+      spec: params.spec.name,
+      specPath: params.specPath,
+      explorationId: `exp-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      durationMs: 0,
+      browser: params.browser ?? 'chromium',
+      viewport: params.viewport ?? { width: 1280, height: 720 },
+      baseUrl: params.baseUrl,
+      steps: [],
+      outcomeChecks: [],
+      overallStatus: 'completed',
+      errors: [],
+    };
+  }
+}
+```
+
+### Adapter Files Location
+
+Built-in adapters are in `packages/exploration/src/adapters/`:
+- `claude.ts` - Anthropic SDK adapter
+- `claude-cli.ts` - Claude CLI adapter
+- `types.ts` - Interface definitions
+
+To add a new adapter:
+1. Create `packages/exploration/src/adapters/my-adapter.ts`
+2. Export from `packages/exploration/src/adapters/index.ts`
+3. Export from `packages/exploration/src/index.ts`
+4. Add to CLI's adapter factory in `packages/cli/src/commands/explore.ts`
 
 ### See Also
 

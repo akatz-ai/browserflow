@@ -9,8 +9,8 @@ import { join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { specSchema } from '@browserflow/core';
 import type { BrowserFlowSpec } from '@browserflow/core';
-import { Explorer, ClaudeAdapter, createBrowserSession } from '@browserflow/exploration';
-import type { ExplorationOutput } from '@browserflow/exploration';
+import { Explorer, ClaudeAdapter, ClaudeCliAdapter, createBrowserSession } from '@browserflow/exploration';
+import type { ExplorationOutput, AIAdapter } from '@browserflow/exploration';
 import { colors } from '../ui/colors.js';
 
 /**
@@ -65,6 +65,20 @@ async function writeExplorationOutput(result: ExplorationOutput): Promise<void> 
   );
 }
 
+/**
+ * Create an AI adapter based on the adapter name
+ */
+function createAdapter(adapterName: string): AIAdapter {
+  switch (adapterName) {
+    case 'claude':
+      return new ClaudeAdapter();
+    case 'claude-cli':
+      return new ClaudeCliAdapter();
+    default:
+      throw new Error(`Unknown adapter: ${adapterName}. Available: claude, claude-cli`);
+  }
+}
+
 export function exploreCommand(): Command {
   const cmd = new Command('explore');
 
@@ -73,7 +87,7 @@ export function exploreCommand(): Command {
     .requiredOption('--spec <name>', 'Spec name to explore')
     .option('--url <url>', 'Base URL (overrides config)')
     .option('--headed', 'Run browser in headed mode')
-    .option('--adapter <name>', 'AI adapter (default: claude)', 'claude')
+    .option('--adapter <name>', 'AI adapter: claude (SDK), claude-cli (CLI)', 'claude')
     .action(async (options) => {
       try {
         // 1. Load and validate spec
@@ -84,7 +98,7 @@ export function exploreCommand(): Command {
 
         // 3. Create browser session and AI adapter
         const browser = createBrowserSession();
-        const adapter = new ClaudeAdapter();
+        const adapter = createAdapter(options.adapter);
 
         // 4. Create explorer
         const explorer = new Explorer({

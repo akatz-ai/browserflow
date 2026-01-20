@@ -1,5 +1,14 @@
 // @browserflow/exploration - Main exploration orchestrator
 
+// Debug flag - set via BF_DEBUG=1 environment variable
+const DEBUG = process.env.BF_DEBUG === '1';
+
+function debug(...args: unknown[]): void {
+  if (DEBUG) {
+    console.error('[explorer]', ...args);
+  }
+}
+
 import type {
   AIAdapter,
   ExploreParams,
@@ -184,6 +193,13 @@ export class Explorer {
       const fullUrl = startPage.startsWith('http') ? startPage : `${baseUrl}${startPage}`;
       await this.browser.navigate(fullUrl);
 
+      // Wait briefly for JS to initialize (configurable via spec timeout)
+      // Note: For JS-heavy apps, consider adding explicit wait steps in the spec
+      if (this.browser.waitForTimeout) {
+        debug('Waiting 1s for page to stabilize...');
+        await this.browser.waitForTimeout(1000);
+      }
+
       // 3. Execute each step
       for (let i = 0; i < spec.steps.length; i++) {
         const specStep = spec.steps[i];
@@ -241,26 +257,37 @@ export class Explorer {
     const screenshotAfterPath = `screenshots/step-${String(stepIndex).padStart(2, '0')}-after.png`;
 
     try {
+      debug(`Step ${stepIndex}: ${step.action} - starting`);
+
       // Take before screenshot and save to disk
+      debug(`Step ${stepIndex}: capturing before screenshot`);
       await this.evidenceCollector.captureScreenshot(
         explorationId,
         `step-${String(stepIndex).padStart(2, '0')}-before`
       );
 
       // Get snapshot for element finding
+      debug(`Step ${stepIndex}: getting before snapshot`);
       snapshotBefore = await this.browser!.getSnapshot({ interactive: true });
+      debug(`Step ${stepIndex}: snapshot has ${Object.keys(snapshotBefore.refs).length} refs, tree: ${snapshotBefore.tree.slice(0, 100)}...`);
 
       // Execute the step
+      debug(`Step ${stepIndex}: executing action ${step.action}`);
+      const startAction = Date.now();
       const execution = await this.executeAction(step, snapshotBefore, baseUrl);
+      debug(`Step ${stepIndex}: action completed in ${Date.now() - startAction}ms, status: ${execution.status}`);
 
       // Take after screenshot and save to disk
+      debug(`Step ${stepIndex}: capturing after screenshot`);
       await this.evidenceCollector.captureScreenshot(
         explorationId,
         `step-${String(stepIndex).padStart(2, '0')}-after`
       );
 
       // Get after snapshot
+      debug(`Step ${stepIndex}: getting after snapshot`);
       snapshotAfter = await this.browser!.getSnapshot({ interactive: true });
+      debug(`Step ${stepIndex}: after snapshot has ${Object.keys(snapshotAfter.refs).length} refs`);
 
       return {
         stepIndex,
