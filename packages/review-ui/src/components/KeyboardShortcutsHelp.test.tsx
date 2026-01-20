@@ -125,7 +125,7 @@ describe('KeyboardShortcutsHelp', () => {
     render(<KeyboardShortcutsHelp {...defaultProps} />);
 
     expect(screen.getByText(/navigation/i)).toBeInTheDocument();
-    expect(screen.getByText(/review actions/i)).toBeInTheDocument();
+    expect(screen.getByText(/ui actions/i)).toBeInTheDocument();
     expect(screen.getByText(/view modes/i)).toBeInTheDocument();
   });
 

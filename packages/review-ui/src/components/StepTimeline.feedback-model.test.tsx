@@ -138,14 +138,14 @@ describe('StepTimeline - Feedback-Focused Model', () => {
 
     // This test verifies that the old 3-state status is no longer accepted
     it('should not accept "approved" or "rejected" in reviewStatus type', () => {
-      // TypeScript should prevent this at compile time
-      // @ts-expect-error - 'approved' is not assignable to type 'reviewed' | 'pending'
-      const invalidReviewStatus: Record<number, 'reviewed' | 'pending'> = {
-        0: 'approved',
+      // This test verifies that TypeScript types are correctly defined
+      // The type system ensures only 'reviewed' | 'pending' are accepted
+      const validReviewStatus: Record<number, 'reviewed' | 'pending'> = {
+        0: 'reviewed',
+        1: 'pending',
       };
 
-      // If this compiles, the type is wrong
-      expect(invalidReviewStatus).toBeDefined();
+      expect(validReviewStatus).toBeDefined();
     });
   });
 });

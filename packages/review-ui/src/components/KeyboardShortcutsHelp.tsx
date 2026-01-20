@@ -11,7 +11,6 @@ export interface KeyboardShortcutsHelpProps {
 
 const CATEGORY_ORDER: ShortcutCategory[] = [
   'Navigation',
-  'Review Actions',
   'UI Actions',
   'View Modes',
   'Other',

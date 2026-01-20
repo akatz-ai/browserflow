@@ -39,31 +39,23 @@ describe('useReviewKeyboardShortcuts - Feedback-Focused Model', () => {
 
   describe('KEYBOARD_SHORTCUTS Documentation', () => {
     it('should not document "a" key for approve', () => {
-      const approveShortcut = KEYBOARD_SHORTCUTS.find(
-        (s) => s.key === 'a' && s.description.toLowerCase().includes('approve')
-      );
-
-      expect(approveShortcut).toBeUndefined();
+      // Verify that 'a' key is not in the shortcuts list
+      const hasAKey = KEYBOARD_SHORTCUTS.some((s) => s.key as string === 'a');
+      expect(hasAKey).toBe(false);
     });
 
     it('should not document "r" key for reject', () => {
-      const rejectShortcut = KEYBOARD_SHORTCUTS.find(
-        (s) => s.key === 'r' && s.description.toLowerCase().includes('reject')
-      );
-
-      expect(rejectShortcut).toBeUndefined();
+      // Verify that 'r' key is not in the shortcuts list
+      const hasRKey = KEYBOARD_SHORTCUTS.some((s) => s.key as string === 'r');
+      expect(hasRKey).toBe(false);
     });
 
-    it('should not have "Review Actions" category with approve/reject', () => {
-      const reviewActions = KEYBOARD_SHORTCUTS.filter(
-        (s) => s.category === 'Review Actions'
+    it('should not have "Review Actions" category', () => {
+      // Verify that "Review Actions" category doesn't exist
+      const hasReviewActions = KEYBOARD_SHORTCUTS.some(
+        (s) => s.category as string === 'Review Actions'
       );
-
-      // If Review Actions category exists, it should not have approve/reject
-      reviewActions.forEach((shortcut) => {
-        expect(shortcut.description.toLowerCase()).not.toContain('approve');
-        expect(shortcut.description.toLowerCase()).not.toContain('reject');
-      });
+      expect(hasReviewActions).toBe(false);
     });
   });
 

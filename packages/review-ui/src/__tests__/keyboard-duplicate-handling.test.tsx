@@ -30,9 +30,7 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
         const handlers: ReviewHandlers = {
           nextStep: vi.fn(),
           prevStep: vi.fn(),
-          approveStep: vi.fn(),
-          rejectStep: vi.fn(),
-          addMask, // This is what should be called from the hook
+                    addMask, // This is what should be called from the hook
           focusLocatorPicker: vi.fn(),
           addAssertion: vi.fn(),
           focusComment: vi.fn(),
@@ -72,9 +70,7 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
         const handlers: ReviewHandlers = {
           nextStep: vi.fn(),
           prevStep: vi.fn(),
-          approveStep: vi.fn(),
-          rejectStep: vi.fn(),
-          addMask,
+                    addMask,
           focusLocatorPicker: vi.fn(),
           addAssertion: vi.fn(),
           focusComment: vi.fn(),
@@ -116,9 +112,7 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
         const handlers: ReviewHandlers = {
           nextStep: vi.fn(),
           prevStep: vi.fn(),
-          approveStep: vi.fn(),
-          rejectStep: vi.fn(),
-          addMask: vi.fn(),
+                    addMask: vi.fn(),
           focusLocatorPicker, // This is what should be called
           addAssertion: vi.fn(),
           focusComment: vi.fn(),
@@ -157,9 +151,7 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
         const handlers: ReviewHandlers = {
           nextStep: vi.fn(),
           prevStep: vi.fn(),
-          approveStep: vi.fn(),
-          rejectStep: vi.fn(),
-          addMask: vi.fn(),
+                    addMask: vi.fn(),
           focusLocatorPicker,
           addAssertion: vi.fn(),
           focusComment: vi.fn(),
@@ -200,9 +192,7 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
         const handlers: ReviewHandlers = {
           nextStep: vi.fn(),
           prevStep: vi.fn(),
-          approveStep: vi.fn(),
-          rejectStep: vi.fn(),
-          addMask: vi.fn(),
+                    addMask: vi.fn(),
           focusLocatorPicker: vi.fn(),
           addAssertion: vi.fn(),
           focusComment: vi.fn(),
@@ -244,9 +234,7 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
         const handlers: ReviewHandlers = {
           nextStep: vi.fn(),
           prevStep: vi.fn(),
-          approveStep: vi.fn(),
-          rejectStep: vi.fn(),
-          addMask: vi.fn(),
+                    addMask: vi.fn(),
           focusLocatorPicker: vi.fn(),
           addAssertion: vi.fn(),
           focusComment: vi.fn(),
@@ -294,9 +282,7 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
         const handlers: ReviewHandlers = {
           nextStep: vi.fn(),
           prevStep: vi.fn(),
-          approveStep: vi.fn(),
-          rejectStep: vi.fn(),
-          addMask: vi.fn(),
+                    addMask: vi.fn(),
           focusLocatorPicker: vi.fn(),
           addAssertion: vi.fn(),
           focusComment: vi.fn(),
@@ -341,9 +327,7 @@ describe('Keyboard Shortcut Duplicate Handling', () => {
         const handlers: ReviewHandlers = {
           nextStep: vi.fn(),
           prevStep: vi.fn(),
-          approveStep: vi.fn(),
-          rejectStep: vi.fn(),
-          addMask,
+                    addMask,
           focusLocatorPicker,
           addAssertion: vi.fn(),
           focusComment: vi.fn(),
