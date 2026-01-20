@@ -242,4 +242,112 @@ describe('listExplorations', () => {
 
 // Server API endpoint tests are covered by the integration of the individual functions
 // (loadExploration, saveReview, listExplorations) which are called by the server routes.
-// Full server integration tests could be added here if needed.
+
+describe('serveStaticUI', () => {
+  let testDir: string;
+
+  beforeEach(async () => {
+    testDir = join(tmpdir(), `bf-review-test-${Date.now()}`);
+
+    // Create review-ui dist directory in test project root
+    const distDir = join(testDir, 'packages', 'review-ui', 'dist');
+    await mkdir(join(distDir, 'assets'), { recursive: true });
+
+    // Create mock index.html
+    await writeFile(
+      join(distDir, 'index.html'),
+      '<!DOCTYPE html><html><head><title>Review UI</title></head><body><div id="root"></div></body></html>'
+    );
+
+    // Create mock CSS file
+    await writeFile(
+      join(distDir, 'assets', 'index-abc123.css'),
+      'body { margin: 0; }'
+    );
+
+    // Create mock JS file
+    await writeFile(
+      join(distDir, 'assets', 'index-xyz789.js'),
+      'console.log("Review UI loaded");'
+    );
+  });
+
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true });
+  });
+
+  test('serves index.html for root path', async () => {
+    const { serveStaticUI } = await import('./review.js');
+    const response = await serveStaticUI('/', testDir);
+    const html = await response.text();
+
+    // Should serve the actual React app index.html, not placeholder
+    expect(response.status).toBe(200);
+    expect(html).toContain('<div id="root"></div>');
+    expect(html).not.toContain('Review UI will be served here');
+    expect(response.headers.get('content-type')).toContain('text/html');
+  });
+
+  test('serves index.html for /index.html', async () => {
+    const { serveStaticUI } = await import('./review.js');
+    const response = await serveStaticUI('/index.html', testDir);
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain('<div id="root"></div>');
+  });
+
+  test('serves CSS files with correct MIME type', async () => {
+    const { serveStaticUI } = await import('./review.js');
+    const response = await serveStaticUI('/assets/index-abc123.css', testDir);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/css');
+
+    const css = await response.text();
+    expect(css).toContain('body { margin: 0; }');
+  });
+
+  test('serves JS files with correct MIME type', async () => {
+    const { serveStaticUI } = await import('./review.js');
+    const response = await serveStaticUI('/assets/index-xyz789.js', testDir);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('javascript');
+
+    const js = await response.text();
+    expect(js).toContain('Review UI loaded');
+  });
+
+  test('serves index.html for SPA routes (non-API, non-static)', async () => {
+    const { serveStaticUI } = await import('./review.js');
+
+    // Test various SPA routes that should fallback to index.html
+    const routes = ['/review', '/review/exp-test', '/settings'];
+
+    for (const route of routes) {
+      const response = await serveStaticUI(route, testDir);
+      const html = await response.text();
+
+      expect(response.status).toBe(200);
+      expect(html).toContain('<div id="root"></div>');
+      expect(response.headers.get('content-type')).toContain('text/html');
+    }
+  });
+
+  test('returns 404 for non-existent static files in assets/', async () => {
+    const { serveStaticUI } = await import('./review.js');
+    const response = await serveStaticUI('/assets/nonexistent.js', testDir);
+
+    expect(response.status).toBe(404);
+  });
+});
+
+// Screenshot serving tests
+// Note: Screenshot serving is implemented as part of the review server's fetch handler
+// and will be tested via integration tests or e2e tests.
+// The implementation should:
+// 1. Serve files from .browserflow/explorations/{id}/screenshots/
+// 2. Use correct MIME types (image/png, image/jpeg)
+// 3. Return 404 for non-existent files
+// 4. Prevent directory traversal attacks
