@@ -84,8 +84,6 @@ export function ReviewPage({
   const keyboardHandlers: ReviewHandlers = {
     nextStep: actions.nextStep,
     prevStep: actions.prevStep,
-    approveStep: actions.approveStep,
-    rejectStep: actions.rejectStep,
     addMask: actions.toggleMaskMode,
     focusLocatorPicker: useCallback(() => {
       locatorPickerRef.current?.focus();
@@ -118,13 +116,10 @@ export function ReviewPage({
   });
 
   // Progress stats
-  const approvedCount = Object.values(state.reviewData).filter(
-    (r) => r.status === 'approved'
+  const reviewedCount = Object.values(state.reviewData).filter(
+    (r) => r.status === 'reviewed'
   ).length;
-  const rejectedCount = Object.values(state.reviewData).filter(
-    (r) => r.status === 'rejected'
-  ).length;
-  const pendingCount = steps.length - approvedCount - rejectedCount;
+  const totalCount = steps.length;
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -140,11 +135,9 @@ export function ReviewPage({
         <div className="flex items-center gap-4">
           {/* Progress */}
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-green-600">{approvedCount} approved</span>
+            <span className="text-cyan-600">{reviewedCount} reviewed</span>
             <span className="text-muted-foreground">•</span>
-            <span className="text-red-600">{rejectedCount} rejected</span>
-            <span className="text-muted-foreground">•</span>
-            <span className="text-yellow-600">{pendingCount} pending</span>
+            <span className="text-muted-foreground">{totalCount} total</span>
           </div>
 
           {/* Actions */}
@@ -245,19 +238,8 @@ export function ReviewPage({
                 </button>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={actions.rejectStep}
-                  className="px-4 py-2 text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 rounded-md transition-colors"
-                >
-                  Reject (r)
-                </button>
-                <button
-                  onClick={actions.approveStep}
-                  className="px-4 py-2 text-sm font-medium bg-green-100 text-green-700 hover:bg-green-200 rounded-md transition-colors"
-                >
-                  Approve (a)
-                </button>
+              <div className="text-sm text-muted-foreground">
+                Add comments or masks to mark steps as reviewed
               </div>
             </div>
           </div>
@@ -570,13 +552,12 @@ function formatLocator(locator: ExplorationStep['execution']['locator']): string
   return `${method}(${argStr})`;
 }
 
-function StatusBadge({ status }: { status: 'approved' | 'rejected' | 'pending' }) {
+function StatusBadge({ status }: { status: 'reviewed' | 'pending' }) {
   return (
     <span
       className={cn(
         'inline-flex px-2 py-0.5 text-xs font-medium rounded',
-        status === 'approved' && 'bg-green-100 text-green-700',
-        status === 'rejected' && 'bg-red-100 text-red-700',
+        status === 'reviewed' && 'bg-cyan-100 text-cyan-700',
         status === 'pending' && 'bg-yellow-100 text-yellow-700'
       )}
     >

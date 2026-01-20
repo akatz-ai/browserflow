@@ -4,7 +4,7 @@ import type { Mask } from '../components/MaskEditor';
 import type { ViewMode } from '../components/ScreenshotViewer';
 import type { LocatorCandidate } from '../components/LocatorPicker';
 
-export type StepReviewStatus = 'approved' | 'rejected' | 'pending';
+export type StepReviewStatus = 'reviewed' | 'pending';
 
 export interface StepReviewData {
   status: StepReviewStatus;
@@ -101,22 +101,19 @@ export function useReviewState({ steps, initialReviewData = {}, onSubmit }: UseR
     setCurrentStepIndex(stepIndex);
   }, []);
 
-  // Review actions
-  const approveStep = useCallback(() => {
-    updateStepReview(currentStepIndex, { status: 'approved' });
-    nextStep();
-  }, [currentStepIndex, updateStepReview, nextStep]);
-
-  const rejectStep = useCallback(() => {
-    updateStepReview(currentStepIndex, { status: 'rejected' });
-  }, [currentStepIndex, updateStepReview]);
+  // Review actions - removed approveStep and rejectStep
+  // Steps are now marked as reviewed automatically when comment or mask is added
 
   // Masks
   const updateMasks = useCallback(
     (masks: Mask[]) => {
-      updateStepReview(currentStepIndex, { masks });
+      // Mark step as reviewed if masks or comment exist
+      const currentData = reviewData[currentStepIndex];
+      const hasComment = currentData?.comment?.trim().length > 0;
+      const status = masks.length > 0 || hasComment ? 'reviewed' : 'pending';
+      updateStepReview(currentStepIndex, { masks, status });
     },
-    [currentStepIndex, updateStepReview]
+    [currentStepIndex, updateStepReview, reviewData]
   );
 
   const toggleMaskMode = useCallback(() => {
@@ -134,9 +131,13 @@ export function useReviewState({ steps, initialReviewData = {}, onSubmit }: UseR
   // Comment
   const updateComment = useCallback(
     (comment: string) => {
-      updateStepReview(currentStepIndex, { comment });
+      // Mark step as reviewed if comment or masks exist
+      const currentData = reviewData[currentStepIndex];
+      const hasMasks = (currentData?.masks?.length ?? 0) > 0;
+      const status = comment.trim().length > 0 || hasMasks ? 'reviewed' : 'pending';
+      updateStepReview(currentStepIndex, { comment, status });
     },
-    [currentStepIndex, updateStepReview]
+    [currentStepIndex, updateStepReview, reviewData]
   );
 
   // UI state
@@ -233,8 +234,6 @@ export function useReviewState({ steps, initialReviewData = {}, onSubmit }: UseR
       nextStep,
       prevStep,
       selectStep,
-      approveStep,
-      rejectStep,
       updateMasks,
       toggleMaskMode,
       lockLocator,

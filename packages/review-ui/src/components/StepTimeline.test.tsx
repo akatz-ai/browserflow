@@ -28,7 +28,7 @@ describe('StepTimeline', () => {
       createMockStep({ step_index: 2, spec_action: { action: 'fill', query: 'Username', value: 'test' } }),
     ],
     currentStepIndex: 0,
-    reviewStatus: {} as Record<number, 'approved' | 'rejected' | 'pending'>,
+    reviewStatus: {} as Record<number, 'reviewed' | 'pending'>,
     onSelectStep: vi.fn(),
   };
 
@@ -48,19 +48,19 @@ describe('StepTimeline', () => {
     expect(screen.getByText(/fill/i)).toBeInTheDocument();
   });
 
-  it('shows approval progress count', () => {
+  it('shows review progress count', () => {
     const propsWithReviews = {
       ...defaultProps,
       reviewStatus: {
-        0: 'approved' as const,
-        1: 'approved' as const,
+        0: 'reviewed' as const,
+        1: 'reviewed' as const,
         2: 'pending' as const,
       },
     };
 
     render(<StepTimeline {...propsWithReviews} />);
 
-    expect(screen.getByText(/2\s*\/\s*3/)).toBeInTheDocument();
+    expect(screen.getByText(/2\s*\/\s*3 reviewed/i)).toBeInTheDocument();
   });
 
   it('highlights the current step', () => {
@@ -87,8 +87,8 @@ describe('StepTimeline', () => {
     const propsWithReviews = {
       ...defaultProps,
       reviewStatus: {
-        0: 'approved' as const,
-        1: 'rejected' as const,
+        0: 'reviewed' as const,
+        1: 'reviewed' as const,
         2: 'pending' as const,
       },
     };
@@ -96,8 +96,8 @@ describe('StepTimeline', () => {
     render(<StepTimeline {...propsWithReviews} />);
 
     // Check for status indicator elements
-    expect(screen.getByTestId('status-approved-0')).toBeInTheDocument();
-    expect(screen.getByTestId('status-rejected-1')).toBeInTheDocument();
+    expect(screen.getByTestId('status-reviewed-0')).toBeInTheDocument();
+    expect(screen.getByTestId('status-reviewed-1')).toBeInTheDocument();
     expect(screen.getByTestId('status-pending-2')).toBeInTheDocument();
   });
 

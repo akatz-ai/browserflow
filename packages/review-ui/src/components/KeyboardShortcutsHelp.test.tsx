@@ -44,22 +44,6 @@ describe('KeyboardShortcutsHelp', () => {
     });
   });
 
-  describe('review action shortcuts', () => {
-    it('shows a shortcut for approve', () => {
-      render(<KeyboardShortcutsHelp {...defaultProps} />);
-
-      expect(screen.getByText(/approve/i)).toBeInTheDocument();
-      expect(screen.getByText(/^a$/)).toBeInTheDocument();
-    });
-
-    it('shows r shortcut for reject', () => {
-      render(<KeyboardShortcutsHelp {...defaultProps} />);
-
-      expect(screen.getByText(/reject/i)).toBeInTheDocument();
-      expect(screen.getByText(/^r$/)).toBeInTheDocument();
-    });
-  });
-
   describe('UI action shortcuts', () => {
     it('shows m shortcut for add mask', () => {
       render(<KeyboardShortcutsHelp {...defaultProps} />);

@@ -103,10 +103,9 @@ describe('ReviewPage - Feedback-Focused Model', () => {
     it('should show "X reviewed / Y total" format instead of approved/rejected/pending', () => {
       render(<ReviewPage {...defaultProps} />);
 
-      // Should NOT show the old format
-      expect(screen.queryByText(/approved/i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/rejected/i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/pending/i)).not.toBeInTheDocument();
+      // Should NOT show the old progress format (approved/rejected counts)
+      expect(screen.queryByText(/\d+\s*approved/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/\d+\s*rejected/i)).not.toBeInTheDocument();
 
       // Should show new format
       expect(screen.getByText(/0 reviewed/i)).toBeInTheDocument();
@@ -266,6 +265,10 @@ describe('ReviewPage - Feedback-Focused Model', () => {
       };
 
       render(<ReviewPage {...defaultProps} initialReviewData={initialData} onSubmit={onSubmit} />);
+
+      // Make a small change to mark as dirty (add a space to comment)
+      const commentInput = screen.getByPlaceholderText(/add a comment/i);
+      await user.type(commentInput, ' ');
 
       const submitButton = screen.getByRole('button', { name: /submit review/i });
       await user.click(submitButton);

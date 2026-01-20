@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 export interface StepTimelineProps {
   steps: ExplorationStep[];
   currentStepIndex: number;
-  reviewStatus: Record<number, 'approved' | 'rejected' | 'pending'>;
+  reviewStatus: Record<number, 'reviewed' | 'pending'>;
   onSelectStep: (stepIndex: number) => void;
 }
 
@@ -14,8 +14,8 @@ export function StepTimeline({
   reviewStatus,
   onSelectStep,
 }: StepTimelineProps) {
-  const approvedCount = Object.values(reviewStatus).filter(
-    (status) => status === 'approved'
+  const reviewedCount = Object.values(reviewStatus).filter(
+    (status) => status === 'reviewed'
   ).length;
 
   return (
@@ -23,7 +23,7 @@ export function StepTimeline({
       <div className="p-2 border-b">
         <h2 className="font-semibold">Steps</h2>
         <div className="text-sm text-muted-foreground">
-          {approvedCount} / {steps.length} approved
+          {reviewedCount} / {steps.length} reviewed
         </div>
       </div>
 
@@ -49,7 +49,7 @@ export function StepTimeline({
 interface StepThumbnailProps {
   step: ExplorationStep;
   index: number;
-  status: 'approved' | 'rejected' | 'pending';
+  status: 'reviewed' | 'pending';
   isSelected: boolean;
   onClick: () => void;
 }
@@ -95,24 +95,17 @@ function StepThumbnail({
 }
 
 interface StatusIconProps {
-  status: 'approved' | 'rejected' | 'pending';
+  status: 'reviewed' | 'pending';
   stepIndex: number;
 }
 
 function StatusIcon({ status, stepIndex }: StatusIconProps) {
   switch (status) {
-    case 'approved':
+    case 'reviewed':
       return (
         <CheckCircleIcon
-          className="h-4 w-4 text-green-500"
-          data-testid={`status-approved-${stepIndex}`}
-        />
-      );
-    case 'rejected':
-      return (
-        <XCircleIcon
-          className="h-4 w-4 text-red-500"
-          data-testid={`status-rejected-${stepIndex}`}
+          className="h-4 w-4 text-cyan-500"
+          data-testid={`status-reviewed-${stepIndex}`}
         />
       );
     case 'pending':

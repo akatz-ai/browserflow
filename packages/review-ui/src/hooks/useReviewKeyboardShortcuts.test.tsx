@@ -27,8 +27,6 @@ describe('useReviewKeyboardShortcuts', () => {
   const createMockHandlers = (): ReviewHandlers => ({
     nextStep: vi.fn(),
     prevStep: vi.fn(),
-    approveStep: vi.fn(),
-    rejectStep: vi.fn(),
     addMask: vi.fn(),
     focusLocatorPicker: vi.fn(),
     addAssertion: vi.fn(),
@@ -75,26 +73,6 @@ describe('useReviewKeyboardShortcuts', () => {
       act(() => fireKeyDown('ArrowUp'));
 
       expect(handlers.prevStep).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('review action shortcuts', () => {
-    it('calls approveStep when a is pressed', () => {
-      const handlers = createMockHandlers();
-      renderHook(() => useReviewKeyboardShortcuts(handlers));
-
-      act(() => fireKeyDown('a'));
-
-      expect(handlers.approveStep).toHaveBeenCalledTimes(1);
-    });
-
-    it('calls rejectStep when r is pressed', () => {
-      const handlers = createMockHandlers();
-      renderHook(() => useReviewKeyboardShortcuts(handlers));
-
-      act(() => fireKeyDown('r'));
-
-      expect(handlers.rejectStep).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -243,12 +221,12 @@ describe('useReviewKeyboardShortcuts', () => {
 
       act(() => {
         fireKeyDown('j');
-        fireKeyDown('a');
+        fireKeyDown('m');
         fireKeyDown('1');
       });
 
       expect(handlers.nextStep).not.toHaveBeenCalled();
-      expect(handlers.approveStep).not.toHaveBeenCalled();
+      expect(handlers.addMask).not.toHaveBeenCalled();
       expect(handlers.setViewMode).not.toHaveBeenCalled();
     });
 

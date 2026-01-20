@@ -4,8 +4,6 @@ import type { ViewMode } from '../components/ScreenshotViewer';
 export interface ReviewHandlers {
   nextStep: () => void;
   prevStep: () => void;
-  approveStep: () => void;
-  rejectStep: () => void;
   addMask: () => void;
   focusLocatorPicker: () => void;
   addAssertion: () => void;
@@ -44,18 +42,6 @@ export function useReviewKeyboardShortcuts(
   });
   useHotkeys('up', handlers.prevStep, {
     enabled,
-    enableOnFormTags: false,
-  });
-
-  // Review actions
-  useHotkeys('a', handlers.approveStep, {
-    enabled,
-    description: 'Approve current step',
-    enableOnFormTags: false,
-  });
-  useHotkeys('r', handlers.rejectStep, {
-    enabled,
-    description: 'Reject current step',
     enableOnFormTags: false,
   });
 
@@ -137,10 +123,6 @@ export const KEYBOARD_SHORTCUTS = [
   // Navigation
   { category: 'Navigation', key: 'j / ↓', description: 'Next step' },
   { category: 'Navigation', key: 'k / ↑', description: 'Previous step' },
-
-  // Review actions
-  { category: 'Review Actions', key: 'a', description: 'Approve current step' },
-  { category: 'Review Actions', key: 'r', description: 'Reject current step' },
 
   // UI actions
   { category: 'UI Actions', key: 'm', description: 'Add mask' },
