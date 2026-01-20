@@ -57,38 +57,84 @@ export async function listExplorations(cwd: string = process.cwd()): Promise<str
 }
 
 /**
+ * Get MIME type based on file extension
+ */
+function getMimeType(pathname: string): string {
+  const ext = pathname.split('.').pop()?.toLowerCase();
+
+  const mimeTypes: Record<string, string> = {
+    'html': 'text/html',
+    'css': 'text/css',
+    'js': 'application/javascript',
+    'json': 'application/json',
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'gif': 'image/gif',
+    'svg': 'image/svg+xml',
+    'ico': 'image/x-icon',
+    'woff': 'font/woff',
+    'woff2': 'font/woff2',
+    'ttf': 'font/ttf',
+  };
+
+  return mimeTypes[ext || ''] || 'application/octet-stream';
+}
+
+/**
  * Serve static files from review-ui dist
  * @internal Exported for testing
  */
 export async function serveStaticUI(pathname: string, cwd: string = process.cwd()): Promise<Response> {
-  // For now, return a simple HTML page
-  // In production, this would serve from packages/review-ui/dist
-  if (pathname === '/' || pathname === '/index.html') {
-    return new Response(
-      `<!DOCTYPE html>
-<html>
-<head>
-  <title>BrowserFlow Review</title>
-  <meta charset="utf-8">
-</head>
-<body>
-  <h1>BrowserFlow Review Server</h1>
-  <p>Review UI will be served here.</p>
-  <p>For now, use the API endpoints:</p>
-  <ul>
-    <li>GET /api/exploration?id=exp-123 - Load exploration data</li>
-    <li>GET /api/exploration - List all explorations</li>
-    <li>POST /api/reviews/:id - Submit review</li>
-  </ul>
-</body>
-</html>`,
-      {
-        headers: { 'Content-Type': 'text/html' },
-      }
-    );
-  }
+  const distDir = join(cwd, 'packages', 'review-ui', 'dist');
 
-  return new Response('Not Found', { status: 404 });
+  try {
+    // Serve index.html for root path
+    if (pathname === '/' || pathname === '/index.html') {
+      const indexPath = join(distDir, 'index.html');
+      const content = await readFile(indexPath, 'utf-8');
+      return new Response(content, {
+        headers: { 'Content-Type': 'text/html' },
+      });
+    }
+
+    // Try to serve static file from dist
+    // Remove leading slash from pathname
+    const filePath = join(distDir, pathname.slice(1));
+
+    // Check if file exists and is within distDir (prevent directory traversal)
+    if (!filePath.startsWith(distDir)) {
+      return new Response('Not Found', { status: 404 });
+    }
+
+    try {
+      const content = await readFile(filePath);
+      const mimeType = getMimeType(pathname);
+
+      return new Response(content, {
+        headers: { 'Content-Type': mimeType },
+      });
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException;
+
+      // If file not found and it's not an /assets/ request, fallback to index.html for SPA routing
+      if (err.code === 'ENOENT' && !pathname.startsWith('/assets/')) {
+        const indexPath = join(distDir, 'index.html');
+        const content = await readFile(indexPath, 'utf-8');
+        return new Response(content, {
+          headers: { 'Content-Type': 'text/html' },
+        });
+      }
+
+      // Return 404 for non-existent files in /assets/
+      return new Response('Not Found', { status: 404 });
+    }
+  } catch (error) {
+    // If dist directory doesn't exist, return error
+    return new Response('Review UI not built. Run: cd packages/review-ui && bun run build', {
+      status: 500
+    });
+  }
 }
 
 /**
@@ -194,8 +240,56 @@ export function reviewCommand(): Command {
               }
             }
 
+            // Serve screenshots from explorations
+            if (url.pathname.startsWith('/api/screenshots/')) {
+              // Path format: /api/screenshots/{exp-id}/{filename}
+              const pathParts = url.pathname.split('/').filter(Boolean);
+
+              if (pathParts.length >= 4) {
+                const expId = pathParts[2];
+                const filename = pathParts.slice(3).join('/');
+
+                // Prevent directory traversal
+                if (filename.includes('..') || expId.includes('..')) {
+                  return new Response('Forbidden', { status: 403 });
+                }
+
+                const screenshotPath = join(
+                  cwd,
+                  '.browserflow',
+                  'explorations',
+                  expId,
+                  'screenshots',
+                  filename
+                );
+
+                // Ensure path is within the expected directory
+                const expectedBase = join(cwd, '.browserflow', 'explorations', expId, 'screenshots');
+                if (!screenshotPath.startsWith(expectedBase)) {
+                  return new Response('Forbidden', { status: 403 });
+                }
+
+                try {
+                  const content = await readFile(screenshotPath);
+                  const mimeType = getMimeType(filename);
+
+                  return new Response(content, {
+                    headers: { 'Content-Type': mimeType },
+                  });
+                } catch (error) {
+                  const err = error as NodeJS.ErrnoException;
+                  if (err.code === 'ENOENT') {
+                    return new Response('Screenshot not found', { status: 404 });
+                  }
+                  throw error;
+                }
+              }
+
+              return new Response('Invalid screenshot path', { status: 400 });
+            }
+
             // Serve static review UI
-            return serveStaticUI(url.pathname);
+            return serveStaticUI(url.pathname, cwd);
           },
         });
 
