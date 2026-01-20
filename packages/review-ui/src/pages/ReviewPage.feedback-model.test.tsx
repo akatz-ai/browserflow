@@ -243,7 +243,8 @@ describe('ReviewPage - Feedback-Focused Model', () => {
             status: 'reviewed',
             comment: 'This looks good',
           }),
-        })
+        }),
+        '' // overallComment (empty in this test)
       );
     });
 
