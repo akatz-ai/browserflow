@@ -220,8 +220,52 @@ export function reviewCommand(): Command {
               }
 
               try {
-                const reviewData = await req.json();
+                const contentType = req.headers.get('content-type') || '';
+                let reviewData: unknown;
+                const screenshotBlobs: Map<string, Blob> = new Map();
+
+                if (contentType.includes('multipart/form-data')) {
+                  // Parse multipart form data
+                  const formData = await req.formData();
+
+                  // Extract review JSON
+                  const reviewDataStr = formData.get('review_data');
+                  if (typeof reviewDataStr === 'string') {
+                    reviewData = JSON.parse(reviewDataStr);
+                  } else {
+                    throw new Error('Missing review_data in form submission');
+                  }
+
+                  // Extract screenshot blobs (step-N-review files)
+                  for (const [key, value] of formData.entries()) {
+                    if (key.startsWith('step-') && key.endsWith('-review') && value instanceof Blob) {
+                      screenshotBlobs.set(key, value);
+                    }
+                  }
+                } else {
+                  // Backwards compatibility: plain JSON
+                  reviewData = await req.json();
+                }
+
+                // Save review.json
                 const reviewPath = await saveReview(id, reviewData, cwd);
+
+                // Save annotated screenshots if any
+                if (screenshotBlobs.size > 0) {
+                  const screenshotsDir = join(cwd, '.browserflow', 'explorations', id, 'screenshots');
+
+                  for (const [key, blob] of screenshotBlobs) {
+                    // Extract step index from key (e.g., "step-2-review" -> "02")
+                    const match = key.match(/^step-(\d+)-review$/);
+                    if (match) {
+                      const stepIndex = match[1];
+                      const paddedIndex = stepIndex.padStart(2, '0');
+                      const filename = `step-${paddedIndex}-review.png`;
+                      const buffer = Buffer.from(await blob.arrayBuffer());
+                      await writeFile(join(screenshotsDir, filename), buffer);
+                    }
+                  }
+                }
 
                 return Response.json(
                   { success: true },

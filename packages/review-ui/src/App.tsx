@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom'
 import { Toaster, toast } from 'react-hot-toast';
 import { ReviewPage } from './pages/ReviewPage';
 import { useExplorationData } from './hooks/useExplorationData';
+import { captureAnnotatedScreenshot } from './lib/captureAnnotatedScreenshot';
 import type { StepReviewData } from './hooks/useReviewState';
 
 export function App() {
@@ -107,32 +108,94 @@ function ReviewRoute() {
   const handleSubmit = async (reviewData: Record<number, StepReviewData>, overallComment: string) => {
     setSubmitting(true);
     try {
+      // Helper to build screenshot URL (matching ReviewPage logic)
+      const getScreenshotUrl = (path?: string): string => {
+        if (!path) return '';
+        if (path.startsWith('http') || path.startsWith('/')) return path;
+        const cleanPath = path.startsWith('screenshots/') ? path.slice('screenshots/'.length) : path;
+        return baseScreenshotPath ? `${baseScreenshotPath}/${cleanPath}` : path;
+      };
+
+      // Build the review JSON and track which steps have masks
+      const stepsWithMasks: Array<{ stepIndex: number; screenshotUrl: string; masks: StepReviewData['masks'] }> = [];
+
       const reviewJson = {
         exploration_id: data.id,
         spec_name: data.specName,
         reviewed_at: new Date().toISOString(),
         overall_comment: overallComment || undefined,
-        steps: Object.entries(reviewData).map(([stepIndex, stepData]) => ({
-          step_index: parseInt(stepIndex, 10),
-          status: stepData.status,
-          comment: stepData.comment || undefined,
-          masks: stepData.masks.length > 0 ? stepData.masks : undefined,
-          locked_locator: stepData.lockedLocator || undefined,
-        })),
+        steps: Object.entries(reviewData).map(([stepIndex, stepData]) => {
+          const idx = parseInt(stepIndex, 10);
+          const step = data.steps.find(s => s.step_index === idx);
+
+          // Track steps with masks for annotated screenshot capture
+          if (stepData.masks.length > 0 && step?.screenshots?.after) {
+            stepsWithMasks.push({
+              stepIndex: idx,
+              screenshotUrl: getScreenshotUrl(step.screenshots.after),
+              masks: stepData.masks,
+            });
+          }
+
+          return {
+            step_index: idx,
+            status: stepData.status,
+            comment: stepData.comment || undefined,
+            masks: stepData.masks.length > 0 ? stepData.masks : undefined,
+            locked_locator: stepData.lockedLocator || undefined,
+            // Will add annotated_screenshot below if masks exist
+            annotated_screenshot: stepData.masks.length > 0
+              ? `screenshots/step-${String(idx).padStart(2, '0')}-review.png`
+              : undefined,
+          };
+        }),
       };
 
-      const response = await fetch(`/api/reviews/${data.id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(reviewJson),
-      });
+      // If there are steps with masks, use multipart/form-data
+      if (stepsWithMasks.length > 0) {
+        const formData = new FormData();
+        formData.append('review_data', JSON.stringify(reviewJson));
 
-      if (!response.ok) {
-        throw new Error(`Save failed: ${response.statusText}`);
+        // Capture annotated screenshots for each step with masks
+        for (const { stepIndex, screenshotUrl, masks } of stepsWithMasks) {
+          try {
+            const blob = await captureAnnotatedScreenshot({
+              imageSrc: screenshotUrl,
+              masks,
+            });
+            formData.append(`step-${stepIndex}-review`, blob, `step-${String(stepIndex).padStart(2, '0')}-review.png`);
+          } catch (captureError) {
+            console.warn(`Failed to capture annotated screenshot for step ${stepIndex}:`, captureError);
+            // Continue without the annotated screenshot
+          }
+        }
+
+        const response = await fetch(`/api/reviews/${data.id}`, {
+          method: 'POST',
+          body: formData, // Browser sets Content-Type with boundary automatically
+        });
+
+        if (!response.ok) {
+          throw new Error(`Save failed: ${response.statusText}`);
+        }
+
+        const reviewPath = response.headers.get('X-Review-Path') || 'server';
+        toast.success(`Saved to ${reviewPath}`);
+      } else {
+        // No masks - use simple JSON
+        const response = await fetch(`/api/reviews/${data.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reviewJson),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Save failed: ${response.statusText}`);
+        }
+
+        const reviewPath = response.headers.get('X-Review-Path') || 'server';
+        toast.success(`Saved to ${reviewPath}`);
       }
-
-      const reviewPath = response.headers.get('X-Review-Path') || 'server';
-      toast.success(`Saved to ${reviewPath}`);
     } catch (error) {
       const err = error as Error;
       toast.error(`Save failed: ${err.message}`, {
