@@ -127,6 +127,7 @@ export function convertToLockfile(exploration: ExplorationOutput): ExplorationLo
         element_ref: step.execution.elementRef,
         selector_used: step.execution.selectorUsed,
         duration_ms: step.execution.durationMs,
+        error: step.execution.error ?? undefined,
       },
       screenshots: {
         before: step.screenshots.before,

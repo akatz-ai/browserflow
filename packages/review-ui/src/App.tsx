@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import { ReviewPage } from './pages/ReviewPage';
@@ -67,6 +68,7 @@ function ReviewRoute() {
   const [searchParams] = useSearchParams();
   const explorationPath = searchParams.get('path') || '/api/exploration';
   const baseScreenshotPath = searchParams.get('screenshots') || '';
+  const [submitting, setSubmitting] = useState(false);
 
   const { data, loading, error } = useExplorationData(explorationPath);
 
@@ -99,36 +101,45 @@ function ReviewRoute() {
     );
   }
 
-  const handleSubmit = (reviewData: Record<number, StepReviewData>) => {
-    console.log('Submitting review:', reviewData);
+  const handleSubmit = async (reviewData: Record<number, StepReviewData>) => {
+    setSubmitting(true);
+    try {
+      const reviewJson = {
+        exploration_id: data.id,
+        spec_name: data.specName,
+        reviewed_at: new Date().toISOString(),
+        steps: Object.entries(reviewData).map(([stepIndex, stepData]) => ({
+          step_index: parseInt(stepIndex, 10),
+          status: stepData.status,
+          comment: stepData.comment || undefined,
+          masks: stepData.masks.length > 0 ? stepData.masks : undefined,
+          locked_locator: stepData.lockedLocator || undefined,
+        })),
+      };
 
-    // In production, this would POST to the server
-    // For now, log and show success
-    const reviewJson = {
-      exploration_id: data.id,
-      spec_name: data.specName,
-      reviewed_at: new Date().toISOString(),
-      steps: Object.entries(reviewData).map(([stepIndex, stepData]) => ({
-        step_index: parseInt(stepIndex, 10),
-        status: stepData.status,
-        comment: stepData.comment || undefined,
-        masks: stepData.masks.length > 0 ? stepData.masks : undefined,
-        locked_locator: stepData.lockedLocator || undefined,
-      })),
-    };
+      const response = await fetch(`/api/reviews/${data.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reviewJson),
+      });
 
-    // Download as JSON for now
-    const blob = new Blob([JSON.stringify(reviewJson, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `review-${data.id}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+      if (!response.ok) {
+        throw new Error(`Save failed: ${response.statusText}`);
+      }
 
-    toast.success('Review submitted! Downloaded as JSON file.');
+      const reviewPath = response.headers.get('X-Review-Path');
+      toast.success(`Saved to ${reviewPath}`);
+    } catch (error) {
+      const err = error as Error;
+      toast.error(`Save failed: ${err.message}. Retry?`, {
+        action: {
+          label: 'Retry',
+          onClick: () => handleSubmit(reviewData),
+        },
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
