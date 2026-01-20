@@ -66,6 +66,20 @@ export function ReviewPage({
     onSubmit,
   });
 
+  // Build screenshot paths
+  const getScreenshotUrl = useCallback(
+    (path?: string) => {
+      if (!path) return '';
+      if (path.startsWith('http') || path.startsWith('/')) return path;
+      return baseScreenshotPath ? `${baseScreenshotPath}/${path}` : path;
+    },
+    [baseScreenshotPath]
+  );
+
+  const beforeSrc = getScreenshotUrl(currentStep?.screenshots?.before);
+  const afterSrc = getScreenshotUrl(currentStep?.screenshots?.after);
+  const diffSrc = getScreenshotUrl((currentStep?.screenshots as { diff?: string })?.diff);
+
   // Create keyboard handlers
   const keyboardHandlers: ReviewHandlers = {
     nextStep: actions.nextStep,
@@ -83,7 +97,16 @@ export function ReviewPage({
     focusComment: useCallback(() => {
       commentRef.current?.focus();
     }, []),
-    setViewMode: actions.setViewMode,
+    setViewMode: useCallback(
+      (mode: ViewMode) => {
+        // Guard against switching to diff mode when no diff image exists
+        if (mode === 'diff' && !diffSrc) {
+          return;
+        }
+        actions.setViewMode(mode);
+      },
+      [diffSrc, actions.setViewMode]
+    ),
     openSearch: actions.openSearch,
     submitReview: actions.submitReview,
     showHelp: actions.openShortcutsHelp,
@@ -93,19 +116,6 @@ export function ReviewPage({
   useReviewKeyboardShortcuts(keyboardHandlers, {
     enabled: !state.showShortcutsHelp && !state.showSearch,
   });
-
-  // Build screenshot paths
-  const getScreenshotUrl = useCallback(
-    (path?: string) => {
-      if (!path) return '';
-      if (path.startsWith('http') || path.startsWith('/')) return path;
-      return baseScreenshotPath ? `${baseScreenshotPath}/${path}` : path;
-    },
-    [baseScreenshotPath]
-  );
-
-  const beforeSrc = getScreenshotUrl(currentStep?.screenshots?.before);
-  const afterSrc = getScreenshotUrl(currentStep?.screenshots?.after);
 
   // Progress stats
   const approvedCount = Object.values(state.reviewData).filter(
@@ -195,8 +205,9 @@ export function ReviewPage({
             <ScreenshotViewer
               beforeSrc={beforeSrc || afterSrc}
               afterSrc={afterSrc || beforeSrc}
+              diffSrc={diffSrc}
               mode={state.viewMode}
-              onModeChange={actions.setViewMode}
+              onModeChange={keyboardHandlers.setViewMode}
             />
           )}
 
