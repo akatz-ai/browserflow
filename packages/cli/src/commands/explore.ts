@@ -91,6 +91,7 @@ export function exploreCommand(): Command {
           adapter,
           browser,
           headless: !options.headed,
+          outputDir: '.browserflow/explorations',
         });
 
         // 5. Run exploration

@@ -269,8 +269,9 @@ describe('Explorer', () => {
 
       const result = await explorerWithTempDir.runExploration(sampleSpec, 'http://localhost:3000');
 
-      // Check that screenshot directory was created
-      const screenshotDir = join(testDir, 'screenshots');
+      // Check that screenshot directory was created (inside exploration-specific directory)
+      const explorationDir = join(testDir, result.explorationId);
+      const screenshotDir = join(explorationDir, 'screenshots');
       const dirExists = await fs.stat(screenshotDir).then(() => true).catch(() => false);
       expect(dirExists).toBe(true);
 
@@ -282,9 +283,9 @@ describe('Explorer', () => {
         expect(step.screenshots.before).toBeDefined();
         expect(step.screenshots.after).toBeDefined();
 
-        // Verify actual files exist
-        const beforePath = join(testDir, step.screenshots.before);
-        const afterPath = join(testDir, step.screenshots.after);
+        // Verify actual files exist (paths are relative to exploration directory)
+        const beforePath = join(explorationDir, step.screenshots.before);
+        const afterPath = join(explorationDir, step.screenshots.after);
 
         const beforeExists = await fs.stat(beforePath).then(() => true).catch(() => false);
         const afterExists = await fs.stat(afterPath).then(() => true).catch(() => false);

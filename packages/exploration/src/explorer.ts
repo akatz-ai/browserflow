@@ -14,6 +14,7 @@ import type {
 import { StepExecutor } from './step-executor';
 import { EvidenceCollector } from './evidence';
 import { LocatorCandidateGenerator } from './locator-candidates';
+import * as path from 'path';
 
 /**
  * Browser launch options
@@ -152,6 +153,10 @@ export class Explorer {
     const steps: StepResult[] = [];
     const errors: string[] = [];
 
+    // Configure evidence collector with exploration-specific output directory
+    const explorationOutputDir = path.join(this.outputDir, explorationId);
+    this.evidenceCollector.setOutputDir(explorationOutputDir);
+
     // Determine viewport - spec preconditions override defaults
     const viewport =
       (spec.preconditions?.viewport as { width: number; height: number } | undefined) ??
@@ -182,7 +187,7 @@ export class Explorer {
       // 3. Execute each step
       for (let i = 0; i < spec.steps.length; i++) {
         const specStep = spec.steps[i];
-        const stepResult = await this.executeStepWithEvidence(specStep, i, baseUrl);
+        const stepResult = await this.executeStepWithEvidence(specStep, i, baseUrl, explorationId);
         steps.push(stepResult);
 
         if (stepResult.execution.status === 'failed' && stepResult.execution.error) {
@@ -224,7 +229,8 @@ export class Explorer {
   private async executeStepWithEvidence(
     step: SpecStep,
     stepIndex: number,
-    baseUrl: string
+    baseUrl: string,
+    explorationId: string
   ): Promise<StepResult> {
     const startTime = Date.now();
     let snapshotBefore: EnhancedSnapshot | undefined;
@@ -235,8 +241,11 @@ export class Explorer {
     const screenshotAfterPath = `screenshots/step-${String(stepIndex).padStart(2, '0')}-after.png`;
 
     try {
-      // Take before screenshot
-      await this.browser!.screenshot();
+      // Take before screenshot and save to disk
+      await this.evidenceCollector.captureScreenshot(
+        explorationId,
+        `step-${String(stepIndex).padStart(2, '0')}-before`
+      );
 
       // Get snapshot for element finding
       snapshotBefore = await this.browser!.getSnapshot({ interactive: true });
@@ -244,8 +253,11 @@ export class Explorer {
       // Execute the step
       const execution = await this.executeAction(step, snapshotBefore, baseUrl);
 
-      // Take after screenshot
-      await this.browser!.screenshot();
+      // Take after screenshot and save to disk
+      await this.evidenceCollector.captureScreenshot(
+        explorationId,
+        `step-${String(stepIndex).padStart(2, '0')}-after`
+      );
 
       // Get after snapshot
       snapshotAfter = await this.browser!.getSnapshot({ interactive: true });
