@@ -228,12 +228,23 @@ export function reviewCommand(): Command {
                   // Parse multipart form data
                   const formData = await req.formData();
 
-                  // Extract review JSON
-                  const reviewDataStr = formData.get('review_data');
-                  if (typeof reviewDataStr === 'string') {
-                    reviewData = JSON.parse(reviewDataStr);
+                  // Extract review JSON - can be string or File/Blob
+                  const reviewDataField = formData.get('review_data');
+                  let reviewDataStr: string;
+
+                  if (typeof reviewDataField === 'string') {
+                    reviewDataStr = reviewDataField;
+                  } else if (reviewDataField instanceof Blob) {
+                    // Handle case where it's sent as a file
+                    reviewDataStr = await reviewDataField.text();
                   } else {
                     throw new Error('Missing review_data in form submission');
+                  }
+
+                  try {
+                    reviewData = JSON.parse(reviewDataStr);
+                  } catch (parseErr) {
+                    throw new Error(`Failed to parse review_data JSON: ${(parseErr as Error).message}`);
                   }
 
                   // Extract screenshot blobs (step-N-review files)
