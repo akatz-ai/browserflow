@@ -58,8 +58,9 @@ export async function listExplorations(cwd: string = process.cwd()): Promise<str
 
 /**
  * Serve static files from review-ui dist
+ * @internal Exported for testing
  */
-async function serveStaticUI(pathname: string): Promise<Response> {
+export async function serveStaticUI(pathname: string, cwd: string = process.cwd()): Promise<Response> {
   // For now, return a simple HTML page
   // In production, this would serve from packages/review-ui/dist
   if (pathname === '/' || pathname === '/index.html') {
