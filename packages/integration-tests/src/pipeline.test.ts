@@ -10,8 +10,10 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { Explorer, ClaudeAdapter, createBrowserSession } from '@browserflow/exploration';
 import type { ExplorationOutput } from '@browserflow/exploration';
+// @ts-expect-error - importing from dist/ for integration testing
 import { loadAndValidateSpec } from '@browserflow/cli/dist/commands/explore.js';
-import { loadExploration, listExplorations, serveStaticUI } from '@browserflow/cli/dist/commands/review.js';
+// @ts-expect-error - importing from dist/ for integration testing
+import { loadExploration, listExplorations, serveStaticUI, saveReview } from '@browserflow/cli/dist/commands/review.js';
 
 describe('Full Pipeline Integration', () => {
   let testDir: string;
@@ -86,13 +88,14 @@ describe('Full Pipeline Integration', () => {
     expect(Array.isArray(result.steps)).toBe(true);
 
     // Write exploration output to disk (since we're testing programmatically)
-    const explorationPath = join(
+    const explorationDir = join(
       testDir,
       '.browserflow',
       'explorations',
-      result.explorationId,
-      'exploration.json'
+      result.explorationId
     );
+    await mkdir(explorationDir, { recursive: true });
+    const explorationPath = join(explorationDir, 'exploration.json');
     await writeFile(explorationPath, JSON.stringify(result, null, 2));
 
     // Verify exploration.json was created
@@ -126,7 +129,7 @@ describe('Full Pipeline Integration', () => {
     }
 
     // Verify all entries start with 'exp-'
-    explorations.forEach(id => {
+    explorations.forEach((id: string) => {
       expect(id).toMatch(/^exp-/);
     });
   });
@@ -224,7 +227,6 @@ describe('Full Pipeline Integration', () => {
       ],
     };
 
-    const { saveReview } = await import('@browserflow/cli/dist/commands/review.js');
     const reviewPath = await saveReview(explorationId, reviewData, testDir);
 
     // Verify review file was created
