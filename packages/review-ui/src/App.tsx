@@ -131,11 +131,8 @@ function ReviewRoute() {
       toast.success(`Saved to ${reviewPath}`);
     } catch (error) {
       const err = error as Error;
-      toast.error(`Save failed: ${err.message}. Retry?`, {
-        action: {
-          label: 'Retry',
-          onClick: () => handleSubmit(reviewData),
-        },
+      toast.error(`Save failed: ${err.message}`, {
+        duration: 5000,
       });
     } finally {
       setSubmitting(false);
