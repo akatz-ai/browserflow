@@ -207,7 +207,7 @@ export function ReviewPage({
               afterSrc={afterSrc || beforeSrc}
               diffSrc={diffSrc}
               mode={state.viewMode}
-              onModeChange={actions.setViewMode}
+              onModeChange={keyboardHandlers.setViewMode}
             />
           )}
 
