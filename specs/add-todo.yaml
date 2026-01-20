@@ -1,0 +1,48 @@
+version: 2
+name: add-todo
+description: |
+  Tests the basic todo creation workflow - adding a new task and verifying it appears in the list.
+  This is a fundamental flow that exercises the input, button, and list rendering.
+
+preconditions:
+  page:
+    url: /
+  viewport:
+    width: 1280
+    height: 720
+
+steps:
+  - id: verify-empty-state
+    action: verify_state
+    description: Verify the app shows empty state initially
+    checks:
+      - text_contains: "No tasks yet"
+
+  - id: type-todo-text
+    action: fill
+    description: Type a new todo item text into the input field
+    target:
+      testid: todo-input
+    value: "Buy groceries"
+
+  - id: click-add-button
+    action: click
+    description: Click the Add button to create the todo
+    target:
+      testid: add-button
+
+  - id: verify-todo-added
+    action: verify_state
+    description: Verify the new todo item appears in the list
+    checks:
+      - text_contains: "Buy groceries"
+      - element_not_visible: "No tasks yet"
+      - text_contains: "1 total"
+
+expected_outcomes:
+  - description: Todo item is visible in the list
+    check: "text_contains"
+    expected: "Buy groceries"
+  - description: Stats show 1 total item
+    check: "text_contains"
+    expected: "1 total, 0 completed"

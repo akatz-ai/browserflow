@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo App - BrowserFlow Test Site</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    #todo-input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+    }
+    #todo-input:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+    #add-btn {
+      padding: 12px 24px;
+      font-size: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #add-btn:hover {
+      background: #0056b3;
+    }
+    #add-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .todo-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: white;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .todo-item.completed .todo-text {
+      text-decoration: line-through;
+      color: #888;
+    }
+    .todo-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    .todo-text {
+      flex: 1;
+      font-size: 16px;
+    }
+    .delete-btn {
+      padding: 6px 12px;
+      font-size: 14px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background: #c82333;
+    }
+    .stats {
+      margin-top: 20px;
+      padding: 12px;
+      background: white;
+      border-radius: 6px;
+      color: #666;
+      font-size: 14px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>Todo List</h1>
+
+  <div class="input-group">
+    <input
+      type="text"
+      id="todo-input"
+      placeholder="Enter a new task..."
+      data-testid="todo-input"
+    >
+    <button id="add-btn" data-testid="add-button" disabled>Add</button>
+  </div>
+
+  <ul class="todo-list" id="todo-list" data-testid="todo-list">
+    <!-- Items will be added here -->
+  </ul>
+
+  <div id="empty-state" class="empty-state">
+    No tasks yet. Add one above!
+  </div>
+
+  <div class="stats" id="stats" data-testid="stats" style="display: none;">
+    <span id="total-count">0</span> total,
+    <span id="completed-count">0</span> completed
+  </div>
+
+  <script>
+    const input = document.getElementById('todo-input');
+    const addBtn = document.getElementById('add-btn');
+    const todoList = document.getElementById('todo-list');
+    const emptyState = document.getElementById('empty-state');
+    const stats = document.getElementById('stats');
+    const totalCount = document.getElementById('total-count');
+    const completedCount = document.getElementById('completed-count');
+
+    let todos = [];
+    let nextId = 1;
+
+    // Enable/disable add button based on input
+    input.addEventListener('input', () => {
+      addBtn.disabled = input.value.trim() === '';
+    });
+
+    // Add todo on Enter key
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && input.value.trim()) {
+        addTodo();
+      }
+    });
+
+    // Add todo on button click
+    addBtn.addEventListener('click', addTodo);
+
+    function addTodo() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      const todo = {
+        id: nextId++,
+        text: text,
+        completed: false
+      };
+      todos.push(todo);
+      input.value = '';
+      addBtn.disabled = true;
+      render();
+    }
+
+    function toggleTodo(id) {
+      const todo = todos.find(t => t.id === id);
+      if (todo) {
+        todo.completed = !todo.completed;
+        render();
+      }
+    }
+
+    function deleteTodo(id) {
+      todos = todos.filter(t => t.id !== id);
+      render();
+    }
+
+    function render() {
+      // Update visibility
+      emptyState.style.display = todos.length === 0 ? 'block' : 'none';
+      stats.style.display = todos.length > 0 ? 'block' : 'none';
+
+      // Update stats
+      totalCount.textContent = todos.length;
+      completedCount.textContent = todos.filter(t => t.completed).length;
+
+      // Render todo items
+      todoList.innerHTML = todos.map(todo => `
+        <li class="todo-item ${todo.completed ? 'completed' : ''}" data-testid="todo-item-${todo.id}">
+          <input
+            type="checkbox"
+            class="todo-checkbox"
+            ${todo.completed ? 'checked' : ''}
+            data-testid="todo-checkbox-${todo.id}"
+            onchange="toggleTodo(${todo.id})"
+          >
+          <span class="todo-text">${escapeHtml(todo.text)}</span>
+          <button
+            class="delete-btn"
+            data-testid="delete-btn-${todo.id}"
+            onclick="deleteTodo(${todo.id})"
+          >Delete</button>
+        </li>
+      `).join('');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
