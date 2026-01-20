@@ -1,0 +1,63 @@
+version: 2
+name: simple-checkout
+description: Basic checkout flow with add to cart and complete purchase
+
+preconditions:
+  page:
+    url: /products
+
+timeout: 60s
+priority: high
+
+steps:
+  - id: initial-state
+    action: screenshot
+    name: products-page
+    description: Capture products page
+
+  - id: add-to-cart
+    action: click
+    target:
+      query: add to cart button for the first product
+    description: Add first product to cart
+
+  - id: verify-cart
+    action: expect
+    target:
+      query: shopping cart icon
+    state: visible
+    description: Verify cart icon appears
+
+  - id: open-cart
+    action: click
+    target:
+      query: shopping cart icon
+    description: Open shopping cart
+
+  - id: cart-screenshot
+    action: screenshot
+    name: cart-view
+    description: Capture cart contents
+
+  - id: checkout
+    action: click
+    target:
+      query: checkout button
+    description: Proceed to checkout
+
+  - id: checkout-screenshot
+    action: screenshot
+    name: checkout-page
+    description: Capture checkout page
+
+expected_outcomes:
+  - description: Cart shows product
+    check: element_visible
+    expected: true
+  - description: Checkout page loads
+    check: navigation_success
+    expected: true
+
+tags:
+  - checkout
+  - e2e
