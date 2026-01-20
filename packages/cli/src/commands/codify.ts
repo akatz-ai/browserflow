@@ -42,7 +42,8 @@ export function codifyCommand(): Command {
         try {
           const reviewPath = join(explorationDir, 'review.json');
           review = JSON.parse(await readFile(reviewPath, 'utf-8')) as ReviewData;
-          console.log(colors.info(`Using review from ${review.updated_at}`));
+          const reviewTimestamp = review.updated_at ?? (review as { reviewed_at?: string }).reviewed_at;
+          console.log(colors.info(`Using review from ${reviewTimestamp}`));
         } catch {
           console.log(colors.warning('No review found - generating without approval metadata'));
         }
@@ -125,7 +126,8 @@ export function convertToLockfile(exploration: ExplorationOutput): ExplorationLo
         status: step.execution.status,
         method: step.execution.method,
         element_ref: step.execution.elementRef,
-        selector_used: step.execution.selectorUsed,
+        // Use elementRef as fallback for selector_used
+        selector_used: step.execution.selectorUsed ?? step.execution.elementRef,
         duration_ms: step.execution.durationMs,
         error: step.execution.error ?? undefined,
       },

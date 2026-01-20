@@ -289,7 +289,8 @@ export class PlaywrightGenerator {
    * Generates navigate action code.
    */
   private generateNavigateCode(action: LegacySpecStep): string[] {
-    const url = action.to ?? '/';
+    // Support both v2 (url) and legacy (to) field names
+    const url = (action as { url?: string }).url ?? action.to ?? '/';
     return [`await page.goto('${escapeString(url)}');`];
   }
 

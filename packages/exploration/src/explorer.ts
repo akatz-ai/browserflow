@@ -174,7 +174,8 @@ export class Explorer {
       this.evidenceCollector.registerSession(explorationId, this.browser);
 
       // 2. Navigate to starting page
-      const startPage = (spec.preconditions?.page as string) ?? '/';
+      const pageConfig = spec.preconditions?.page as { url?: string } | undefined;
+      const startPage = pageConfig?.url ?? '/';
       const fullUrl = startPage.startsWith('http') ? startPage : `${baseUrl}${startPage}`;
       await this.browser.navigate(fullUrl);
 
@@ -377,16 +378,54 @@ export class Explorer {
       return step.selector;
     }
 
-    // Use AI adapter to find element from query
-    if (step.query) {
-      const result = await this.adapter.findElement(step.query, snapshot);
+    // Check for target object (v2 spec format)
+    const target = step.target as {
+      query?: string;
+      testid?: string;
+      role?: string;
+      css?: string;
+      text?: string;
+      label?: string;
+      placeholder?: string;
+    } | undefined;
+
+    if (target) {
+      // If target has CSS selector, use it directly
+      if (target.css) {
+        return target.css;
+      }
+
+      // If target has testid, convert to Playwright testId selector
+      if (target.testid) {
+        return `[data-testid="${target.testid}"]`;
+      }
+
+      // Use AI adapter to find element from query or other target properties
+      const query = target.query
+        || (target.role && `a ${target.role} element`)
+        || (target.text && `element with text "${target.text}"`)
+        || (target.label && `element with label "${target.label}"`)
+        || (target.placeholder && `input with placeholder "${target.placeholder}"`);
+
+      if (query) {
+        const result = await this.adapter.findElement(query, snapshot);
+        if (result.ref === 'NOT_FOUND') {
+          throw new Error(`Element not found for query: ${query}`);
+        }
+        return result.ref;
+      }
+    }
+
+    // Legacy: Use AI adapter to find element from step.query (legacy format)
+    if ((step as { query?: string }).query) {
+      const result = await this.adapter.findElement((step as { query?: string }).query!, snapshot);
       if (result.ref === 'NOT_FOUND') {
-        throw new Error(`Element not found for query: ${step.query}`);
+        throw new Error(`Element not found for query: ${(step as { query?: string }).query}`);
       }
       return result.ref;
     }
 
-    throw new Error('Step must have ref, selector, or query');
+    throw new Error('Step must have ref, selector, target, or query');
   }
 
   /**
