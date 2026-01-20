@@ -71,7 +71,10 @@ export function ReviewPage({
     (path?: string) => {
       if (!path) return '';
       if (path.startsWith('http') || path.startsWith('/')) return path;
-      return baseScreenshotPath ? `${baseScreenshotPath}/${path}` : path;
+      // Strip "screenshots/" prefix since baseScreenshotPath points to the API endpoint
+      // which already serves from the screenshots directory
+      const cleanPath = path.startsWith('screenshots/') ? path.slice('screenshots/'.length) : path;
+      return baseScreenshotPath ? `${baseScreenshotPath}/${cleanPath}` : path;
     },
     [baseScreenshotPath]
   );
@@ -189,6 +192,7 @@ export function ReviewPage({
           currentStepIndex={state.currentStepIndex}
           reviewStatus={reviewStatus}
           onSelectStep={actions.selectStep}
+          getScreenshotUrl={getScreenshotUrl}
         />
 
         {/* Center: Screenshot viewer / Mask editor */}

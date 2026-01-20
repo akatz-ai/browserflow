@@ -78,6 +78,23 @@ export function useExplorationData(explorationPath?: string): UseExplorationData
 function normalizeExplorationData(json: unknown, sourcePath: string): ExplorationData {
   const obj = json as Record<string, unknown>;
 
+  // Handle exploration engine format (camelCase: explorationId, specPath, etc.)
+  if ('explorationId' in obj && 'steps' in obj && Array.isArray(obj.steps)) {
+    const steps = obj.steps as Array<Record<string, unknown>>;
+
+    return {
+      id: obj.explorationId as string || 'unknown',
+      specName: obj.spec as string || 'Unknown Spec',
+      specPath: obj.specPath as string || sourcePath,
+      exploredAt: obj.timestamp as string || new Date().toISOString(),
+      duration: obj.durationMs as number || 0,
+      status: obj.overallStatus === 'completed' ? 'passed' : 'failed',
+      steps: steps.map((step, idx) => normalizeStep(step, idx)),
+      browser: obj.browser ? { name: obj.browser as string, version: '' } : undefined,
+      viewport: obj.viewport as { width: number; height: number } | undefined,
+    };
+  }
+
   // Handle legacy format (from our test runner)
   if ('spec' in obj && 'steps' in obj && Array.isArray(obj.steps)) {
     const legacySteps = obj.steps as Array<Record<string, unknown>>;
@@ -122,7 +139,7 @@ function normalizeExplorationData(json: unknown, sourcePath: string): Exploratio
  */
 function normalizeStep(step: Record<string, unknown>, index: number): ExplorationStep {
   // Handle legacy format from our test script
-  if ('action' in step && !('spec_action' in step)) {
+  if ('action' in step && !('spec_action' in step) && !('specAction' in step)) {
     return {
       step_index: step.index as number ?? index,
       spec_action: {
@@ -140,7 +157,32 @@ function normalizeStep(step: Record<string, unknown>, index: number): Exploratio
     };
   }
 
-  // Already in correct format
+  // Handle camelCase format from exploration engine (specAction, stepIndex, etc.)
+  if ('specAction' in step || 'stepIndex' in step) {
+    const specAction = step.specAction as Record<string, unknown> | undefined;
+    const execution = step.execution as Record<string, unknown> | undefined;
+    const screenshots = step.screenshots as Record<string, unknown> | undefined;
+
+    return {
+      step_index: (step.stepIndex as number) ?? index,
+      spec_action: specAction as ExplorationStep['spec_action'],
+      execution: {
+        status: (execution?.status as string) === 'completed' ? 'completed' : 'failed',
+        duration_ms: execution?.durationMs as number || 0,
+        method: execution?.method as string | undefined,
+        element_ref: execution?.elementRef as string | undefined,
+        locator: execution?.locator as ExplorationStep['execution']['locator'],
+      },
+      screenshots: {
+        before: screenshots?.before as string | undefined,
+        after: screenshots?.after as string | undefined,
+      },
+      snapshot_before: step.snapshotBefore as Record<string, unknown> | undefined,
+      snapshot_after: step.snapshotAfter as Record<string, unknown> | undefined,
+    };
+  }
+
+  // Already in correct format (snake_case)
   return step as unknown as ExplorationStep;
 }
 

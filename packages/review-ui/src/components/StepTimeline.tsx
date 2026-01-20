@@ -6,6 +6,7 @@ export interface StepTimelineProps {
   currentStepIndex: number;
   reviewStatus: Record<number, 'reviewed' | 'pending'>;
   onSelectStep: (stepIndex: number) => void;
+  getScreenshotUrl?: (path?: string) => string;
 }
 
 export function StepTimeline({
@@ -13,6 +14,7 @@ export function StepTimeline({
   currentStepIndex,
   reviewStatus,
   onSelectStep,
+  getScreenshotUrl,
 }: StepTimelineProps) {
   const reviewedCount = Object.values(reviewStatus).filter(
     (status) => status === 'reviewed'
@@ -39,6 +41,7 @@ export function StepTimeline({
             status={reviewStatus[step.step_index] || 'pending'}
             isSelected={step.step_index === currentStepIndex}
             onClick={() => onSelectStep(step.step_index)}
+            getScreenshotUrl={getScreenshotUrl}
           />
         ))}
       </div>
@@ -52,6 +55,7 @@ interface StepThumbnailProps {
   status: 'reviewed' | 'pending';
   isSelected: boolean;
   onClick: () => void;
+  getScreenshotUrl?: (path?: string) => string;
 }
 
 function StepThumbnail({
@@ -60,7 +64,12 @@ function StepThumbnail({
   status,
   isSelected,
   onClick,
+  getScreenshotUrl,
 }: StepThumbnailProps) {
+  const thumbnailSrc = getScreenshotUrl
+    ? getScreenshotUrl(step.screenshots?.after)
+    : step.screenshots?.after;
+
   return (
     <button
       onClick={onClick}
@@ -83,9 +92,9 @@ function StepThumbnail({
         </div>
       </div>
 
-      {step.screenshots?.after && (
+      {thumbnailSrc && (
         <img
-          src={step.screenshots.after}
+          src={thumbnailSrc}
           alt=""
           className="mt-2 w-full h-16 object-cover rounded"
         />

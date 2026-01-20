@@ -67,10 +67,13 @@ function HomePage() {
 function ReviewRoute() {
   const [searchParams] = useSearchParams();
   const explorationPath = searchParams.get('path') || '/api/exploration';
-  const baseScreenshotPath = searchParams.get('screenshots') || '';
+  const screenshotsParam = searchParams.get('screenshots');
   const [submitting, setSubmitting] = useState(false);
 
   const { data, loading, error } = useExplorationData(explorationPath);
+
+  // Build screenshot base path from exploration ID (or use explicit param)
+  const baseScreenshotPath = screenshotsParam || (data?.id ? `/api/screenshots/${data.id}` : '');
 
   if (loading) {
     return (
