@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrowserFlow Architecture Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-purple: #a371f7;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --accent-cyan: #39c5cf;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        nav h1 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: var(--accent-blue);
+        }
+
+        nav .subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-bottom: 4px;
+        }
+
+        nav ul li a {
+            display: block;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        nav ul li a:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        nav ul li a.active {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+            border-left: 2px solid var(--accent-blue);
+        }
+
+        /* Main Content */
+        main {
+            margin-left: 280px;
+            padding: 40px 60px;
+            max-width: 1200px;
+        }
+
+        section {
+            margin-bottom: 60px;
+            scroll-margin-top: 20px;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            margin: 24px 0 16px;
+            color: var(--text-primary);
+        }
+
+        h4 {
+            font-size: 1rem;
+            margin: 16px 0 12px;
+            color: var(--text-secondary);
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+        }
+
+        /* Card Grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .card.blue { border-left: 4px solid var(--accent-blue); }
+        .card.green { border-left: 4px solid var(--accent-green); }
+        .card.purple { border-left: 4px solid var(--accent-purple); }
+        .card.orange { border-left: 4px solid var(--accent-orange); }
+        .card.red { border-left: 4px solid var(--accent-red); }
+        .card.cyan { border-left: 4px solid var(--accent-cyan); }
+
+        .card h4 {
+            margin: 0 0 8px;
+            color: var(--text-primary);
+        }
+
+        .card p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            margin: 12px 0;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .badge-blue { background: rgba(88, 166, 255, 0.2); color: var(--accent-blue); }
+        .badge-green { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .badge-orange { background: rgba(210, 153, 34, 0.2); color: var(--accent-orange); }
+        .badge-red { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+        .badge-purple { background: rgba(163, 113, 247, 0.2); color: var(--accent-purple); }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        tr:hover td {
+            background: var(--bg-secondary);
+        }
+
+        /* Code */
+        code {
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85em;
+            color: var(--accent-cyan);
+        }
+
+        pre {
+            background: var(--bg-tertiary);
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Callouts */
+        .callout {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 16px 0;
+            border-left: 4px solid;
+        }
+
+        .callout-info {
+            background: rgba(88, 166, 255, 0.1);
+            border-color: var(--accent-blue);
+        }
+
+        .callout-warning {
+            background: rgba(210, 153, 34, 0.1);
+            border-color: var(--accent-orange);
+        }
+
+        .callout-danger {
+            background: rgba(248, 81, 73, 0.1);
+            border-color: var(--accent-red);
+        }
+
+        .callout-success {
+            background: rgba(63, 185, 80, 0.1);
+            border-color: var(--accent-green);
+        }
+
+        .callout-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        /* Details/Collapsible */
+        details {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+
+        details summary {
+            padding: 16px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-primary);
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details summary::before {
+            content: '>';
+            display: inline-block;
+            transition: transform 0.2s ease;
+            color: var(--accent-blue);
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        details .content {
+            padding: 0 20px 20px;
+        }
+
+        /* Score Cards */
+        .score-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .score-card .label {
+            flex: 1;
+            color: var(--text-secondary);
+        }
+
+        .stars {
+            color: var(--accent-orange);
+            font-size: 1.2rem;
+        }
+
+        .stars .empty {
+            color: var(--border-color);
+        }
+
+        /* Mermaid Diagrams */
+        .mermaid {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        /* File Reference */
+        .file-ref {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-purple);
+            background: rgba(163, 113, 247, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            nav {
+                position: static;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            main {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+
+        /* Abstraction Grid */
+        .abstraction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .abstraction-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .abstraction-item .icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .abstraction-item h5 {
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .abstraction-item p {
+            font-size: 0.8rem;
+            margin: 0;
+        }
+
+        /* Fit Matrix */
+        .fit-matrix {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 24px 0;
+        }
+
+        .fit-cell {
+            padding: 12px;
+            text-align: center;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .fit-header {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .fit-yes {
+            background: rgba(63, 185, 80, 0.2);
+            color: var(--accent-green);
+        }
+
+        .fit-partial {
+            background: rgba(210, 153, 34, 0.2);
+            color: var(--accent-orange);
+        }
+
+        .fit-no {
+            background: rgba(248, 81, 73, 0.2);
+            color: var(--accent-red);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>BrowserFlow</h1>
+        <p class="subtitle">Architecture Report &bull; 2026-01-19</p>
+        <ul>
+            <li><a href="#executive-summary">Executive Summary</a></li>
+            <li><a href="#design-philosophy">Design Philosophy</a></li>
+            <li><a href="#system-overview">System Overview</a></li>
+            <li><a href="#core-abstractions">Core Abstractions</a></li>
+            <li><a href="#component-deep-dives">Component Deep Dives</a></li>
+            <li><a href="#data-flow">Data Flow Diagrams</a></li>
+            <li><a href="#state-management">State Management</a></li>
+            <li><a href="#concurrency">Concurrency Model</a></li>
+            <li><a href="#patterns">Pattern Catalog</a></li>
+            <li><a href="#adrs">ADRs</a></li>
+            <li><a href="#risks">Risks & Technical Debt</a></li>
+            <li><a href="#assessment">Assessment</a></li>
+            <li><a href="#glossary">Glossary</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Executive Summary -->
+        <section id="executive-summary">
+            <h2>Executive Summary</h2>
+            <p>BrowserFlow is a Bun/TypeScript monorepo built around a human-in-the-loop E2E workflow. The architecture enables AI-driven browser exploration with human review and approval before test generation.</p>
+
+            <div class="card-grid">
+                <div class="card blue">
+                    <h4>Packages</h4>
+                    <div class="value">5</div>
+                    <p>Core domain, CLI, Exploration, Generator, Review UI</p>
+                </div>
+                <div class="card green">
+                    <h4>Architecture Style</h4>
+                    <div class="value">Hub & Spoke</div>
+                    <p>Core package at center with dependent interfaces</p>
+                </div>
+                <div class="card purple">
+                    <h4>Primary Runtime</h4>
+                    <div class="value">Bun + TypeScript</div>
+                    <p>With Playwright for browser automation</p>
+                </div>
+                <div class="card orange">
+                    <h4>Integration Status</h4>
+                    <div class="value">Partial</div>
+                    <p>Some pipeline stages are stubbed</p>
+                </div>
+            </div>
+
+            <div class="callout callout-info">
+                <div class="callout-title">Key Architectural Highlights</div>
+                <ul>
+                    <li>Schema-driven validation with Zod for specs, configs, and lockfiles</li>
+                    <li>Pluggable AI adapter interface with Claude as initial implementation</li>
+                    <li>BrowserSession abstraction wrapping agent-browser for exploration</li>
+                    <li>Handlebars-based test generation from exploration lockfiles</li>
+                    <li>React SPA for step-by-step exploration review</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Design Philosophy -->
+        <section id="design-philosophy">
+            <h2>Design Philosophy</h2>
+
+            <div class="card-grid">
+                <div class="card cyan">
+                    <h4>Human-in-the-Loop</h4>
+                    <p>AI explores, humans approve. No test is generated without explicit review and approval of each exploration step.</p>
+                </div>
+                <div class="card blue">
+                    <h4>Schema-First</h4>
+                    <p>Zod schemas define the contract. Specs, configs, and lockfiles are validated at runtime with detailed error messages.</p>
+                </div>
+                <div class="card green">
+                    <h4>Deterministic Execution</h4>
+                    <p>Playwright provides reproducible test execution with JSON reporting and structured artifacts.</p>
+                </div>
+                <div class="card purple">
+                    <h4>Pluggable Adapters</h4>
+                    <p>AI and browser integrations are abstracted behind interfaces, allowing provider swaps without core changes.</p>
+                </div>
+            </div>
+
+            <h3>Core Principles</h3>
+            <table>
+                <tr>
+                    <th>Principle</th>
+                    <th>Implementation</th>
+                </tr>
+                <tr>
+                    <td>Separation of Concerns</td>
+                    <td>Packages split by responsibility: core (domain), CLI (interface), exploration (orchestration), generator (output), review-ui (approval)</td>
+                </tr>
+                <tr>
+                    <td>Single Source of Truth</td>
+                    <td>Core package owns all shared types and schemas; other packages import from core</td>
+                </tr>
+                <tr>
+                    <td>Fail Gracefully</td>
+                    <td>Exploration continues on step failures; errors are collected and reported in output</td>
+                </tr>
+                <tr>
+                    <td>Reproducibility</td>
+                    <td>Lockfiles capture exact element locators and assertions for deterministic replay</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- System Overview -->
+        <section id="system-overview">
+            <h2>System Overview</h2>
+
+            <div class="mermaid">
+flowchart LR
+    User[User] --> CLI["@browserflow/cli (bf)"]
+    Specs["specs/*.yaml"] --> CLI
+    Config["browserflow.yaml"] --> CLI
+    CLI --> Core["@browserflow/core"]
+    CLI --> Playwright["Playwright CLI"]
+    CLI --> Runs[".browserflow/runs/"]
+    CLI --> Baselines[".browserflow/baselines/"]
+
+    Exploration["@browserflow/exploration"] --> Core
+    Exploration --> AgentBrowser["agent-browser"]
+    Exploration --> Anthropic["Anthropic API"]
+
+    Generator["@browserflow/generator"] --> Core
+    Generator --> Tests["Playwright Tests"]
+
+    ReviewUI["@browserflow/review-ui"] --> ReviewAPI["/api/exploration"]
+    ReviewUI --> ReviewJSON["review.json"]
+
+    Specs -.-> Exploration
+    Exploration -.-> ReviewUI
+    ReviewUI -.-> Generator
+            </div>
+
+            <div class="callout callout-warning">
+                <div class="callout-title">Integration Note</div>
+                <p>Dashed edges represent intended but not fully wired connections. The exploration-to-review-to-generator pipeline is not integrated into the CLI.</p>
+            </div>
+
+            <h3>Package Dependencies</h3>
+            <div class="mermaid">
+graph LR
+    cli["@browserflow/cli"] --> core["@browserflow/core"]
+    exploration["@browserflow/exploration"] --> core
+    generator["@browserflow/generator"] --> core
+    reviewUI["@browserflow/review-ui"] --> core
+
+    exploration --> agentBrowser["agent-browser"]
+    exploration --> anthropic["@anthropic-ai/sdk"]
+    cli --> playwright["Playwright"]
+    generator --> handlebars["Handlebars"]
+    reviewUI --> react["React"]
+            </div>
+        </section>
+
+        <!-- Core Abstractions -->
+        <section id="core-abstractions">
+            <h2>Core Abstractions</h2>
+
+            <div class="abstraction-grid">
+                <div class="abstraction-item">
+                    <div class="icon">📋</div>
+                    <h5>BrowserFlowSpec</h5>
+                    <p>Validated YAML spec format (v2)</p>
+                </div>
+                <div class="abstraction-item">
+                    <div class="icon">🎯</div>
+                    <h5>LocatorObject</h5>
+                    <p>Stable locator with fallbacks</p>
+                </div>
+                <div class="abstraction-item">
+                    <div class="icon">🔒</div>
+                    <h5>Lockfile</h5>
+                    <p>Canonical exploration artifact</p>
+                </div>
+                <div class="abstraction-item">
+                    <div class="icon">🌐</div>
+                    <h5>BrowserSession</h5>
+                    <p>Browser automation interface</p>
+                </div>
+                <div class="abstraction-item">
+                    <div class="icon">🤖</div>
+                    <h5>AIAdapter</h5>
+                    <p>LLM integration contract</p>
+                </div>
+                <div class="abstraction-item">
+                    <div class="icon">📦</div>
+                    <h5>RunStore</h5>
+                    <p>Run artifact persistence</p>
+                </div>
+            </div>
+
+            <h3>Interface Boundaries</h3>
+            <table>
+                <tr>
+                    <th>Interface</th>
+                    <th>Location</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td><code>AIAdapter</code></td>
+                    <td class="file-ref">exploration/src/adapters/types.ts:184</td>
+                    <td>LLM provider integration seam</td>
+                </tr>
+                <tr>
+                    <td><code>BrowserSession</code></td>
+                    <td class="file-ref">exploration/src/explorer.ts:30</td>
+                    <td>Browser automation abstraction</td>
+                </tr>
+                <tr>
+                    <td><code>RunStore</code></td>
+                    <td class="file-ref">core/src/run-store.ts:44</td>
+                    <td>Run persistence API</td>
+                </tr>
+                <tr>
+                    <td><code>customActionHandlers</code></td>
+                    <td class="file-ref">exploration/src/step-executor.ts:16</td>
+                    <td>Bespoke step behavior injection</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Component Deep Dives -->
+        <section id="component-deep-dives">
+            <h2>Component Deep Dives</h2>
+
+            <details>
+                <summary><span class="badge badge-blue">CORE</span> @browserflow/core</summary>
+                <div class="content">
+                    <p><strong>Responsibility:</strong> Zod schemas for specs/config/lockfile, locator model, run-store, and shared types.</p>
+
+                    <h4>Key Types</h4>
+                    <table>
+                        <tr><th>Type</th><th>Location</th><th>Purpose</th></tr>
+                        <tr>
+                            <td><code>BrowserFlowSpec</code></td>
+                            <td class="file-ref">spec-schema.ts:246</td>
+                            <td>Validated spec format</td>
+                        </tr>
+                        <tr>
+                            <td><code>LocatorObject</code></td>
+                            <td class="file-ref">locator-object.ts:71</td>
+                            <td>Stable locator definition</td>
+                        </tr>
+                        <tr>
+                            <td><code>Lockfile</code></td>
+                            <td class="file-ref">lockfile.ts:90</td>
+                            <td>Exploration artifact</td>
+                        </tr>
+                    </table>
+
+                    <h4>Schema Enforcement</h4>
+                    <pre><code>export const specSchema = z
+  .object({
+    version: z.literal(2),
+    name: z.string().regex(/^[a-z0-9-]+$/),
+    steps: z.array(stepSchema).min(1),
+    timeout: durationSchema.optional(),
+  });</code></pre>
+                </div>
+            </details>
+
+            <details>
+                <summary><span class="badge badge-green">CLI</span> @browserflow/cli</summary>
+                <div class="content">
+                    <p><strong>Responsibility:</strong> CLI commands for init, doctor, lint, run, baseline, and repair.</p>
+
+                    <h4>Command Structure</h4>
+                    <table>
+                        <tr><th>Command</th><th>Handler</th><th>Purpose</th></tr>
+                        <tr><td><code>bf init</code></td><td class="file-ref">commands/init.ts</td><td>Initialize project</td></tr>
+                        <tr><td><code>bf doctor</code></td><td class="file-ref">commands/doctor.ts</td><td>Environment checks</td></tr>
+                        <tr><td><code>bf lint</code></td><td class="file-ref">commands/lint.ts</td><td>Spec validation</td></tr>
+                        <tr><td><code>bf run</code></td><td class="file-ref">commands/run.ts:39</td><td>Execute tests</td></tr>
+                        <tr><td><code>bf baseline</code></td><td class="file-ref">commands/baseline.ts</td><td>Manage baselines</td></tr>
+                        <tr><td><code>bf repair</code></td><td class="file-ref">commands/repair.ts</td><td>Fix failing tests</td></tr>
+                    </table>
+
+                    <h4>Run Pipeline</h4>
+                    <pre><code>const runDir = await runStore.createRun('_execution');
+const executorResult = await executePlaywright(specs, options, runDir);
+const summary = await collectResults(runDir, executorResult);
+if (summary.failed > 0) {
+  await generateFailureBundles(runDir, summary.failures);
+}</code></pre>
+                </div>
+            </details>
+
+            <details>
+                <summary><span class="badge badge-purple">EXPLORATION</span> @browserflow/exploration</summary>
+                <div class="content">
+                    <p><strong>Responsibility:</strong> AI exploration orchestration via Explorer, using BrowserSession and AIAdapter.</p>
+
+                    <h4>Key Classes</h4>
+                    <table>
+                        <tr><th>Class</th><th>Location</th><th>Role</th></tr>
+                        <tr>
+                            <td><code>Explorer</code></td>
+                            <td class="file-ref">explorer.ts:91</td>
+                            <td>Main orchestrator</td>
+                        </tr>
+                        <tr>
+                            <td><code>ClaudeAdapter</code></td>
+                            <td class="file-ref">adapters/claude.ts:69</td>
+                            <td>Claude LLM integration</td>
+                        </tr>
+                        <tr>
+                            <td><code>AgentBrowserSession</code></td>
+                            <td class="file-ref">agent-browser-session.ts:15</td>
+                            <td>Browser wrapper</td>
+                        </tr>
+                        <tr>
+                            <td><code>StepExecutor</code></td>
+                            <td class="file-ref">step-executor.ts</td>
+                            <td>Step action dispatch</td>
+                        </tr>
+                    </table>
+
+                    <h4>BrowserSession Interface</h4>
+                    <pre><code>export interface BrowserSession {
+  launch(options?: BrowserLaunchOptions): Promise&lt;void&gt;;
+  navigate(url: string): Promise&lt;void&gt;;
+  screenshot(): Promise&lt;Buffer&gt;;
+  getSnapshot(options?: {...}): Promise&lt;EnhancedSnapshot&gt;;
+  close(): Promise&lt;void&gt;;
+}</code></pre>
+                </div>
+            </details>
+
+            <details>
+                <summary><span class="badge badge-orange">GENERATOR</span> @browserflow/generator</summary>
+                <div class="content">
+                    <p><strong>Responsibility:</strong> Convert exploration lockfiles into Playwright tests using Handlebars templates.</p>
+
+                    <h4>Generation Pipeline</h4>
+                    <pre><code>const content = this.template({
+  specName: lockfile.spec,
+  explorationId: lockfile.exploration_id,
+  reviewer: review?.reviewer,
+  steps,
+  outcomeChecks,
+});
+
+return {
+  path: `tests/${lockfile.spec}.spec.ts`,
+  content,
+};</code></pre>
+
+                    <h4>Supported Actions</h4>
+                    <span class="badge badge-blue">click</span>
+                    <span class="badge badge-blue">navigate</span>
+                    <span class="badge badge-blue">fill</span>
+                    <span class="badge badge-blue">type</span>
+                    <span class="badge badge-blue">wait</span>
+                    <span class="badge badge-blue">screenshot</span>
+                    <span class="badge badge-blue">verify_state</span>
+                    <span class="badge badge-blue">select</span>
+                    <span class="badge badge-blue">check</span>
+                </div>
+            </details>
+
+            <details>
+                <summary><span class="badge badge-cyan">UI</span> @browserflow/review-ui</summary>
+                <div class="content">
+                    <p><strong>Responsibility:</strong> React SPA for loading exploration JSON, presenting step review UI, and outputting review decisions.</p>
+
+                    <h4>Key Hooks</h4>
+                    <table>
+                        <tr><th>Hook</th><th>Location</th><th>Purpose</th></tr>
+                        <tr>
+                            <td><code>useExplorationData</code></td>
+                            <td class="file-ref">hooks/useExplorationData.ts:33</td>
+                            <td>Load and normalize exploration JSON</td>
+                        </tr>
+                        <tr>
+                            <td><code>useReviewState</code></td>
+                            <td class="file-ref">hooks/useReviewState.ts</td>
+                            <td>Manage review decisions per step</td>
+                        </tr>
+                    </table>
+
+                    <h4>Review Output</h4>
+                    <pre><code>const reviewJson = {
+  exploration_id: data.id,
+  spec_name: data.specName,
+  reviewed_at: new Date().toISOString(),
+  steps: Object.entries(reviewData).map(([stepIndex, stepData]) => ({
+    step_index: parseInt(stepIndex, 10),
+    status: stepData.status,
+  })),
+};</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <!-- Data Flow Diagrams -->
+        <section id="data-flow">
+            <h2>Data Flow Diagrams</h2>
+
+            <h3>Flow 1: bf run (Playwright Execution)</h3>
+            <div class="mermaid">
+sequenceDiagram
+    participant User
+    participant CLI as bf run
+    participant RunStore
+    participant PW as Playwright
+    participant Results as collectResults
+    participant Bundles as generateFailureBundles
+
+    User->>CLI: bf run --spec name
+    CLI->>RunStore: createRun("_execution")
+    CLI->>PW: spawn playwright test --reporter json
+    PW-->>CLI: stdout/stderr/json
+    CLI->>Results: collectResults(runDir, json)
+    Results-->>CLI: RunResult
+    alt failures > 0
+        CLI->>Bundles: generateFailureBundles(runDir, failures)
+    end
+    CLI-->>User: summary + exit code
+            </div>
+
+            <h3>Flow 2: Explorer.runExploration</h3>
+            <div class="mermaid">
+sequenceDiagram
+    participant Caller
+    participant Explorer
+    participant Browser as BrowserSession
+    participant AI as AIAdapter
+
+    Caller->>Explorer: runExploration(spec, baseUrl)
+    Explorer->>Browser: launch(headless, viewport)
+    Explorer->>Browser: navigate(baseUrl + startPage)
+    loop Each Step
+        Explorer->>Browser: screenshot + getSnapshot
+        Explorer->>AI: findElement(query)
+        AI-->>Explorer: ref, confidence, reasoning
+        Explorer->>Browser: click/fill/etc
+        Explorer->>Browser: screenshot + getSnapshot
+    end
+    Explorer->>Browser: close()
+    Explorer-->>Caller: ExplorationOutput
+            </div>
+
+            <h3>Flow 3: Review UI</h3>
+            <div class="mermaid">
+sequenceDiagram
+    participant User
+    participant UI as Review UI
+    participant API as /api/exploration
+    participant Browser
+
+    User->>UI: open /review?path=...
+    UI->>API: fetch exploration JSON
+    API-->>UI: exploration JSON
+    UI->>UI: normalizeExplorationData()
+    User->>UI: approve/reject/comment
+    UI->>Browser: create JSON blob + download
+            </div>
+        </section>
+
+        <!-- State Management -->
+        <section id="state-management">
+            <h2>State Management</h2>
+
+            <h3>Review Step State Diagram</h3>
+            <div class="mermaid">
+stateDiagram-v2
+    [*] --> Pending
+    Pending --> Approved: approveStep()
+    Pending --> Rejected: rejectStep()
+            </div>
+
+            <h3>State Ownership Table</h3>
+            <table>
+                <tr>
+                    <th>State</th>
+                    <th>Owner</th>
+                    <th>Persistence</th>
+                    <th>Location</th>
+                </tr>
+                <tr>
+                    <td><code>.browserflow/runs/_execution/*</code></td>
+                    <td>CLI RunStore</td>
+                    <td>Filesystem (per run)</td>
+                    <td class="file-ref">cli/src/run/run-store.ts:14</td>
+                </tr>
+                <tr>
+                    <td><code>.browserflow/baselines/*</code></td>
+                    <td>CLI BaselineStore</td>
+                    <td>Filesystem (persistent)</td>
+                    <td class="file-ref">cli/src/commands/baseline.ts:43</td>
+                </tr>
+                <tr>
+                    <td><code>reviewData</code> (per step)</td>
+                    <td>Review UI hook</td>
+                    <td>In-memory (exported via JSON)</td>
+                    <td class="file-ref">review-ui/src/hooks/useReviewState.ts:32</td>
+                </tr>
+                <tr>
+                    <td>Explorer step list + errors</td>
+                    <td>Explorer.runExploration</td>
+                    <td>In-memory (returned in output)</td>
+                    <td class="file-ref">exploration/src/explorer.ts:145</td>
+                </tr>
+                <tr>
+                    <td>Lockfile JSON</td>
+                    <td>core writeLockfile</td>
+                    <td>Filesystem</td>
+                    <td class="file-ref">core/src/lockfile.ts:145</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Concurrency Model -->
+        <section id="concurrency">
+            <h2>Concurrency Model</h2>
+
+            <div class="card-grid">
+                <div class="card blue">
+                    <h4>CLI Run</h4>
+                    <p>Spawns Playwright in child process; listens to stdout/stderr events asynchronously but single-process.</p>
+                </div>
+                <div class="card green">
+                    <h4>Baseline Comparison</h4>
+                    <p>Uses <code>Promise.all</code> to read files concurrently for parallel I/O.</p>
+                </div>
+                <div class="card purple">
+                    <h4>Exploration Steps</h4>
+                    <p>Sequential for-loop; no parallel step execution to ensure deterministic ordering.</p>
+                </div>
+                <div class="card orange">
+                    <h4>Review UI</h4>
+                    <p>Async fetch in React useEffect; browser event loop handles concurrency.</p>
+                </div>
+            </div>
+
+            <div class="callout callout-warning">
+                <div class="callout-title">Potential Hazards</div>
+                <ul>
+                    <li><strong>Run directory collision:</strong> Timestamp-based without locking; concurrent runs could interleave artifacts</li>
+                    <li><strong>Baseline race:</strong> Baseline updates and run artifacts share <code>.browserflow</code> without coordination</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Pattern Catalog -->
+        <section id="patterns">
+            <h2>Pattern Catalog</h2>
+
+            <table>
+                <tr>
+                    <th>Pattern</th>
+                    <th>Location</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td><strong>Strategy / Plugin</strong></td>
+                    <td><code>AIAdapter</code> + <code>ClaudeAdapter</code></td>
+                    <td>Swap LLM providers</td>
+                </tr>
+                <tr>
+                    <td><strong>Adapter</strong></td>
+                    <td><code>AgentBrowserSession</code></td>
+                    <td>Wrap agent-browser into BrowserSession</td>
+                </tr>
+                <tr>
+                    <td><strong>Command</strong></td>
+                    <td>CLI subcommands via Commander</td>
+                    <td>Encapsulate CLI actions</td>
+                </tr>
+                <tr>
+                    <td><strong>Command (Domain)</strong></td>
+                    <td><code>step.action</code> switch in StepExecutor</td>
+                    <td>Dispatch spec actions to behavior</td>
+                </tr>
+                <tr>
+                    <td><strong>Repository / Store</strong></td>
+                    <td><code>RunStore</code>, <code>BaselineStore</code></td>
+                    <td>Encapsulate FS persistence</td>
+                </tr>
+                <tr>
+                    <td><strong>Factory</strong></td>
+                    <td><code>createRunStore()</code></td>
+                    <td>Create run-store for project root</td>
+                </tr>
+                <tr>
+                    <td><strong>Template</strong></td>
+                    <td>Handlebars-based generation</td>
+                    <td>Emit Playwright tests/config</td>
+                </tr>
+                <tr>
+                    <td><strong>Observer</strong></td>
+                    <td>Child process stdout/stderr listeners</td>
+                    <td>Capture Playwright output incrementally</td>
+                </tr>
+                <tr>
+                    <td><strong>Dependency Injection</strong></td>
+                    <td><code>ExplorerConfig</code>, <code>StepExecutorConfig</code></td>
+                    <td>Pass adapter/browser/custom handlers</td>
+                </tr>
+                <tr>
+                    <td><strong>State Machine (Implicit)</strong></td>
+                    <td>Review step status</td>
+                    <td>pending → approved/rejected</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- ADRs -->
+        <section id="adrs">
+            <h2>Architectural Decision Records</h2>
+
+            <details>
+                <summary>ADR-1: Zod Schemas for Validation</summary>
+                <div class="content">
+                    <p><strong>Context:</strong> Need runtime validation for YAML and JSON artifacts.</p>
+                    <p><strong>Decision:</strong> Define schemas in core and export for linting and JSON schema generation.</p>
+                    <p><strong>Tradeoffs:</strong> Strong validation and IDE support vs. duplicated types between packages.</p>
+                    <p class="file-ref">Evidence: spec-schema.ts:207, config-schema.ts:65</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>ADR-2: Playwright for Deterministic Execution</summary>
+                <div class="content">
+                    <p><strong>Context:</strong> Tests must be CI-friendly and deterministic.</p>
+                    <p><strong>Decision:</strong> CLI spawns Playwright with JSON reporter; generator emits Playwright tests.</p>
+                    <p><strong>Tradeoffs:</strong> Relies on Playwright toolchain and reporter semantics.</p>
+                    <p class="file-ref">Evidence: executor.ts:23, playwright-ts.ts:40</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>ADR-3: BrowserSession Abstraction with agent-browser</summary>
+                <div class="content">
+                    <p><strong>Context:</strong> Exploration needs a consistent browser API with snapshot refs.</p>
+                    <p><strong>Decision:</strong> BrowserSession interface + AgentBrowserSession adapter.</p>
+                    <p><strong>Tradeoffs:</strong> Tight coupling to agent-browser capabilities.</p>
+                    <p class="file-ref">Evidence: explorer.ts:30, agent-browser-session.ts:8</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>ADR-4: Pluggable AI Adapter Interface</summary>
+                <div class="content">
+                    <p><strong>Context:</strong> Exploration needs LLM-assisted element resolution.</p>
+                    <p><strong>Decision:</strong> AIAdapter contract; ClaudeAdapter as default.</p>
+                    <p><strong>Tradeoffs:</strong> API credentials and latency; explore() currently stubbed.</p>
+                    <p class="file-ref">Evidence: adapters/types.ts:184, adapters/claude.ts:69</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>ADR-5: .browserflow Directory for Artifacts</summary>
+                <div class="content">
+                    <p><strong>Context:</strong> Keep artifacts out of repo and per-run isolation.</p>
+                    <p><strong>Decision:</strong> RunStore creates <code>.browserflow/runs/...</code> with artifacts.</p>
+                    <p><strong>Tradeoffs:</strong> Multiple implementations with diverging layouts.</p>
+                    <p class="file-ref">Evidence: run-store.ts:14, core/run-store.ts:71</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>ADR-6: Template-Based Generation with Handlebars</summary>
+                <div class="content">
+                    <p><strong>Context:</strong> Need customizable test output.</p>
+                    <p><strong>Decision:</strong> Compile templates for tests and Playwright config.</p>
+                    <p><strong>Tradeoffs:</strong> Template logic can drift from runtime semantics.</p>
+                    <p class="file-ref">Evidence: playwright-ts.ts:86, config-emit.ts:118</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>ADR-7: Review UI as Standalone SPA</summary>
+                <div class="content">
+                    <p><strong>Context:</strong> Decouple review UX from CLI runtime.</p>
+                    <p><strong>Decision:</strong> React SPA uses fetch and downloads review JSON.</p>
+                    <p><strong>Tradeoffs:</strong> Requires a separate server to provide exploration JSON.</p>
+                    <p class="file-ref">Evidence: useExplorationData.ts:33, App.tsx:100</p>
+                </div>
+            </details>
+        </section>
+
+        <!-- Risks & Technical Debt -->
+        <section id="risks">
+            <h2>Risks & Technical Debt</h2>
+
+            <table>
+                <tr>
+                    <th>Issue</th>
+                    <th>Severity</th>
+                    <th>Evidence</th>
+                    <th>Impact</th>
+                </tr>
+                <tr>
+                    <td>Dual CLI implementations (bash vs Node)</td>
+                    <td><span class="badge badge-red">High</span></td>
+                    <td class="file-ref">bin/bf:20, cli/src/index.ts:11</td>
+                    <td>User confusion and inconsistent behavior</td>
+                </tr>
+                <tr>
+                    <td>Spec shape mismatch: core vs exploration</td>
+                    <td><span class="badge badge-red">High</span></td>
+                    <td class="file-ref">spec-schema.ts:82, adapters/types.ts:83</td>
+                    <td>Exploration may not accept validated specs</td>
+                </tr>
+                <tr>
+                    <td>preconditions.page treated as string vs object</td>
+                    <td><span class="badge badge-red">High</span></td>
+                    <td class="file-ref">explorer.ts:169, spec-schema.ts:171</td>
+                    <td>Incorrect start page resolution</td>
+                </tr>
+                <tr>
+                    <td>Duration types mismatch (strings vs numbers)</td>
+                    <td><span class="badge badge-orange">Medium</span></td>
+                    <td class="file-ref">spec-schema.ts:99, adapters/types.ts:94</td>
+                    <td>Timeouts may be misinterpreted</td>
+                </tr>
+                <tr>
+                    <td>Generator output path differs from CLI</td>
+                    <td><span class="badge badge-orange">Medium</span></td>
+                    <td class="file-ref">playwright-ts.ts:113, executor.ts:113</td>
+                    <td>CLI run may not find generated tests</td>
+                </tr>
+                <tr>
+                    <td>Baseline diff uses byte comparison</td>
+                    <td><span class="badge badge-orange">Medium</span></td>
+                    <td class="file-ref">baseline.ts:136</td>
+                    <td>False positives/negatives in visual checks</td>
+                </tr>
+                <tr>
+                    <td>Exploration explore() and evidence capture stubbed</td>
+                    <td><span class="badge badge-red">High</span></td>
+                    <td class="file-ref">claude.ts:159, evidence.ts:62</td>
+                    <td>Incomplete exploration pipeline</td>
+                </tr>
+                <tr>
+                    <td>Review UI expects /api/exploration - no server</td>
+                    <td><span class="badge badge-orange">Medium</span></td>
+                    <td class="file-ref">useExplorationData.ts:54</td>
+                    <td>Review UI cannot load without external server</td>
+                </tr>
+                <tr>
+                    <td>Two run-store implementations</td>
+                    <td><span class="badge badge-orange">Medium</span></td>
+                    <td class="file-ref">core/run-store.ts, cli/run-store.ts</td>
+                    <td>Artifact location inconsistencies</td>
+                </tr>
+            </table>
+
+            <div class="callout callout-danger">
+                <div class="callout-title">Critical Path Blockers</div>
+                <p>The exploration-to-review-to-generator pipeline is not wired into the CLI. Key stubs must be implemented before end-to-end workflow is functional.</p>
+            </div>
+        </section>
+
+        <!-- Assessment -->
+        <section id="assessment">
+            <h2>Assessment</h2>
+
+            <h3>Quality Scores</h3>
+            <div class="score-card">
+                <span class="label">Schema Design</span>
+                <span class="stars">★★★★<span class="empty">★</span></span>
+            </div>
+            <div class="score-card">
+                <span class="label">Package Separation</span>
+                <span class="stars">★★★★<span class="empty">★</span></span>
+            </div>
+            <div class="score-card">
+                <span class="label">Integration Completeness</span>
+                <span class="stars">★★<span class="empty">★★★</span></span>
+            </div>
+            <div class="score-card">
+                <span class="label">Error Handling</span>
+                <span class="stars">★★★<span class="empty">★★</span></span>
+            </div>
+            <div class="score-card">
+                <span class="label">Test Coverage</span>
+                <span class="stars">★★★<span class="empty">★★</span></span>
+            </div>
+            <div class="score-card">
+                <span class="label">Documentation</span>
+                <span class="stars">★★★<span class="empty">★★</span></span>
+            </div>
+
+            <h3>Fit-for-Purpose Matrix</h3>
+            <div class="fit-matrix">
+                <div class="fit-cell fit-header">Use Case</div>
+                <div class="fit-cell fit-header">CLI Run</div>
+                <div class="fit-cell fit-header">Exploration</div>
+                <div class="fit-cell fit-header">Review</div>
+
+                <div class="fit-cell fit-header">Development</div>
+                <div class="fit-cell fit-yes">Ready</div>
+                <div class="fit-cell fit-partial">Partial</div>
+                <div class="fit-cell fit-partial">Partial</div>
+
+                <div class="fit-cell fit-header">CI Integration</div>
+                <div class="fit-cell fit-yes">Ready</div>
+                <div class="fit-cell fit-no">Not Ready</div>
+                <div class="fit-cell fit-no">Not Ready</div>
+
+                <div class="fit-cell fit-header">Production</div>
+                <div class="fit-cell fit-partial">Partial</div>
+                <div class="fit-cell fit-no">Not Ready</div>
+                <div class="fit-cell fit-no">Not Ready</div>
+            </div>
+
+            <h3>Strengths</h3>
+            <div class="callout callout-success">
+                <ul>
+                    <li>Strong schema-driven validation with shared typing across packages</li>
+                    <li>Clear separation between CLI, exploration, generator, and review UI</li>
+                    <li>Deterministic Playwright execution with structured JSON results</li>
+                    <li>Well-designed adapter interfaces for extensibility</li>
+                </ul>
+            </div>
+
+            <h3>Risks</h3>
+            <div class="callout callout-danger">
+                <ul>
+                    <li>Multiple data models for specs/exploration cause cross-package mismatches</li>
+                    <li>Key pipeline stages (exploration, review server, generation) not wired into CLI</li>
+                    <li>Dual CLI implementations may confuse users</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Glossary -->
+        <section id="glossary">
+            <h2>Glossary</h2>
+
+            <table>
+                <tr>
+                    <th>Term</th>
+                    <th>Definition</th>
+                    <th>Reference</th>
+                </tr>
+                <tr>
+                    <td><strong>Spec</strong></td>
+                    <td>YAML file describing intended user actions and checks (v2 format)</td>
+                    <td class="file-ref">spec-schema.ts:207</td>
+                </tr>
+                <tr>
+                    <td><strong>Step</strong></td>
+                    <td>Single action inside a spec; executed by exploration or tests</td>
+                    <td class="file-ref">spec-schema.ts:83</td>
+                </tr>
+                <tr>
+                    <td><strong>Exploration</strong></td>
+                    <td>AI-driven run that records steps, screenshots, and decisions</td>
+                    <td class="file-ref">explorer.ts:136</td>
+                </tr>
+                <tr>
+                    <td><strong>Review</strong></td>
+                    <td>Human approval workflow for exploration steps</td>
+                    <td class="file-ref">App.tsx:64</td>
+                </tr>
+                <tr>
+                    <td><strong>Lockfile</strong></td>
+                    <td>Canonical exploration artifact containing locators, masks, and assertions</td>
+                    <td class="file-ref">lockfile.ts:90</td>
+                </tr>
+                <tr>
+                    <td><strong>LocatorObject</strong></td>
+                    <td>Structured locator with preferred and fallback strategies</td>
+                    <td class="file-ref">locator-object.ts:71</td>
+                </tr>
+                <tr>
+                    <td><strong>Baseline</strong></td>
+                    <td>Stored screenshot for visual regression comparisons</td>
+                    <td class="file-ref">baseline.ts:13</td>
+                </tr>
+                <tr>
+                    <td><strong>Failure Bundle</strong></td>
+                    <td>Structured failure artifact with trace/screenshot/diff metadata</td>
+                    <td class="file-ref">failure-bundle.ts:24</td>
+                </tr>
+                <tr>
+                    <td><strong>AIAdapter</strong></td>
+                    <td>Interface for LLM integrations (element finding, exploration)</td>
+                    <td class="file-ref">adapters/types.ts:184</td>
+                </tr>
+                <tr>
+                    <td><strong>BrowserSession</strong></td>
+                    <td>Abstraction for browser automation with snapshot support</td>
+                    <td class="file-ref">explorer.ts:30</td>
+                </tr>
+            </table>
+        </section>
+
+        <footer style="margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem;">
+            <p>Generated: 2026-01-19 | BrowserFlow Architecture Report | Verified against codebase</p>
+        </footer>
+    </main>
+
+    <script>
+        // Initialize Mermaid with dark theme
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                darkMode: true,
+                background: '#161b22',
+                primaryColor: '#58a6ff',
+                primaryTextColor: '#e6edf3',
+                primaryBorderColor: '#30363d',
+                lineColor: '#8b949e',
+                secondaryColor: '#a371f7',
+                tertiaryColor: '#21262d'
+            },
+            flowchart: {
+                curve: 'basis',
+                padding: 20
+            },
+            sequence: {
+                actorMargin: 50,
+                boxMargin: 10,
+                boxTextMargin: 5
+            }
+        });
+
+        // Scroll highlighting for navigation
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('nav ul li a');
+
+        function highlightNav() {
+            const scrollPos = window.scrollY + 100;
+
+            sections.forEach(section => {
+                const top = section.offsetTop;
+                const height = section.offsetHeight;
+                const id = section.getAttribute('id');
+
+                if (scrollPos >= top && scrollPos < top + height) {
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === '#' + id) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }
+
+        window.addEventListener('scroll', highlightNav);
+        highlightNav();
+    </script>
+</body>
+</html>

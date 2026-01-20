@@ -239,11 +239,9 @@ describe('convertToLockfile', () => {
       action: 'navigate',
       url: '/checkout',
     });
-    expect(lockfile.steps[0].execution).toEqual({
-      status: 'completed',
-      method: 'page.goto',
-      durationMs: 500,
-    });
+    expect(lockfile.steps[0].execution.status).toBe('completed');
+    expect(lockfile.steps[0].execution.method).toBe('page.goto');
+    expect(lockfile.steps[0].execution.duration_ms).toBe(500);
     expect(lockfile.outcome_checks).toEqual([
       {
         check: 'url_contains',
@@ -297,8 +295,8 @@ describe('convertToLockfile', () => {
       selector: '#username',
       value: 'testuser',
     });
-    expect(lockfile.steps[0].execution.elementRef).toBe('e1');
-    expect(lockfile.steps[0].execution.selectorUsed).toBe('#username');
+    expect(lockfile.steps[0].execution.element_ref).toBe('e1');
+    expect(lockfile.steps[0].execution.selector_used).toBe('#username');
   });
 
   test('includes metadata fields', () => {
