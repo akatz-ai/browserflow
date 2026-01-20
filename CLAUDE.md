@@ -54,6 +54,37 @@ Do NOT create `.spec.ts` files expecting `@playwright/test` runner to work.
 
 ---
 
+## Unit Testing
+
+Different packages use different test runners based on their needs:
+
+| Package | Test Runner | Why |
+|---------|-------------|-----|
+| `packages/cli` | `bun:test` | No DOM needed |
+| `packages/core` | `bun:test` | No DOM needed |
+| `packages/exploration` | `bun:test` | No DOM needed |
+| `packages/generator` | `bun:test` | No DOM needed |
+| `packages/review-ui` | `vitest` | Needs jsdom for React/DOM testing |
+
+**Key rule:** Check the package's `package.json` scripts to see which runner it uses before writing tests.
+
+```bash
+# Running tests
+bun test                           # Root - runs bun:test for most packages
+cd packages/review-ui && bun test  # Uses vitest (see package.json)
+```
+
+**Import patterns:**
+```typescript
+// For bun:test packages
+import { describe, test, expect } from 'bun:test';
+
+// For review-ui (vitest)
+import { describe, test, expect, vi } from 'vitest';
+```
+
+---
+
 ## BrowserFlow Workflow
 
 BrowserFlow is a tool **designed for AI agents to use** when creating reliable Playwright tests. It provides structured browser exploration with human feedback, optimized for LLM context and understanding.
@@ -199,30 +230,37 @@ The exploration artifact contains step-by-step execution data:
 ```typescript
 {
   spec: string;              // Spec name
+  specPath: string;          // Path to spec file
   explorationId: string;     // Unique exploration ID (exp-<timestamp>)
   timestamp: string;         // ISO8601 timestamp
   baseUrl: string;           // Target URL
   browser: string;           // chromium | firefox | webkit
   viewport: { width, height };
+  durationMs: number;        // Total exploration time
 
   steps: [                   // Array of step results
     {
       stepIndex: number;
       specAction: {...};     // Original spec step definition
       execution: {
-        status: 'success' | 'failed';
-        method: string;      // 'click', 'fill', etc.
-        elementRef: string;  // Locator used
-        selectorUsed: string;
+        status: 'completed' | 'failed' | 'skipped';
+        method: string;        // 'click', 'fill', etc.
+        elementRef?: string;   // Element reference used
+        selectorUsed?: string; // Actual selector
         durationMs: number;
-        error?: string;
+        error?: string;        // Error message if failed
       },
       screenshots: {
         before: string;      // Path to before screenshot
         after: string;       // Path to after screenshot
       },
-      snapshotBefore: string;  // DOM snapshot (HTML)
-      snapshotAfter: string;
+      snapshotBefore?: {...};  // DOM snapshot with tree and refs
+      snapshotAfter?: {
+        tree: string;          // Accessibility tree
+        refs: {                // Element references with Playwright locators
+          "e1": { selector: "getByRole(...)", role: "button", name: "Add" }
+        }
+      }
     }
   ],
 
@@ -236,8 +274,7 @@ The exploration artifact contains step-by-step execution data:
   ],
 
   overallStatus: 'completed' | 'failed' | 'timeout';
-  durationMs: number;
-  errors: string[];
+  errors: string[];          // List of error messages
 }
 ```
 
@@ -267,7 +304,8 @@ The review artifact contains human feedback (comments and mask highlights):
           reason: string;       // Required comment explaining the highlight
         }
       ];
-      locked_locator?: string;  // Preferred locator if human selected one
+      locked_locator?: string;         // Preferred locator if human selected one
+      annotated_screenshot?: string;   // Path to screenshot with mask overlays rendered
     }
   ]
 }
