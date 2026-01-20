@@ -36,20 +36,45 @@ BrowserFlow is a tool **designed for AI agents** (like Claude) to create reliabl
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) package manager
+- [Bun](https://bun.sh) package manager (or npm)
 - Node.js 18+
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (recommended)
 
 ### Installation
 
+#### Option 1: Claude Code Plugin (Recommended)
+
+Install BrowserFlow as a Claude Code plugin to get AI-assisted test creation:
+
 ```bash
-# Clone the repository
+# In Claude Code, add the marketplace
+/plugin marketplace add akatz-ai/browserflow
+
+# Install the plugin
+/plugin install browserflow@browserflow
+```
+
+Or load directly for development:
+```bash
+claude --plugin-dir ./browserflow-plugin
+```
+
+#### Option 2: CLI Only
+
+```bash
+# Install globally
+bun add -g @browserflow/cli
+
+# Or install from source
 git clone https://github.com/akatz-ai/browserflow.git
 cd browserflow
-
-# Install dependencies
 bun install
+bun run build
+cd packages/cli && bun link
+```
 
-# Install Playwright browsers
+Then install Playwright browsers:
+```bash
 bun x playwright install chromium
 ```
 
@@ -363,9 +388,48 @@ review:
 
 ---
 
+## Claude Code Plugin
+
+BrowserFlow includes a Claude Code plugin that gives Claude the knowledge to help you create E2E tests. The plugin provides:
+
+- **Skill documentation** - Claude understands the full BrowserFlow workflow
+- **Spec format reference** - Claude can write valid YAML specs
+- **Artifact schemas** - Claude knows how to read exploration and review data
+- **Adapter guidance** - Claude can help create custom AI adapters
+
+### Install the Plugin
+
+```bash
+# In Claude Code
+/plugin marketplace add akatz-ai/browserflow
+/plugin install browserflow@browserflow
+```
+
+Once installed, Claude will automatically use the BrowserFlow skill when:
+- You ask to create E2E tests
+- You're working with `.browserflow/` directories or `specs/*.yaml` files
+- You mention `bf explore`, `bf review`, or Playwright testing
+
+### Plugin Structure
+
+```
+browserflow-plugin/
+├── .claude-plugin/
+│   └── plugin.json           # Plugin manifest
+└── skills/
+    └── browserflow/
+        ├── SKILL.md          # Main skill (loaded when triggered)
+        └── references/       # Detailed docs (loaded as needed)
+            ├── spec-schema.md
+            ├── artifacts.md
+            └── adapters.md
+```
+
+---
+
 ## Integration with AI Agents
 
-BrowserFlow is designed as a tool for AI agents. When working with Claude Code or similar:
+BrowserFlow is designed as a tool for AI agents. When working with Claude Code:
 
 1. **Agent writes spec** based on feature requirements
 2. **Agent runs exploration** via `bf explore`

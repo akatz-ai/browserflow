@@ -1,0 +1,28 @@
+{
+  "name": "browserflow",
+  "owner": {
+    "name": "akatz-ai",
+    "email": "akatz.claude1@gmail.com"
+  },
+  "metadata": {
+    "description": "AI-driven E2E test creation with human feedback",
+    "version": "0.1.0",
+    "pluginRoot": "./"
+  },
+  "plugins": [
+    {
+      "name": "browserflow",
+      "source": "./browserflow-plugin",
+      "description": "AI-assisted Playwright test creation through structured browser exploration with human feedback. Creates reliable E2E tests by exploring web UIs, capturing DOM snapshots, and iterating on human feedback.",
+      "version": "0.1.0",
+      "author": {
+        "name": "akatz-ai"
+      },
+      "homepage": "https://github.com/akatz-ai/browserflow",
+      "repository": "https://github.com/akatz-ai/browserflow",
+      "license": "MIT",
+      "keywords": ["playwright", "e2e", "testing", "browser", "automation", "ai"],
+      "category": "testing"
+    }
+  ]
+}
