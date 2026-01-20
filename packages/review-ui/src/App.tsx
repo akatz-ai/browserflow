@@ -101,13 +101,14 @@ function ReviewRoute() {
     );
   }
 
-  const handleSubmit = async (reviewData: Record<number, StepReviewData>) => {
+  const handleSubmit = async (reviewData: Record<number, StepReviewData>, overallComment: string) => {
     setSubmitting(true);
     try {
       const reviewJson = {
         exploration_id: data.id,
         spec_name: data.specName,
         reviewed_at: new Date().toISOString(),
+        overall_comment: overallComment || undefined,
         steps: Object.entries(reviewData).map(([stepIndex, stepData]) => ({
           step_index: parseInt(stepIndex, 10),
           status: stepData.status,
