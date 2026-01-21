@@ -1,8 +1,9 @@
 {
   "name": "@browserflow/review-ui",
   "version": "0.0.1",
-  "description": "React review application for BrowserFlow",
+  "description": "React review application for BrowserFlow - Human-in-the-Loop E2E Test Generation",
   "type": "module",
+  "main": "./dist/index.html",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -12,6 +13,13 @@
     "test:watch": "vitest"
   },
   "files": ["dist"],
+  "keywords": ["browserflow", "review-ui", "e2e", "testing"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akatz-ai/browserflow.git",
+    "directory": "packages/review-ui"
+  },
+  "license": "MIT",
   "dependencies": {
     "@browserflow/core": "workspace:*",
     "class-variance-authority": "^0.7.0",

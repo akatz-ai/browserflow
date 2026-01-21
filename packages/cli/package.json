@@ -1,7 +1,7 @@
 {
   "name": "@browserflow/cli",
   "version": "0.0.1",
-  "description": "bf command-line tool for BrowserFlow",
+  "description": "bf command-line tool for BrowserFlow - Human-in-the-Loop E2E Test Generation",
   "type": "module",
   "bin": {
     "bf": "./bin/bf.js"
@@ -24,11 +24,26 @@
     "typecheck": "tsc --noEmit",
     "dev": "bun run src/index.ts"
   },
-  "files": ["dist", "bin", "src"],
+  "files": ["dist", "bin"],
+  "keywords": ["browserflow", "e2e", "testing", "playwright", "ai", "automation"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akatz-ai/browserflow.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/akatz-ai/browserflow/issues"
+  },
+  "homepage": "https://github.com/akatz-ai/browserflow#readme",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@browserflow/core": "workspace:*",
     "@browserflow/exploration": "workspace:*",
     "@browserflow/generator": "workspace:*",
+    "@browserflow/review-ui": "workspace:*",
     "chalk": "^5.3.0",
     "commander": "^12.0.0",
     "ora": "^8.0.0",

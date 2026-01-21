@@ -1,8 +1,14 @@
 {
   "name": "@browserflow/exploration",
   "version": "0.0.1",
-  "description": "AI exploration engine for BrowserFlow",
+  "description": "AI exploration engine for BrowserFlow - Human-in-the-Loop E2E Test Generation",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akatz-ai/browserflow.git",
+    "directory": "packages/exploration"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

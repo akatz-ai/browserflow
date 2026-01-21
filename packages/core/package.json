@@ -1,8 +1,14 @@
 {
   "name": "@browserflow/core",
   "version": "0.0.1",
-  "description": "Shared types, schemas, and utilities for BrowserFlow",
+  "description": "Shared types, schemas, and utilities for BrowserFlow - Human-in-the-Loop E2E Test Generation",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akatz-ai/browserflow.git",
+    "directory": "packages/core"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
