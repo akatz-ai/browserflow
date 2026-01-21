@@ -1,4 +1,4 @@
-// @browserflow/exploration - Evidence collection (screenshots and traces)
+// @akatz-ai/exploration - Evidence collection (screenshots and traces)
 
 import { promises as fs } from 'fs';
 import * as path from 'path';

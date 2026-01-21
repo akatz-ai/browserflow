@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import type { MaskRegion } from '@browserflow/core';
+import type { MaskRegion } from '@akatz-ai/core';
 import {
   generateScreenshotAssertion,
   generateScreenshotCapture,

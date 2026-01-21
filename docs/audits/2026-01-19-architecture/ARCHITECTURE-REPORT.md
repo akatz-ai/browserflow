@@ -13,22 +13,22 @@ Observed integration is partial: the CLI only runs existing Playwright tests and
 ## System Overview Diagram
 ```mermaid
 flowchart LR
-  User[User] --> CLI["@browserflow/cli (bf)"]
+  User[User] --> CLI["@akatz-ai/cli (bf)"]
   Specs["specs/*.yaml"] --> CLI
   Config["browserflow.yaml"] --> CLI
-  CLI --> Core["@browserflow/core"]
+  CLI --> Core["@akatz-ai/core"]
   CLI --> Playwright["Playwright CLI (bunx playwright)"]
   CLI --> Runs[".browserflow/runs/..."]
   CLI --> Baselines[".browserflow/baselines/..."]
 
-  Exploration["@browserflow/exploration"] --> Core
+  Exploration["@akatz-ai/exploration"] --> Core
   Exploration --> AgentBrowser["agent-browser BrowserManager"]
   Exploration --> Anthropic["Anthropic API"]
 
-  Generator["@browserflow/generator"] --> Core
+  Generator["@akatz-ai/generator"] --> Core
   Generator --> Tests["Playwright test files"]
 
-  ReviewUI["@browserflow/review-ui"] --> ReviewAPI["/api/exploration (server)"]
+  ReviewUI["@akatz-ai/review-ui"] --> ReviewAPI["/api/exploration (server)"]
   ReviewUI --> ReviewJSON["review-<id>.json download"]
 
   %% inferred pipeline edges
@@ -61,10 +61,10 @@ Note: dashed edges are inferred from docs/legacy CLI and are not wired in code.
 ### Dependency Graph (packages only)
 ```mermaid
 graph LR
-  cli["@browserflow/cli"] --> core["@browserflow/core"]
-  exploration["@browserflow/exploration"] --> core
-  generator["@browserflow/generator"] --> core
-  reviewUI["@browserflow/review-ui"] --> core
+  cli["@akatz-ai/cli"] --> core["@akatz-ai/core"]
+  exploration["@akatz-ai/exploration"] --> core
+  generator["@akatz-ai/generator"] --> core
+  reviewUI["@akatz-ai/review-ui"] --> core
 
   exploration --> agentBrowser["agent-browser"]
   exploration --> anthropic["@anthropic-ai/sdk"]
@@ -74,7 +74,7 @@ graph LR
 ```
 
 ## Component Deep Dives
-### @browserflow/core
+### @akatz-ai/core
 - Responsibility: Zod schemas for specs/config/lockfile, locator model, run-store, and shared types. (`packages/core/src/spec-schema.ts:207`, `packages/core/src/config-schema.ts:65`, `packages/core/src/lockfile.ts:90`)
 - Key types: `BrowserFlowSpec`, `LocatorObject`, `Lockfile`, `ReviewData`. (`packages/core/src/spec-schema.ts:241`, `packages/core/src/locator-object.ts:71`, `packages/core/src/lockfile.ts:90`, `packages/core/src/config.ts:77`)
 - Dependencies: Zod for validation, Playwright core for locator resolution. (`packages/core/src/spec-schema.ts:7`, `packages/core/src/locator-object.ts:8`)
@@ -91,7 +91,7 @@ export const specSchema = z
 ```
 (`packages/core/src/spec-schema.ts:207`)
 
-### @browserflow/cli
+### @akatz-ai/cli
 - Responsibility: Provide CLI commands for initialization, environment checks, spec linting, test execution, baselines, and repair. (`packages/cli/src/index.ts:11`)
 - Entry points: Node bin `bf.js` calls `run()`; `run()` registers commands with Commander. (`packages/cli/bin/bf.js:1`, `packages/cli/src/index.ts:11`)
 - Execution pipeline for `bf run`: resolve specs, create run dir, spawn Playwright with JSON reporter, collect results, generate failure bundles. (`packages/cli/src/commands/run.ts:39`, `packages/cli/src/run/executor.ts:12`, `packages/cli/src/run/results.ts:7`)
@@ -106,7 +106,7 @@ if (summary.failed > 0) {
 ```
 (`packages/cli/src/commands/run.ts:39`)
 
-### @browserflow/exploration
+### @akatz-ai/exploration
 - Responsibility: Orchestrate AI exploration via `Explorer`, using a `BrowserSession` abstraction and an `AIAdapter` for element resolution. (`packages/exploration/src/explorer.ts:30`, `packages/exploration/src/adapters/types.ts:181`)
 - Browser integration: `AgentBrowserSession` wraps agent-browser's `BrowserManager`. (`packages/exploration/src/agent-browser-session.ts:8`)
 - Execution model: `runExploration()` launches browser, navigates, executes steps with screenshots and snapshots, and returns `ExplorationOutput`. (`packages/exploration/src/explorer.ts:136`)
@@ -122,7 +122,7 @@ export interface BrowserSession {
 ```
 (`packages/exploration/src/explorer.ts:30`)
 
-### @browserflow/generator
+### @akatz-ai/generator
 - Responsibility: Convert exploration lockfiles into Playwright tests using Handlebars templates; generate Playwright config templates. (`packages/generator/src/playwright-ts.ts:74`, `packages/generator/src/config-emit.ts:118`)
 - Key types: `ExplorationLockfile`, `ReviewData`, `GeneratedTest`. (`packages/generator/src/playwright-ts.ts:6`)
 - Evidence snippet (generator output):
@@ -145,7 +145,7 @@ return {
 ```
 (`packages/generator/src/playwright-ts.ts:100`, `packages/generator/src/playwright-ts.ts:112`)
 
-### @browserflow/review-ui
+### @akatz-ai/review-ui
 - Responsibility: Load exploration JSON, present step review UI, and output review JSON (download). (`packages/review-ui/src/App.tsx:64`, `packages/review-ui/src/hooks/useExplorationData.ts:33`)
 - Data normalization: `useExplorationData` adapts legacy exploration JSON and lockfile-style data into `ExplorationData`. (`packages/review-ui/src/hooks/useExplorationData.ts:78`)
 - Evidence snippet (submit workflow):
@@ -323,7 +323,7 @@ sequenceDiagram
 | State machine (implicit) | Review step status | `pending` -> `approved`/`rejected` | `packages/review-ui/src/hooks/useReviewState.ts:104` |
 
 ## Layering and Boundaries
-Observed layering is hub-and-spoke around `@browserflow/core`. Core provides schemas and shared types, while CLI, exploration, generator, and review UI import core types but do not depend on each other directly. (`packages/core/src/spec-schema.ts:207`, `packages/cli/src/index.ts:11`, `packages/exploration/src/explorer.ts:91`, `packages/generator/src/playwright-ts.ts:74`, `packages/review-ui/src/hooks/useReviewState.ts:1`)
+Observed layering is hub-and-spoke around `@akatz-ai/core`. Core provides schemas and shared types, while CLI, exploration, generator, and review UI import core types but do not depend on each other directly. (`packages/core/src/spec-schema.ts:207`, `packages/cli/src/index.ts:11`, `packages/exploration/src/explorer.ts:91`, `packages/generator/src/playwright-ts.ts:74`, `packages/review-ui/src/hooks/useReviewState.ts:1`)
 Inferred boundary intent: specs and reviews should flow from exploration to generation, but there is no direct wiring in the CLI, and several data shapes differ (see Technical Debt). (Inference)
 
 ## Concurrency Model

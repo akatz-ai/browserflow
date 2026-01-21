@@ -1,4 +1,4 @@
-// @browserflow/exploration - Locator candidate generator tests
+// @akatz-ai/exploration - Locator candidate generator tests
 import { describe, it, expect, beforeEach } from 'bun:test';
 import {
   LocatorCandidateGenerator,

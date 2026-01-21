@@ -41,9 +41,9 @@ if [ -z "$BF_ROOT" ]; then
     echo "BrowserFlow not found locally. Installing from npm..."
 
     if [ "$PKG_MGR" = "bun" ]; then
-        bun add -g @browserflow/cli
+        bun add -g @akatz-ai/cli
     else
-        npm install -g @browserflow/cli
+        npm install -g @akatz-ai/cli
     fi
 else
     echo "Found BrowserFlow at: $BF_ROOT"

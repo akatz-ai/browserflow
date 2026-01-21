@@ -138,9 +138,9 @@ async function main(): Promise<void> {
     console.log('✨ All packages published successfully!');
     console.log('');
     console.log('Install with:');
-    console.log('  bun add -g @browserflow/cli');
+    console.log('  bun add -g @akatz-ai/cli');
     console.log('  # or');
-    console.log('  npm install -g @browserflow/cli');
+    console.log('  npm install -g @akatz-ai/cli');
 
   } finally {
     // Restore original package.json files

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LocatorPicker, type LocatorCandidate } from './LocatorPicker';
-import type { LegacyLocatorObject } from '@browserflow/core';
+import type { LegacyLocatorObject } from '@akatz-ai/core';
 
 // Helper to create mock candidates
 function createMockCandidate(overrides: Partial<LocatorCandidate> = {}): LocatorCandidate {

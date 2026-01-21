@@ -1,4 +1,4 @@
-// @browserflow/exploration - AI exploration engine
+// @akatz-ai/exploration - AI exploration engine
 
 // Main orchestrator
 export { Explorer } from './explorer';

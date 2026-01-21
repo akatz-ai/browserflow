@@ -1,4 +1,4 @@
-// @browserflow/exploration - Adapter types
+// @akatz-ai/exploration - Adapter types
 
 /**
  * Represents a step execution result from AI exploration

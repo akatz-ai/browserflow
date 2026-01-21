@@ -7,7 +7,7 @@ import type {
   PlaywrightConfigOptions,
   PlaywrightProject,
   GeneratedConfig,
-} from '@browserflow/core';
+} from '@akatz-ai/core';
 import Handlebars from 'handlebars';
 
 /**

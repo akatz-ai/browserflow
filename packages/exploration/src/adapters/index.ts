@@ -1,4 +1,4 @@
-// @browserflow/exploration - Adapter exports
+// @akatz-ai/exploration - Adapter exports
 
 export { ClaudeAdapter } from './claude';
 export type { ClaudeAdapterConfig } from './claude';

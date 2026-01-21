@@ -1,4 +1,4 @@
-// @browserflow/exploration - Explorer tests
+// @akatz-ai/exploration - Explorer tests
 import { describe, it, expect, beforeEach, spyOn, afterEach } from 'bun:test';
 import { Explorer } from './explorer';
 import type { BrowserSession } from './explorer';

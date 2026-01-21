@@ -1,4 +1,4 @@
-// @browserflow/exploration - Claude CLI Adapter tests (with mocks)
+// @akatz-ai/exploration - Claude CLI Adapter tests (with mocks)
 
 import { describe, test, expect, mock, beforeEach } from 'bun:test';
 import { ClaudeCliAdapter } from './claude-cli';

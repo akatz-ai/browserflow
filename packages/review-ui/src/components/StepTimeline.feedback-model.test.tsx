@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StepTimeline } from './StepTimeline';
-import type { ExplorationStep } from '@browserflow/core';
+import type { ExplorationStep } from '@akatz-ai/core';
 
 // Helper to create mock steps
 function createMockStep(overrides: Partial<ExplorationStep> = {}): ExplorationStep {

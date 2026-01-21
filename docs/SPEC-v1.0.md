@@ -2544,18 +2544,18 @@ browserflow/
 │                           Package Dependency Graph                               │
 ├─────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                  │
-│                              @browserflow/cli                                    │
+│                              @akatz-ai/cli                                    │
 │                                    │                                             │
 │                 ┌──────────────────┼──────────────────┐                          │
 │                 │                  │                  │                          │
 │                 ▼                  ▼                  ▼                          │
-│        @browserflow/         @browserflow/    @browserflow/                      │
+│        @akatz-ai/         @akatz-ai/    @akatz-ai/                      │
 │         exploration           generator         review-ui                        │
 │                 │                  │                  │                          │
 │                 └──────────────────┼──────────────────┘                          │
 │                                    │                                             │
 │                                    ▼                                             │
-│                            @browserflow/core                                     │
+│                            @akatz-ai/core                                     │
 │                                    │                                             │
 │                 ┌──────────────────┼──────────────────┐                          │
 │                 │                  │                  │                          │
@@ -2580,7 +2580,7 @@ browserflow/
     "test": "bun run --filter '*' test",
     "lint": "bun run --filter '*' lint",
     "typecheck": "bun run --filter '*' typecheck",
-    "dev": "bun run --filter @browserflow/cli dev"
+    "dev": "bun run --filter @akatz-ai/cli dev"
   },
   "devDependencies": {
     "typescript": "^5.3.0",
@@ -2654,7 +2654,7 @@ browserflow/
 **Key Tasks:**
 1. Initialize monorepo structure
 2. Configure TypeScript paths and references
-3. Implement `@browserflow/core` package
+3. Implement `@akatz-ai/core` package
 4. Define Zod schemas for spec v2
 5. Implement duration parser (ms/s/m/h)
 6. Implement run ID generator and directory management

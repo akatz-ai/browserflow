@@ -406,10 +406,10 @@ bf explore --spec add-todo --url http://localhost:3001 --adapter claude-cli
 
 ### Creating Custom Adapters
 
-Adapters implement the `AIAdapter` interface from `@browserflow/exploration`:
+Adapters implement the `AIAdapter` interface from `@akatz-ai/exploration`:
 
 ```typescript
-import type { AIAdapter, EnhancedSnapshot, FindElementResult, ExploreParams, ExplorationOutput } from '@browserflow/exploration';
+import type { AIAdapter, EnhancedSnapshot, FindElementResult, ExploreParams, ExplorationOutput } from '@akatz-ai/exploration';
 
 export class MyCustomAdapter implements AIAdapter {
   readonly name = 'my-adapter';
@@ -468,26 +468,26 @@ To add a new adapter:
 
 ## Publishing & Distribution
 
-BrowserFlow is distributed via npm as a set of scoped packages under `@browserflow/*`.
+BrowserFlow is distributed via npm as a set of scoped packages under `@akatz-ai/*`.
 
 ### Package Structure
 
 | Package | Description |
 |---------|-------------|
-| `@browserflow/cli` | Main CLI (`bf` command) - install this globally |
-| `@browserflow/core` | Shared types, schemas, Zod validators |
-| `@browserflow/exploration` | AI exploration engine (playwright, adapters) |
-| `@browserflow/generator` | Playwright test code generator |
-| `@browserflow/review-ui` | React review application |
+| `@akatz-ai/cli` | Main CLI (`bf` command) - install this globally |
+| `@akatz-ai/core` | Shared types, schemas, Zod validators |
+| `@akatz-ai/exploration` | AI exploration engine (playwright, adapters) |
+| `@akatz-ai/generator` | Playwright test code generator |
+| `@akatz-ai/review-ui` | React review application |
 
 ### Installation (for users)
 
 ```bash
 # Using bun (recommended)
-bun add -g @browserflow/cli
+bun add -g @akatz-ai/cli
 
 # Using npm
-npm install -g @browserflow/cli
+npm install -g @akatz-ai/cli
 
 # Or via install script
 curl -fsSL https://raw.githubusercontent.com/akatz-ai/browserflow/main/scripts/install.sh | bash
@@ -531,7 +531,7 @@ bun run publish:dry  # Preview what would be published
 ### How review-ui Assets Work
 
 When installed via npm, the CLI finds the review-ui assets through package resolution:
-1. `review.ts` uses `import.meta.resolve('@browserflow/review-ui/package.json')`
+1. `review.ts` uses `import.meta.resolve('@akatz-ai/review-ui/package.json')`
 2. Resolves to the installed package location in `node_modules`
 3. Serves static files from that package's `dist/` directory
 

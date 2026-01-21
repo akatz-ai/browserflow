@@ -1,4 +1,4 @@
-// @browserflow/exploration - Step executor tests
+// @akatz-ai/exploration - Step executor tests
 import { describe, it, expect, beforeEach, spyOn } from 'bun:test';
 import { StepExecutor } from './step-executor';
 import type { BrowserSession } from './explorer';

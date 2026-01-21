@@ -3,7 +3,7 @@
  * Converts LocatorObject instances to Playwright locator code strings.
  */
 
-import type { LegacyLocatorObject, LocatorMethod } from '@browserflow/core';
+import type { LegacyLocatorObject, LocatorMethod } from '@akatz-ai/core';
 
 // Use the legacy interface for backwards compatibility
 type LocatorObject = LegacyLocatorObject;

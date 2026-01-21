@@ -1,5 +1,5 @@
 /**
- * @browserflow/generator
+ * @akatz-ai/generator
  *
  * Playwright test generator for BrowserFlow.
  * Converts exploration lockfiles into deterministic Playwright Test code.
@@ -54,4 +54,4 @@ export type {
   ReviewData,
   PlaywrightConfigOptions,
   PlaywrightProject,
-} from '@browserflow/core';
+} from '@akatz-ai/core';

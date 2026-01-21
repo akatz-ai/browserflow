@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import type { ExplorationStep, LegacyLocatorObject } from '@browserflow/core';
+import type { ExplorationStep, LegacyLocatorObject } from '@akatz-ai/core';
 import type { Mask } from '../components/MaskEditor';
 import type { ViewMode } from '../components/ScreenshotViewer';
 import type { LocatorCandidate } from '../components/LocatorPicker';

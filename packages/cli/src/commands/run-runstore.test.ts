@@ -7,7 +7,7 @@ import { describe, expect, test, beforeEach, afterEach } from 'bun:test';
 import { mkdir, writeFile, rm, readdir, stat, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { createRunStore } from '@browserflow/core';
+import { createRunStore } from '@akatz-ai/core';
 
 describe('CLI uses core RunStore', () => {
   let testDir: string;

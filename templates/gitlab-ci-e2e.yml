@@ -14,7 +14,7 @@ e2e:
       - ~/.cache/ms-playwright/
 
   before_script:
-    - bun add -g @browserflow/cli
+    - bun add -g @akatz-ai/cli
     - bunx playwright install --with-deps chromium
 
   script:

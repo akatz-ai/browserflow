@@ -12,7 +12,7 @@ This guide will help you go from zero to running your first BrowserFlow test in 
 
 ```bash
 # Install BrowserFlow CLI globally
-bun add -g @browserflow/cli
+bun add -g @akatz-ai/cli
 
 # Install Playwright browsers
 bunx playwright install chromium
@@ -184,13 +184,13 @@ output:
 Ensure the CLI is installed globally:
 
 ```bash
-bun add -g @browserflow/cli
+bun add -g @akatz-ai/cli
 ```
 
 Or run via bunx:
 
 ```bash
-bunx @browserflow/cli init
+bunx @akatz-ai/cli init
 ```
 
 ### "No browserflow.yaml found"

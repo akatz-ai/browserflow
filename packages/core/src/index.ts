@@ -1,5 +1,5 @@
 /**
- * @browserflow/core - Shared types, schemas, and utilities
+ * @akatz-ai/core - Shared types, schemas, and utilities
  */
 
 // Spec schema and types

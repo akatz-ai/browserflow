@@ -17,7 +17,7 @@ This directory contains JSON Schemas generated from BrowserFlow's Zod schemas. T
 Add a schema reference comment at the top of your YAML files:
 
 ```yaml
-# yaml-language-server: $schema=./node_modules/@browserflow/core/schemas/spec-v2.schema.json
+# yaml-language-server: $schema=./node_modules/@akatz-ai/core/schemas/spec-v2.schema.json
 version: 2
 name: my-test
 steps:
@@ -29,7 +29,7 @@ steps:
 For config files:
 
 ```yaml
-# yaml-language-server: $schema=./node_modules/@browserflow/core/schemas/browserflow.schema.json
+# yaml-language-server: $schema=./node_modules/@akatz-ai/core/schemas/browserflow.schema.json
 project:
   name: my-project
   base_url: http://localhost:3000
@@ -42,8 +42,8 @@ Add schema associations to your `.vscode/settings.json`:
 ```json
 {
   "yaml.schemas": {
-    "./node_modules/@browserflow/core/schemas/spec-v2.schema.json": "specs/**/*.yaml",
-    "./node_modules/@browserflow/core/schemas/browserflow.schema.json": "browserflow.yaml"
+    "./node_modules/@akatz-ai/core/schemas/spec-v2.schema.json": "specs/**/*.yaml",
+    "./node_modules/@akatz-ai/core/schemas/browserflow.schema.json": "browserflow.yaml"
   }
 }
 ```
@@ -70,7 +70,7 @@ For global configuration, add to your VS Code user settings:
 
 1. Open Settings > Languages & Frameworks > Schemas and DTDs > JSON Schema Mappings
 2. Add a new mapping:
-   - Schema file: `node_modules/@browserflow/core/schemas/spec-v2.schema.json`
+   - Schema file: `node_modules/@akatz-ai/core/schemas/spec-v2.schema.json`
    - File path pattern: `specs/*.yaml`
 
 ### Neovim (with nvim-lspconfig)
@@ -82,8 +82,8 @@ require('lspconfig').yamlls.setup({
   settings = {
     yaml = {
       schemas = {
-        ["./node_modules/@browserflow/core/schemas/spec-v2.schema.json"] = "specs/**/*.yaml",
-        ["./node_modules/@browserflow/core/schemas/browserflow.schema.json"] = "browserflow.yaml",
+        ["./node_modules/@akatz-ai/core/schemas/spec-v2.schema.json"] = "specs/**/*.yaml",
+        ["./node_modules/@akatz-ai/core/schemas/browserflow.schema.json"] = "browserflow.yaml",
       },
     },
   },

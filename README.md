@@ -63,7 +63,7 @@ claude --plugin-dir ./browserflow-plugin
 
 ```bash
 # Install globally
-bun add -g @browserflow/cli
+bun add -g @akatz-ai/cli
 
 # Or install from source
 git clone https://github.com/akatz-ai/browserflow.git

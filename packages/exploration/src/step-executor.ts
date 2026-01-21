@@ -1,6 +1,6 @@
-// @browserflow/exploration - Step executor
+// @akatz-ai/exploration - Step executor
 
-import { parseDuration } from '@browserflow/core';
+import { parseDuration } from '@akatz-ai/core';
 import type { BrowserSession } from './explorer';
 import type {
   SpecStep,
