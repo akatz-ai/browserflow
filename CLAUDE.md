@@ -463,3 +463,76 @@ To add a new adapter:
 
 - **BrowserFlow skill** (`~/.claude/skills/browserflow-testing.md`) - Detailed workflow guidance, spec format, best practices
 - **Spec YAML format** - Intent-first test specifications (v2 schema)
+
+---
+
+## Publishing & Distribution
+
+BrowserFlow is distributed via npm as a set of scoped packages under `@browserflow/*`.
+
+### Package Structure
+
+| Package | Description |
+|---------|-------------|
+| `@browserflow/cli` | Main CLI (`bf` command) - install this globally |
+| `@browserflow/core` | Shared types, schemas, Zod validators |
+| `@browserflow/exploration` | AI exploration engine (playwright, adapters) |
+| `@browserflow/generator` | Playwright test code generator |
+| `@browserflow/review-ui` | React review application |
+
+### Installation (for users)
+
+```bash
+# Using bun (recommended)
+bun add -g @browserflow/cli
+
+# Using npm
+npm install -g @browserflow/cli
+
+# Or via install script
+curl -fsSL https://raw.githubusercontent.com/akatz-ai/browserflow/main/scripts/install.sh | bash
+```
+
+### Publishing a New Release
+
+**Prerequisites (one-time setup):**
+1. Create npm account at https://www.npmjs.com/signup
+2. Create automation token: https://www.npmjs.com/settings/<username>/tokens → "Automation"
+3. Add `NPM_TOKEN` secret to GitHub: https://github.com/akatz-ai/browserflow/settings/secrets/actions
+
+**To publish:**
+```bash
+# 1. Update version in root package.json (optional - defaults to tag)
+# 2. Create and push a version tag
+git tag v0.1.0
+git push --tags
+```
+
+The GitHub Actions workflow (`.github/workflows/release.yml`) will:
+1. Build all packages
+2. Run tests
+3. Convert `workspace:*` references to actual versions
+4. Publish packages in dependency order to npm
+5. Create a GitHub Release with install instructions
+
+**Local dry-run:**
+```bash
+bun run publish:dry  # Preview what would be published
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `scripts/publish.ts` | Handles workspace protocol conversion and npm publish |
+| `scripts/install.sh` | User-facing install script (wraps bun/npm) |
+| `.github/workflows/release.yml` | CI/CD workflow triggered on `v*` tags |
+
+### How review-ui Assets Work
+
+When installed via npm, the CLI finds the review-ui assets through package resolution:
+1. `review.ts` uses `import.meta.resolve('@browserflow/review-ui/package.json')`
+2. Resolves to the installed package location in `node_modules`
+3. Serves static files from that package's `dist/` directory
+
+In development (monorepo), it falls back to `packages/review-ui/dist`.
