@@ -32,6 +32,11 @@ BrowserFlow is a tool **designed for AI agents** (like Claude) to create reliabl
 **Result**: Pay tokens once to create tests, run them forever in CI for free.
 
 ---
+### Screenshot
+
+View of the main interface:
+
+<img width="1440" height="1116" alt="screenshot_20260120_210642" src="https://github.com/user-attachments/assets/66c1c823-36fc-4717-ad35-f2a8bb47384c" />
 
 ## Quick Start
 
@@ -152,6 +157,8 @@ Opens a web UI at `http://localhost:8190` where humans provide **free-form feedb
 - **Add comments** - Explain what looks wrong or needs attention
 - **Draw masks** - Highlight specific areas on screenshots that need fixing
 - **Write overall notes** - Summarize findings
+
+<img width="1413" height="1091" alt="screenshot_20260120_210658" src="https://github.com/user-attachments/assets/ab9f748d-6e56-45fa-a842-c123e763f604" />
 
 **Important:** Masks are for **highlighting issues** (pointing at problems), not for hiding dynamic content. Each mask requires a comment explaining what's wrong.
 
