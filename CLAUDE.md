@@ -225,7 +225,34 @@ const review = JSON.parse(
 // e.g., refs.e1.selector = "getByRole('button', { name: 'Add' })"
 ```
 
-The AI writes the test directly - there's no separate `bf codify` command. The test generation happens in conversation, informed by exploration data and human feedback.
+Use `bf codify` to generate a Playwright test from an exploration:
+
+```bash
+# Generate from a specific exploration
+bf codify --exploration <exp-id>
+
+# Find latest exploration for a spec
+bf codify --spec <spec-name>
+
+# Dry run - print test without writing
+bf codify --exploration <exp-id> --dry-run
+
+# Custom output path
+bf codify --exploration <exp-id> --output path/to/test.spec.ts
+
+# Skip comments or visual assertions
+bf codify --exploration <exp-id> --no-comments
+bf codify --exploration <exp-id> --no-visual
+
+# Require review approval before generating
+bf codify --exploration <exp-id> --require-review
+```
+
+The codify command:
+1. Loads exploration data (and optional review feedback)
+2. Resolves element refs to Playwright locators from snapshot data
+3. Generates deterministic Playwright test code
+4. Outputs to `e2e/tests/{specName}.spec.ts` by default
 
 ### Understanding exploration.json
 

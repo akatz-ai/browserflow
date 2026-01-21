@@ -8,6 +8,7 @@ import { baselineCommand } from './commands/baseline.js';
 import { repairCommand } from './commands/repair.js';
 import { exploreCommand } from './commands/explore.js';
 import { reviewCommand } from './commands/review.js';
+import { codifyCommand } from './commands/codify.js';
 
 const require = createRequire(import.meta.url);
 const { version: VERSION } = require('../package.json');
@@ -28,6 +29,7 @@ export function createProgram(): Command {
   program.addCommand(repairCommand());
   program.addCommand(exploreCommand());
   program.addCommand(reviewCommand());
+  program.addCommand(codifyCommand());
 
   return program;
 }
