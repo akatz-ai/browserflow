@@ -7,9 +7,47 @@ description: AI-assisted Playwright test creation through structured browser exp
 
 Create reliable Playwright tests through AI-driven browser exploration with human feedback.
 
+## Before You Start
+
+**IMPORTANT: Always check if `bf` is already installed before attempting installation.**
+
+```bash
+# Check if bf CLI is installed
+bf --version
+```
+
+If the command returns a version number, the CLI is already installed and you can skip to "Quick Start".
+
 ## Installation
 
-**Install this plugin in Claude Code:**
+### Check Prerequisites
+
+1. **Check if bf is already installed:** `bf --version`
+2. **Check if Playwright browsers are installed:** `bunx playwright --version`
+
+Only install what's missing.
+
+### Install bf CLI (if not installed)
+
+```bash
+# Global install (recommended for CLI usage)
+bun add -g @browserflow-ai/cli
+
+# Or as dev dependency in your project
+bun add -D @browserflow-ai/cli
+```
+
+**Package name:** `@browserflow-ai/cli` (note: it's `browserflow-ai`, not `browserflow`)
+
+### Install Playwright browsers (if not installed)
+
+```bash
+bunx playwright install chromium
+```
+
+### Plugin Installation (optional)
+
+To install this as a Claude Code plugin:
 
 ```bash
 # Add the marketplace
@@ -24,17 +62,11 @@ Or load directly for development:
 claude --plugin-dir ./browserflow-plugin
 ```
 
-**Install bf CLI in your project:**
-
-```bash
-bun add -D @browserflow-ai/cli && bunx playwright install chromium
-```
-
 ## Quick Start
 
 ```bash
-# 1. Install bf CLI (if not already installed)
-bun add -D @browserflow-ai/cli && bunx playwright install chromium
+# 1. Verify bf is installed
+bf --version
 
 # 2. Write a spec
 cat > specs/login.yaml << 'EOF'
