@@ -85,13 +85,25 @@ function getMimeType(pathname: string): string {
 /**
  * Find the review-ui dist directory
  * Checks multiple locations to support both development and installed package scenarios
+ * @param cwd Optional working directory for testing (used to find monorepo structure)
  */
-async function findReviewUIDistDir(): Promise<string> {
+async function findReviewUIDistDir(cwd?: string): Promise<string> {
   const __dirname = dirname(fileURLToPath(import.meta.url));
+  const workingDir = cwd || process.cwd();
 
-  // Try to find @browserflow/review-ui package first (for installed scenarios)
+  // When cwd is explicitly provided (testing), check that first
+  if (cwd) {
+    const testPath = join(cwd, 'packages', 'review-ui', 'dist');
+    try {
+      await access(testPath);
+      return testPath;
+    } catch {
+      // Fall through to other methods
+    }
+  }
+
+  // Try to find @browserflow/review-ui package (for installed scenarios)
   try {
-    // Use import.meta.resolve to find the package
     const reviewUiPkgPath = await import.meta.resolve?.('@browserflow/review-ui/package.json');
     if (reviewUiPkgPath) {
       const pkgDir = dirname(fileURLToPath(reviewUiPkgPath));
@@ -100,17 +112,17 @@ async function findReviewUIDistDir(): Promise<string> {
       return distDir;
     }
   } catch {
-    // Package resolution failed, try other methods
+    // Package resolution failed, try filesystem paths
   }
 
-  // Fallback: check multiple filesystem locations
+  // Fallback: check filesystem locations
   const candidates = [
-    // 1. Development: monorepo structure (running from source)
+    // 1. Development: from repo root / cwd
+    join(workingDir, 'packages', 'review-ui', 'dist'),
+    // 2. Development: monorepo structure (running from source)
     join(__dirname, '..', '..', '..', '..', 'review-ui', 'dist'),
-    // 2. Installed package: review-ui as sibling in node_modules
+    // 3. Installed package: review-ui as sibling in node_modules
     join(__dirname, '..', '..', '..', 'review-ui', 'dist'),
-    // 3. Development: from repo root
-    join(process.cwd(), 'packages', 'review-ui', 'dist'),
   ];
 
   for (const candidate of candidates) {
@@ -129,13 +141,15 @@ async function findReviewUIDistDir(): Promise<string> {
 
 /**
  * Serve static files from review-ui dist
+ * @param pathname The URL pathname to serve
+ * @param cwd Optional working directory for testing
  * @internal Exported for testing
  */
-export async function serveStaticUI(pathname: string): Promise<Response> {
+export async function serveStaticUI(pathname: string, cwd?: string): Promise<Response> {
   let distDir: string;
 
   try {
-    distDir = await findReviewUIDistDir();
+    distDir = await findReviewUIDistDir(cwd);
   } catch (error) {
     return new Response((error as Error).message, { status: 500 });
   }

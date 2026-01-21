@@ -16,6 +16,14 @@
     "./dist/*": {
       "import": "./dist/*.js",
       "types": "./dist/*.d.ts"
+    },
+    "./dist/commands/explore.js": {
+      "import": "./dist/commands/explore.js",
+      "types": "./dist/commands/explore.d.ts"
+    },
+    "./dist/commands/review.js": {
+      "import": "./dist/commands/review.js",
+      "types": "./dist/commands/review.d.ts"
     }
   },
   "scripts": {

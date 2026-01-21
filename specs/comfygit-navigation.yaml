@@ -1,0 +1,95 @@
+version: 2
+name: comfygit-navigation
+description: |
+  Tests the ComfyGit panel navigation - opening the panel and clicking through
+  the various menu tabs (Status, History, Branches, Debug, Remotes) to verify
+  all sections are accessible and render correctly.
+
+preconditions:
+  page:
+    url: /
+  viewport:
+    width: 1280
+    height: 720
+
+steps:
+  - id: wait-for-canvas
+    action: verify_state
+    description: Wait for ComfyUI canvas to load
+    checks:
+      - element_visible: "canvas"
+
+  - id: open-comfygit-panel
+    action: click
+    description: Click the ComfyGit button to open the panel
+    target:
+      text: "ComfyGit"
+
+  - id: verify-panel-opened
+    action: verify_state
+    description: Verify the ComfyGit panel opened and shows STATUS tab
+    checks:
+      - text_contains: "STATUS"
+      - text_contains: "HISTORY"
+
+  - id: click-history-tab
+    action: click
+    description: Click the HISTORY tab to view commit history
+    target:
+      text: "HISTORY"
+
+  - id: verify-history-visible
+    action: verify_state
+    description: Verify the history section is displayed
+    checks:
+      - text_contains: "HISTORY"
+
+  - id: click-branches-tab
+    action: click
+    description: Click the BRANCHES tab to view git branches
+    target:
+      text: "BRANCHES"
+
+  - id: verify-branches-visible
+    action: verify_state
+    description: Verify the branches section is displayed
+    checks:
+      - text_contains: "BRANCHES"
+
+  - id: click-debug-tab
+    action: click
+    description: Click the DEBUG tab to view debug information
+    target:
+      text: "DEBUG"
+
+  - id: verify-debug-visible
+    action: verify_state
+    description: Verify the debug section is displayed
+    checks:
+      - text_contains: "DEBUG"
+
+  - id: click-remotes-tab
+    action: click
+    description: Click the REMOTES tab to view git remotes
+    target:
+      text: "REMOTES"
+
+  - id: verify-remotes-visible
+    action: verify_state
+    description: Verify the remotes section is displayed
+    checks:
+      - text_contains: "REMOTES"
+
+  - id: return-to-status
+    action: click
+    description: Return to the STATUS tab
+    target:
+      text: "STATUS"
+
+expected_outcomes:
+  - description: All navigation tabs are accessible
+    check: "text_contains"
+    expected: "STATUS"
+  - description: Panel remains open after navigation
+    check: "element_visible"
+    expected: "ComfyGit panel"

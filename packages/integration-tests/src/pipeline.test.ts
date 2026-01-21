@@ -10,10 +10,9 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { Explorer, ClaudeAdapter, createBrowserSession } from '@browserflow/exploration';
 import type { ExplorationOutput } from '@browserflow/exploration';
-// @ts-expect-error - importing from dist/ for integration testing
-import { loadAndValidateSpec } from '@browserflow/cli/dist/commands/explore.js';
-// @ts-expect-error - importing from dist/ for integration testing
-import { loadExploration, listExplorations, serveStaticUI, saveReview } from '@browserflow/cli/dist/commands/review.js';
+// Use relative imports for monorepo workspace compatibility
+import { loadAndValidateSpec } from '../../cli/src/commands/explore.js';
+import { loadExploration, listExplorations, serveStaticUI, saveReview } from '../../cli/src/commands/review.js';
 
 describe('Full Pipeline Integration', () => {
   let testDir: string;
