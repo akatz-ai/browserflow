@@ -1,4 +1,5 @@
-# BrowserFlow
+![pixl-Browserflow](https://github.com/user-attachments/assets/9de2c613-36f6-47a8-8f4d-bcb82eace754)
+
 
 **AI-Driven E2E Test Creation with Human Feedback**
 
