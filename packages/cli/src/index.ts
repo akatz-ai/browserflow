@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { createRequire } from 'node:module';
 import { initCommand } from './commands/init.js';
 import { doctorCommand } from './commands/doctor.js';
 import { lintCommand } from './commands/lint.js';
@@ -8,7 +9,8 @@ import { repairCommand } from './commands/repair.js';
 import { exploreCommand } from './commands/explore.js';
 import { reviewCommand } from './commands/review.js';
 
-const VERSION = '0.0.1';
+const require = createRequire(import.meta.url);
+const { version: VERSION } = require('../package.json');
 
 export function createProgram(): Command {
   const program = new Command();

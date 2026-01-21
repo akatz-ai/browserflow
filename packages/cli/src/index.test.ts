@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'bun:test';
+import { createRequire } from 'node:module';
 import { createProgram } from './index.js';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json');
 
 describe('bf CLI', () => {
   it('should have correct name and description', () => {
@@ -10,7 +14,7 @@ describe('bf CLI', () => {
 
   it('should have correct version', () => {
     const program = createProgram();
-    expect(program.version()).toBe('0.0.1');
+    expect(program.version()).toBe(pkg.version);
   });
 
   it('should have init command', () => {
