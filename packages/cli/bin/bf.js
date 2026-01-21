@@ -1,3 +1,3 @@
 #!/usr/bin/env bun
-import { run } from '../src/index.ts';
+import { run } from '../dist/index.js';
 run();
