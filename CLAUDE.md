@@ -502,18 +502,21 @@ curl -fsSL https://raw.githubusercontent.com/akatz-ai/browserflow/main/scripts/i
 
 **To publish:**
 ```bash
-# 1. Update version in root package.json (optional - defaults to tag)
-# 2. Create and push a version tag
+# Just create and push a version tag - that's it!
 git tag v0.1.0
-git push --tags
+git push origin v0.1.0
 ```
 
 The GitHub Actions workflow (`.github/workflows/release.yml`) will:
 1. Build all packages
 2. Run tests
-3. Convert `workspace:*` references to actual versions
-4. Publish packages in dependency order to npm
-5. Create a GitHub Release with install instructions
+3. **Extract version from git tag** (e.g., `v0.1.0` → `0.1.0`)
+4. **Inject version into all package.json files** before publishing
+5. Convert `workspace:*` references to actual versions
+6. Publish packages in dependency order to npm
+7. Create a GitHub Release with install instructions
+
+**Version syncing:** The version in `package.json` files in the repo doesn't need to be updated manually. The publish script reads the version from the git tag and injects it into all packages before publishing. This ensures `bf --version` always matches the release tag.
 
 **Local dry-run:**
 ```bash
@@ -524,9 +527,10 @@ bun run publish:dry  # Preview what would be published
 
 | File | Purpose |
 |------|---------|
-| `scripts/publish.ts` | Handles workspace protocol conversion and npm publish |
+| `scripts/publish.ts` | Handles version injection, workspace protocol conversion, and npm publish |
 | `scripts/install.sh` | User-facing install script (wraps bun/npm) |
 | `.github/workflows/release.yml` | CI/CD workflow triggered on `v*` tags |
+| `packages/cli/src/index.ts` | Reads version from `package.json` at runtime |
 
 ### How review-ui Assets Work
 
