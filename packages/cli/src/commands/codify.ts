@@ -15,6 +15,9 @@ import { loadExploration, listExplorations } from './review.js';
  * Resolve an element ref to a locator object using snapshot refs data.
  * The exploration stores elementRef (e.g., "e17") and the actual locator data
  * is in snapshotBefore.refs or snapshotAfter.refs.
+ *
+ * For testid-based targets, elementRef may contain the actual CSS selector
+ * (e.g., "[data-testid=\"todo-input\"]") which should be used directly.
  */
 function resolveElementRefToLocator(
   elementRef: string | undefined,
@@ -22,6 +25,20 @@ function resolveElementRefToLocator(
   snapshotAfter: Record<string, unknown> | undefined
 ): LegacyLocatorObject | undefined {
   if (!elementRef) return undefined;
+
+  // Check if elementRef is already a CSS selector (starts with [ or contains data-testid)
+  if (elementRef.startsWith('[') || elementRef.includes('data-testid')) {
+    // Extract testid if present and use getByTestId
+    const testIdMatch = elementRef.match(/data-testid="([^"]+)"/);
+    if (testIdMatch) {
+      return {
+        method: 'getByTestId',
+        args: { testId: testIdMatch[1] },
+      };
+    }
+    // Otherwise use as CSS selector
+    return { selector: elementRef };
+  }
 
   // Try to get refs from snapshot (prefer snapshotBefore as it's what was used for the action)
   const refs = (snapshotBefore?.refs ?? snapshotAfter?.refs) as Record<string, Record<string, unknown>> | undefined;
