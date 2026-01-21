@@ -19,11 +19,11 @@
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@akatz-ai/core": ["packages/core/src/index.ts"],
-      "@akatz-ai/cli": ["packages/cli/src/index.ts"],
-      "@akatz-ai/exploration": ["packages/exploration/src/index.ts"],
-      "@akatz-ai/generator": ["packages/generator/src/index.ts"],
-      "@akatz-ai/review-ui": ["packages/review-ui/src/index.ts"]
+      "@browserflow-ai/core": ["packages/core/src/index.ts"],
+      "@browserflow-ai/cli": ["packages/cli/src/index.ts"],
+      "@browserflow-ai/exploration": ["packages/exploration/src/index.ts"],
+      "@browserflow-ai/generator": ["packages/generator/src/index.ts"],
+      "@browserflow-ai/review-ui": ["packages/review-ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "dist"]

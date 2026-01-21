@@ -27,14 +27,14 @@ claude --plugin-dir ./browserflow-plugin
 **Install bf CLI in your project:**
 
 ```bash
-bun add -D @akatz-ai/cli && bunx playwright install chromium
+bun add -D @browserflow-ai/cli && bunx playwright install chromium
 ```
 
 ## Quick Start
 
 ```bash
 # 1. Install bf CLI (if not already installed)
-bun add -D @akatz-ai/cli && bunx playwright install chromium
+bun add -D @browserflow-ai/cli && bunx playwright install chromium
 
 # 2. Write a spec
 cat > specs/login.yaml << 'EOF'
@@ -198,7 +198,7 @@ project/
 See [references/adapters.md](references/adapters.md) for creating custom LLM adapters.
 
 ```typescript
-import type { AIAdapter, FindElementResult } from '@akatz-ai/exploration';
+import type { AIAdapter, FindElementResult } from '@browserflow-ai/exploration';
 
 class MyAdapter implements AIAdapter {
   readonly name = 'my-adapter';

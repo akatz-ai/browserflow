@@ -67,10 +67,10 @@ jobs:
 
             ```bash
             # Using bun (recommended)
-            bun add -g @akatz-ai/cli
+            bun add -g @browserflow-ai/cli
 
             # Using npm
-            npm install -g @akatz-ai/cli
+            npm install -g @browserflow-ai/cli
 
             # Verify installation
             bf --version

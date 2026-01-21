@@ -7,10 +7,10 @@ import { Command } from 'commander';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
-import { specSchema } from '@akatz-ai/core';
-import type { BrowserFlowSpec } from '@akatz-ai/core';
-import { Explorer, ClaudeAdapter, ClaudeCliAdapter, createBrowserSession } from '@akatz-ai/exploration';
-import type { ExplorationOutput, AIAdapter } from '@akatz-ai/exploration';
+import { specSchema } from '@browserflow-ai/core';
+import type { BrowserFlowSpec } from '@browserflow-ai/core';
+import { Explorer, ClaudeAdapter, ClaudeCliAdapter, createBrowserSession } from '@browserflow-ai/exploration';
+import type { ExplorationOutput, AIAdapter } from '@browserflow-ai/exploration';
 import { colors } from '../ui/colors.js';
 
 /**

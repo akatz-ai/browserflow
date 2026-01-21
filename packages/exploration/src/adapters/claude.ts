@@ -1,4 +1,4 @@
-// @akatz-ai/exploration - Claude AI Adapter
+// @browserflow-ai/exploration - Claude AI Adapter
 
 import Anthropic from '@anthropic-ai/sdk';
 import type {

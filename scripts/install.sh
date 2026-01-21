@@ -45,10 +45,10 @@ main() {
   # Check for bun or npm
   if has_command bun; then
     info "Found bun, installing with bun..."
-    bun add -g @akatz-ai/cli
+    bun add -g @browserflow-ai/cli
   elif has_command npm; then
     info "Found npm, installing with npm..."
-    npm install -g @akatz-ai/cli
+    npm install -g @browserflow-ai/cli
   else
     error "Neither bun nor npm found. Please install one of them first.
 

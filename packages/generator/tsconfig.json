@@ -5,7 +5,7 @@
     "rootDir": "src",
     "baseUrl": "../..",
     "paths": {
-      "@akatz-ai/core": ["packages/core/src/index.ts"]
+      "@browserflow-ai/core": ["packages/core/src/index.ts"]
     }
   },
   "include": ["src"],

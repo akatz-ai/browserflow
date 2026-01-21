@@ -102,9 +102,9 @@ async function findReviewUIDistDir(cwd?: string): Promise<string> {
     }
   }
 
-  // Try to find @akatz-ai/review-ui package (for installed scenarios)
+  // Try to find @browserflow-ai/review-ui package (for installed scenarios)
   try {
-    const reviewUiPkgPath = await import.meta.resolve?.('@akatz-ai/review-ui/package.json');
+    const reviewUiPkgPath = await import.meta.resolve?.('@browserflow-ai/review-ui/package.json');
     if (reviewUiPkgPath) {
       const pkgDir = dirname(fileURLToPath(reviewUiPkgPath));
       const distDir = join(pkgDir, 'dist');

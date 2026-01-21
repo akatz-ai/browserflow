@@ -29,7 +29,7 @@ jobs:
         run: bun install
 
       - name: Install BrowserFlow
-        run: bun add -g @akatz-ai/cli
+        run: bun add -g @browserflow-ai/cli
 
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
@@ -114,7 +114,7 @@ jobs:
         run: bun install
 
       - name: Install BrowserFlow
-        run: bun add -g @akatz-ai/cli
+        run: bun add -g @browserflow-ai/cli
 
       - name: Install Playwright browser
         run: bunx playwright install --with-deps ${{ matrix.browser }}
@@ -159,7 +159,7 @@ e2e:
   image: oven/bun:latest
 
   before_script:
-    - bun add -g @akatz-ai/cli
+    - bun add -g @browserflow-ai/cli
     - bunx playwright install --with-deps chromium
 
   script:
@@ -207,7 +207,7 @@ e2e:
   parallel: 4
 
   before_script:
-    - bun add -g @akatz-ai/cli
+    - bun add -g @browserflow-ai/cli
     - bunx playwright install --with-deps chromium
 
   script:
@@ -250,7 +250,7 @@ e2e:
     DATABASE_URL: postgres://test:test@postgres/test
 
   before_script:
-    - bun add -g @akatz-ai/cli
+    - bun add -g @browserflow-ai/cli
     - bunx playwright install --with-deps chromium
 
   script:

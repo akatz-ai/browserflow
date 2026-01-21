@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import type { LegacyLocatorObject, LocatorMethod } from '@akatz-ai/core';
+import type { LegacyLocatorObject, LocatorMethod } from '@browserflow-ai/core';
 import { cn } from '@/lib/utils';
 
 // Strategy types for locator candidates

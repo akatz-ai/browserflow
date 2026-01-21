@@ -8,7 +8,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@akatz-ai/core": ["./node_modules/@akatz-ai/core/dist/index.d.ts", "../core/src/index.ts"]
+      "@browserflow-ai/core": ["./node_modules/@browserflow-ai/core/dist/index.d.ts", "../core/src/index.ts"]
     },
     "types": ["vitest/globals"],
     "noEmit": true

@@ -1,5 +1,5 @@
 {
-  "name": "@akatz-ai/generator",
+  "name": "@browserflow-ai/generator",
   "version": "0.0.1",
   "description": "Playwright test generator for BrowserFlow - Human-in-the-Loop E2E Test Generation",
   "type": "module",
@@ -24,7 +24,7 @@
   },
   "files": ["dist", "src"],
   "dependencies": {
-    "@akatz-ai/core": "workspace:*",
+    "@browserflow-ai/core": "workspace:*",
     "@types/bun": "^1.3.6",
     "handlebars": "^4.7.8"
   }

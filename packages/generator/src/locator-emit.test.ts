@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import type { LegacyLocatorObject } from '@akatz-ai/core';
+import type { LegacyLocatorObject } from '@browserflow-ai/core';
 
 // Use the legacy interface for backwards compatibility
 type LocatorObject = LegacyLocatorObject;

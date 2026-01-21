@@ -9,7 +9,7 @@ import type {
   GeneratedTest,
   ReviewData,
   LegacySpecStep,
-} from '@akatz-ai/core';
+} from '@browserflow-ai/core';
 import Handlebars from 'handlebars';
 import { resolveLocatorCode, escapeString } from './locator-emit.js';
 import {

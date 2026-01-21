@@ -1,4 +1,4 @@
-// @akatz-ai/exploration - Locator candidate generation
+// @browserflow-ai/exploration - Locator candidate generation
 
 /**
  * A locator candidate with confidence score

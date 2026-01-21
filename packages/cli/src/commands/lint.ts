@@ -7,7 +7,7 @@ import { Command } from 'commander';
 import { readFile, readdir, access } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 import { parse as parseYaml, LineCounter, parseDocument } from 'yaml';
-import { specSchema } from '@akatz-ai/core';
+import { specSchema } from '@browserflow-ai/core';
 import { colors, symbols } from '../ui/colors.js';
 import { logHeader, logNewline } from '../ui/prompts.js';
 

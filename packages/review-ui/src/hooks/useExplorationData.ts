@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { ExplorationStep } from '@akatz-ai/core';
+import type { ExplorationStep } from '@browserflow-ai/core';
 
 export interface ExplorationData {
   id: string;

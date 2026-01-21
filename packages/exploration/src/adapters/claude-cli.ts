@@ -1,4 +1,4 @@
-// @akatz-ai/exploration - Claude CLI Adapter
+// @browserflow-ai/exploration - Claude CLI Adapter
 // Uses the `claude` CLI tool instead of the Anthropic SDK
 // This allows users to leverage their existing Claude Code authentication
 

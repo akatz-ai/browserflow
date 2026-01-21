@@ -1,5 +1,5 @@
 {
-  "name": "@akatz-ai/integration-tests",
+  "name": "@browserflow-ai/integration-tests",
   "version": "0.0.1",
   "description": "Integration tests for BrowserFlow CLI pipeline",
   "type": "module",
@@ -9,9 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@akatz-ai/cli": "workspace:*",
-    "@akatz-ai/core": "workspace:*",
-    "@akatz-ai/exploration": "workspace:*"
+    "@browserflow-ai/cli": "workspace:*",
+    "@browserflow-ai/core": "workspace:*",
+    "@browserflow-ai/exploration": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

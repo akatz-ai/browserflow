@@ -1,5 +1,5 @@
 {
-  "name": "@akatz-ai/core",
+  "name": "@browserflow-ai/core",
   "version": "0.0.1",
   "description": "Shared types, schemas, and utilities for BrowserFlow - Human-in-the-Loop E2E Test Generation",
   "type": "module",

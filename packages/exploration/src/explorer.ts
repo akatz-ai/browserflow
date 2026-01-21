@@ -1,4 +1,4 @@
-// @akatz-ai/exploration - Main exploration orchestrator
+// @browserflow-ai/exploration - Main exploration orchestrator
 
 // Debug flag - set via BF_DEBUG=1 environment variable
 const DEBUG = process.env.BF_DEBUG === '1';

@@ -8,8 +8,8 @@ import { describe, expect, test, beforeAll, afterAll } from 'bun:test';
 import { mkdir, writeFile, readdir, readFile, rm, cp } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { Explorer, ClaudeAdapter, createBrowserSession } from '@akatz-ai/exploration';
-import type { ExplorationOutput } from '@akatz-ai/exploration';
+import { Explorer, ClaudeAdapter, createBrowserSession } from '@browserflow-ai/exploration';
+import type { ExplorationOutput } from '@browserflow-ai/exploration';
 // Use relative imports for monorepo workspace compatibility
 import { loadAndValidateSpec } from '../../cli/src/commands/explore.js';
 import { loadExploration, listExplorations, serveStaticUI, saveReview } from '../../cli/src/commands/review.js';

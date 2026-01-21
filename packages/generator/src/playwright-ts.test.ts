@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import type { ExplorationLockfile, ExplorationStep, LegacySpecStep, ReviewData } from '@akatz-ai/core';
+import type { ExplorationLockfile, ExplorationStep, LegacySpecStep, ReviewData } from '@browserflow-ai/core';
 import { PlaywrightGenerator, generateTest } from './playwright-ts.js';
 
 /**

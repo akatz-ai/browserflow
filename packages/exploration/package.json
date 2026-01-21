@@ -1,5 +1,5 @@
 {
-  "name": "@akatz-ai/exploration",
+  "name": "@browserflow-ai/exploration",
   "version": "0.0.1",
   "description": "AI exploration engine for BrowserFlow - Human-in-the-Loop E2E Test Generation",
   "type": "module",
@@ -25,7 +25,7 @@
   "files": ["dist", "src"],
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
-    "@akatz-ai/core": "workspace:*",
+    "@browserflow-ai/core": "workspace:*",
     "agent-browser": "^0.5.0"
   }
 }

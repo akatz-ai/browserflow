@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { basename } from 'node:path';
-import { createRunStore } from '@akatz-ai/core';
+import { createRunStore } from '@browserflow-ai/core';
 import { resolveSpecs, executePlaywright } from '../run/executor.js';
 import { collectResults, generateFailureBundles } from '../run/results.js';
 import { printRunHeader, printRunSummary, printError } from '../run/output.js';

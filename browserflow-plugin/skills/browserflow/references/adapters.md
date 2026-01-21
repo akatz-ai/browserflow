@@ -33,7 +33,7 @@ bf explore --spec login --url http://localhost:3000 --adapter claude-cli
 
 ## Creating Custom Adapters
 
-Implement the `AIAdapter` interface from `@akatz-ai/exploration`:
+Implement the `AIAdapter` interface from `@browserflow-ai/exploration`:
 
 ```typescript
 import type {
@@ -42,7 +42,7 @@ import type {
   FindElementResult,
   ExploreParams,
   ExplorationOutput
-} from '@akatz-ai/exploration';
+} from '@browserflow-ai/exploration';
 
 export interface MyAdapterConfig {
   apiKey: string;
@@ -184,7 +184,7 @@ interface ExploreParams {
 ### Using Programmatically
 
 ```typescript
-import { Explorer, MyAdapter } from '@akatz-ai/exploration';
+import { Explorer, MyAdapter } from '@browserflow-ai/exploration';
 
 const adapter = new MyAdapter({
   apiKey: process.env.MY_API_KEY!,
@@ -203,7 +203,7 @@ const result = await explorer.explore({
 
 ```typescript
 import OpenAI from 'openai';
-import type { AIAdapter, EnhancedSnapshot, FindElementResult } from '@akatz-ai/exploration';
+import type { AIAdapter, EnhancedSnapshot, FindElementResult } from '@browserflow-ai/exploration';
 
 export class OpenAIAdapter implements AIAdapter {
   readonly name = 'openai';

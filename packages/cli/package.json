@@ -1,5 +1,5 @@
 {
-  "name": "@akatz-ai/cli",
+  "name": "@browserflow-ai/cli",
   "version": "0.0.1",
   "description": "bf command-line tool for BrowserFlow - Human-in-the-Loop E2E Test Generation",
   "type": "module",
@@ -48,10 +48,10 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@akatz-ai/core": "workspace:*",
-    "@akatz-ai/exploration": "workspace:*",
-    "@akatz-ai/generator": "workspace:*",
-    "@akatz-ai/review-ui": "workspace:*",
+    "@browserflow-ai/core": "workspace:*",
+    "@browserflow-ai/exploration": "workspace:*",
+    "@browserflow-ai/generator": "workspace:*",
+    "@browserflow-ai/review-ui": "workspace:*",
     "chalk": "^5.3.0",
     "commander": "^12.0.0",
     "ora": "^8.0.0",

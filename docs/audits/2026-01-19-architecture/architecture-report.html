@@ -561,22 +561,22 @@
 
             <div class="mermaid">
 flowchart LR
-    User[User] --> CLI["@akatz-ai/cli (bf)"]
+    User[User] --> CLI["@browserflow-ai/cli (bf)"]
     Specs["specs/*.yaml"] --> CLI
     Config["browserflow.yaml"] --> CLI
-    CLI --> Core["@akatz-ai/core"]
+    CLI --> Core["@browserflow-ai/core"]
     CLI --> Playwright["Playwright CLI"]
     CLI --> Runs[".browserflow/runs/"]
     CLI --> Baselines[".browserflow/baselines/"]
 
-    Exploration["@akatz-ai/exploration"] --> Core
+    Exploration["@browserflow-ai/exploration"] --> Core
     Exploration --> AgentBrowser["agent-browser"]
     Exploration --> Anthropic["Anthropic API"]
 
-    Generator["@akatz-ai/generator"] --> Core
+    Generator["@browserflow-ai/generator"] --> Core
     Generator --> Tests["Playwright Tests"]
 
-    ReviewUI["@akatz-ai/review-ui"] --> ReviewAPI["/api/exploration"]
+    ReviewUI["@browserflow-ai/review-ui"] --> ReviewAPI["/api/exploration"]
     ReviewUI --> ReviewJSON["review.json"]
 
     Specs -.-> Exploration
@@ -592,10 +592,10 @@ flowchart LR
             <h3>Package Dependencies</h3>
             <div class="mermaid">
 graph LR
-    cli["@akatz-ai/cli"] --> core["@akatz-ai/core"]
-    exploration["@akatz-ai/exploration"] --> core
-    generator["@akatz-ai/generator"] --> core
-    reviewUI["@akatz-ai/review-ui"] --> core
+    cli["@browserflow-ai/cli"] --> core["@browserflow-ai/core"]
+    exploration["@browserflow-ai/exploration"] --> core
+    generator["@browserflow-ai/generator"] --> core
+    reviewUI["@browserflow-ai/review-ui"] --> core
 
     exploration --> agentBrowser["agent-browser"]
     exploration --> anthropic["@anthropic-ai/sdk"]
@@ -677,7 +677,7 @@ graph LR
             <h2>Component Deep Dives</h2>
 
             <details>
-                <summary><span class="badge badge-blue">CORE</span> @akatz-ai/core</summary>
+                <summary><span class="badge badge-blue">CORE</span> @browserflow-ai/core</summary>
                 <div class="content">
                     <p><strong>Responsibility:</strong> Zod schemas for specs/config/lockfile, locator model, run-store, and shared types.</p>
 
@@ -713,7 +713,7 @@ graph LR
             </details>
 
             <details>
-                <summary><span class="badge badge-green">CLI</span> @akatz-ai/cli</summary>
+                <summary><span class="badge badge-green">CLI</span> @browserflow-ai/cli</summary>
                 <div class="content">
                     <p><strong>Responsibility:</strong> CLI commands for init, doctor, lint, run, baseline, and repair.</p>
 
@@ -739,7 +739,7 @@ if (summary.failed > 0) {
             </details>
 
             <details>
-                <summary><span class="badge badge-purple">EXPLORATION</span> @akatz-ai/exploration</summary>
+                <summary><span class="badge badge-purple">EXPLORATION</span> @browserflow-ai/exploration</summary>
                 <div class="content">
                     <p><strong>Responsibility:</strong> AI exploration orchestration via Explorer, using BrowserSession and AIAdapter.</p>
 
@@ -780,7 +780,7 @@ if (summary.failed > 0) {
             </details>
 
             <details>
-                <summary><span class="badge badge-orange">GENERATOR</span> @akatz-ai/generator</summary>
+                <summary><span class="badge badge-orange">GENERATOR</span> @browserflow-ai/generator</summary>
                 <div class="content">
                     <p><strong>Responsibility:</strong> Convert exploration lockfiles into Playwright tests using Handlebars templates.</p>
 
@@ -812,7 +812,7 @@ return {
             </details>
 
             <details>
-                <summary><span class="badge badge-cyan">UI</span> @akatz-ai/review-ui</summary>
+                <summary><span class="badge badge-cyan">UI</span> @browserflow-ai/review-ui</summary>
                 <div class="content">
                     <p><strong>Responsibility:</strong> React SPA for loading exploration JSON, presenting step review UI, and outputting review decisions.</p>
 

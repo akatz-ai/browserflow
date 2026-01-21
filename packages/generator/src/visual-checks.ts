@@ -3,7 +3,7 @@
  * Generates Playwright screenshot assertion code.
  */
 
-import type { MaskRegion } from '@akatz-ai/core';
+import type { MaskRegion } from '@browserflow-ai/core';
 import { escapeString } from './locator-emit.js';
 
 /**

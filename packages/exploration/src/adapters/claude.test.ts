@@ -1,4 +1,4 @@
-// @akatz-ai/exploration - Claude adapter tests
+// @browserflow-ai/exploration - Claude adapter tests
 import { describe, it, expect, beforeEach, mock } from 'bun:test';
 import { ClaudeAdapter } from './claude';
 
