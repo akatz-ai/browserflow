@@ -1,6 +1,6 @@
 {
   "name": "@browserflow-ai/integration-tests",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Integration tests for BrowserFlow CLI pipeline",
   "type": "module",
   "private": true,

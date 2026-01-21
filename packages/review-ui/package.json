@@ -1,6 +1,6 @@
 {
   "name": "@browserflow-ai/review-ui",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "React review application for BrowserFlow - Human-in-the-Loop E2E Test Generation",
   "type": "module",
   "main": "./dist/index.html",
